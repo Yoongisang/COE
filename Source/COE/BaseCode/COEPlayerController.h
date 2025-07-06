@@ -26,23 +26,22 @@ protected:
 
 public:
 	ACOEPlayerController();
-
 protected:
 	/** Jump Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
-	UInputAction* JumpAction;
+	TObjectPtr<UInputAction> JumpAction;
 
 	/** Move Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
-	UInputAction* MoveAction;
+	TObjectPtr<UInputAction> MoveAction;
 
 	/** Look Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
-	UInputAction* LookAction;
+	TObjectPtr<UInputAction> LookAction;
 
 	/** Mouse Look Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
-	UInputAction* MouseLookAction;
+	TObjectPtr<UInputAction> MouseLookAction;
 
 	/** Input mapping context setup */
 	virtual void SetupInputComponent();
@@ -63,8 +62,6 @@ public:
 	/** Handles look inputs from either controls or UI interfaces */
 	UFUNCTION(BlueprintCallable, Category = "Input")
 	virtual void DoLook(float Yaw, float Pitch);
-
-public:
 
 	/** Handles jump pressed inputs from either controls or UI interfaces */
 	UFUNCTION(BlueprintCallable, Category = "Input")

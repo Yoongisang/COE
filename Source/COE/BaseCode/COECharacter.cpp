@@ -49,10 +49,29 @@ ACOECharacter::ACOECharacter()
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = true; //컨트롤러 따라가게 바꿈
-	//AnimInstance 캐스트
-	AnimInstance = Cast<UCOEAnimInstance>(GetMesh()->GetAnimInstance());
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+}
+
+void ACOECharacter::BeginPlay()
+{
+	Super::BeginPlay();
+	//AnimInstance 캐스트
+	AnimInstance = Cast<UCOEAnimInstance>(GetMesh()->GetAnimInstance());
+}
+
+void ACOECharacter::DefaultAttack()
+{
+	//AnimInstance가 nullptr이 아니라면 DefaultAttackAnim 실행
+	if (IsValid(AnimInstance))
+	{
+		AnimInstance->DefaultAttackAnim();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("Null"));
+	}
+	UE_LOG(LogTemp, Log, TEXT("DefaultAttack"));
 }
 
 

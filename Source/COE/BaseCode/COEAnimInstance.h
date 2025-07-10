@@ -13,6 +13,9 @@ UCLASS()
 class COE_API UCOEAnimInstance : public UAnimInstance
 {
 	GENERATED_BODY()
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AnimMontage")
+	TObjectPtr <UAnimMontage> DefaultAttackMontage;
 private:
 	//움직임 체크 (Idle 판단)
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ani", meta = (AllowPrivateAccess = "true"))
@@ -48,7 +51,12 @@ public:
 public:
 	UCOEAnimInstance();
 	virtual void NativeInitializeAnimation() override;
+	//CharacterMovement에 연결된 폰의 움직임 받아옴
 	virtual void NativeBeginPlay() override;
+	//실시간으로 CharacterMovement관련값 업데이트
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
+
+public:
+	void DefaultAttackAnim();
 
 };

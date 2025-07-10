@@ -9,6 +9,7 @@
 class UInputMappingContext;
 class UInputAction;
 struct FInputActionValue;
+
 /**
  *  Basic PlayerController class for a third person game
  *  Manages input mappings
@@ -23,7 +24,6 @@ protected:
 	/** Input Mapping Contexts */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category ="Input", meta = (AllowPrivateAccess = "true"))
 	TArray<UInputMappingContext*> DefaultMappingContexts;
-
 public:
 	ACOEPlayerController();
 protected:
@@ -42,6 +42,10 @@ protected:
 	/** Mouse Look Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	TObjectPtr<UInputAction> MouseLookAction;
+
+	/** DefaultAttack */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	TObjectPtr<UInputAction> DefaultAttack;
 
 	/** Input mapping context setup */
 	virtual void SetupInputComponent();
@@ -70,5 +74,9 @@ public:
 	/** Handles jump pressed inputs from either controls or UI interfaces */
 	UFUNCTION(BlueprintCallable, Category = "Input")
 	virtual void DoJumpEnd();
+
+	/** 기본공격 인풋  */
+	UFUNCTION(BlueprintCallable, Category = "Input")
+	virtual void DoDefaultAttack();
 
 };

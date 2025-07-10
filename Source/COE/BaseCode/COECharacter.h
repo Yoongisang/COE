@@ -36,6 +36,7 @@ public:
 
 	/** Constructor */
 	ACOECharacter();	
+
 public:
 
 	/** Returns CameraBoom subobject **/
@@ -43,5 +44,10 @@ public:
 
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+public:
+	void BeginPlay() override;
+	/** 기본공격*/
+	void DefaultAttack();
 };
 

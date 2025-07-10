@@ -41,6 +41,9 @@ void ACOEPlayerController::SetupInputComponent()
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ACOEPlayerController::Look);
 		EnhancedInputComponent->BindAction(MouseLookAction, ETriggerEvent::Triggered, this, &ACOEPlayerController::Look);
+
+		//DefaultAttack
+		EnhancedInputComponent->BindAction(DefaultAttack, ETriggerEvent::Triggered, this, &ACOEPlayerController::DoDefaultAttack);
 	}
 	else
 	{
@@ -74,11 +77,11 @@ void ACOEPlayerController::Look(const FInputActionValue& Value)
 
 void ACOEPlayerController::DoMove(float Right, float Forward)
 {
-	ACharacter* ControllerCharacter = this->GetCharacter();
-	if (ControllerCharacter != nullptr)
+	//ACharacter* ControllerCharacter = this->GetCharacter();
+	if (ACOECharacter* Char = Cast<ACOECharacter>(GetCharacter()))
 	{
 		// find out which way is forward
-		const FRotator Rotation = ControllerCharacter->GetControlRotation();
+		const FRotator Rotation = Char->GetControlRotation();
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
 
 		// get forward vector
@@ -88,8 +91,8 @@ void ACOEPlayerController::DoMove(float Right, float Forward)
 		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
 		// add movement 
-		ControllerCharacter->AddMovementInput(ForwardDirection, Forward);
-		ControllerCharacter->AddMovementInput(RightDirection, Right);
+		Char->AddMovementInput(ForwardDirection, Forward);
+		Char->AddMovementInput(RightDirection, Right);
 	}
 }
 
@@ -97,28 +100,38 @@ void ACOEPlayerController::DoLook(float Yaw, float Pitch)
 {
 	
 	
-	if (APawn* ControllerPawn = GetPawn())
+	if (ACOECharacter* COEPawn = Cast<ACOECharacter>(GetPawn()))
 	{
-		ControllerPawn->AddControllerYawInput(Yaw);
-		ControllerPawn->AddControllerPitchInput(Pitch);
+		COEPawn->AddControllerYawInput(Yaw);
+		COEPawn->AddControllerPitchInput(Pitch);
 	}
 }
 void ACOEPlayerController::DoJumpStart()
 {
 	// signal the character to jump
-	ACharacter* ControllerCharacter = this->GetCharacter();
-	if (ControllerCharacter != nullptr)
+	//ACharacter* ControllerCharacter = this->GetCharacter();
+	if (ACOECharacter* Char = Cast<ACOECharacter>(GetCharacter()))
 	{
-		ControllerCharacter->Jump();
+		Char->Jump();
 	}
 }
 
 void ACOEPlayerController::DoJumpEnd()
 {
 	// signal the character to stop jumping
-	ACharacter* ControllerCharacter = this->GetCharacter();
-	if (ControllerCharacter != nullptr)
+	//ACharacter* ControllerCharacter = this->GetCharacter();
+	if (ACOECharacter* Char = Cast<ACOECharacter>(GetCharacter()))
 	{
-		ControllerCharacter->StopJumping();
+		Char->StopJumping();
 	}
+}
+
+void ACOEPlayerController::DoDefaultAttack()
+{
+	//ACharacter* ControllerCharacter = this->GetCharacter();
+	if (ACOECharacter* Char = Cast<ACOECharacter>(GetCharacter()))
+	{
+		Char->DefaultAttack();
+	}
+
 }

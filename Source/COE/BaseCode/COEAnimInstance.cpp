@@ -29,6 +29,7 @@ void UCOEAnimInstance::NativeBeginPlay()
 			//CharacterMovement에 연결된 폰의 움직임 받아옴
 			CharacterMovement = Character->GetCharacterMovement();
 		}
+
 	}
 }
 
@@ -67,5 +68,18 @@ void UCOEAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		DeltaRotation.Normalize();
 
 		YawOffset = DeltaRotation.Yaw;
+	}
+}
+
+void UCOEAnimInstance::DefaultAttackAnim()
+{
+
+	if (IsValid(DefaultAttackMontage))
+	{
+		if (!Montage_IsPlaying(DefaultAttackMontage))
+		{
+			Montage_Play(DefaultAttackMontage);
+		}
+
 	}
 }

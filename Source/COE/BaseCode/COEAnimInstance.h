@@ -16,7 +16,7 @@ class COE_API UCOEAnimInstance : public UAnimInstance
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AnimMontage")
 	TObjectPtr <UAnimMontage> DefaultAttackMontage;
-private:
+public:
 	//움직임 체크 (Idle 판단)
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ani", meta = (AllowPrivateAccess = "true"))
 	bool ShouldMove;
@@ -57,6 +57,7 @@ public:
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 
 public:
+	UFUNCTION(BlueprintCallable, Category = "Animation")
 	void DefaultAttackAnim();
 
 };

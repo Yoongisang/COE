@@ -24,8 +24,10 @@ protected:
 	/** Input Mapping Contexts */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category ="Input", meta = (AllowPrivateAccess = "true"))
 	TArray<UInputMappingContext*> DefaultMappingContexts;
+
 public:
-	ACOEPlayerController();
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<class ACOECharacter> COEChar;
 protected:
 	/** Jump Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
@@ -57,7 +59,11 @@ protected:
 
 		/** Called for looking input */
 	void Look(const FInputActionValue& Value);
+
 public:
+
+	/** BeginPlay */
+	virtual void BeginPlay() override;
 
 	/** Handles move inputs from either controls or UI interfaces */
 	UFUNCTION(BlueprintCallable, Category = "Input")

@@ -53,9 +53,6 @@ void ACOEPlayerController::SetupInputComponent()
 	
 
 }
-ACOEPlayerController::ACOEPlayerController()
-{
-}
 
 void ACOEPlayerController::Move(const FInputActionValue& Value)
 {
@@ -75,13 +72,17 @@ void ACOEPlayerController::Look(const FInputActionValue& Value)
 
 }
 
+void ACOEPlayerController::BeginPlay()
+{
+	COEChar = Cast<ACOECharacter>(GetCharacter());
+}
+
 void ACOEPlayerController::DoMove(float Right, float Forward)
 {
-	//ACharacter* ControllerCharacter = this->GetCharacter();
-	if (ACOECharacter* Char = Cast<ACOECharacter>(GetCharacter()))
+	if (IsValid(COEChar))
 	{
 		// find out which way is forward
-		const FRotator Rotation = Char->GetControlRotation();
+		const FRotator Rotation = COEChar->GetControlRotation();
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
 
 		// get forward vector
@@ -91,47 +92,47 @@ void ACOEPlayerController::DoMove(float Right, float Forward)
 		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
 		// add movement 
-		Char->AddMovementInput(ForwardDirection, Forward);
-		Char->AddMovementInput(RightDirection, Right);
+		COEChar->AddMovementInput(ForwardDirection, Forward);
+		COEChar->AddMovementInput(RightDirection, Right);
 	}
 }
 
 void ACOEPlayerController::DoLook(float Yaw, float Pitch)
 {
-	
-	
-	if (ACOECharacter* COEPawn = Cast<ACOECharacter>(GetPawn()))
+	// add yaw and pitch input to controller
+	if (IsValid(COEChar))
 	{
-		COEPawn->AddControllerYawInput(Yaw);
-		COEPawn->AddControllerPitchInput(Pitch);
+		COEChar->AddControllerYawInput(Yaw);
+		COEChar->AddControllerPitchInput(Pitch);
 	}
 }
 void ACOEPlayerController::DoJumpStart()
 {
 	// signal the character to jump
-	//ACharacter* ControllerCharacter = this->GetCharacter();
-	if (ACOECharacter* Char = Cast<ACOECharacter>(GetCharacter()))
+	if (IsValid(COEChar))
 	{
-		Char->Jump();
+		COEChar->Jump();
 	}
 }
+
 
 void ACOEPlayerController::DoJumpEnd()
 {
 	// signal the character to stop jumping
-	//ACharacter* ControllerCharacter = this->GetCharacter();
-	if (ACOECharacter* Char = Cast<ACOECharacter>(GetCharacter()))
+	if (IsValid(COEChar))
 	{
-		Char->StopJumping();
+		COEChar->StopJumping();
 	}
 }
 
 void ACOEPlayerController::DoDefaultAttack()
 {
-	//ACharacter* ControllerCharacter = this->GetCharacter();
-	if (ACOECharacter* Char = Cast<ACOECharacter>(GetCharacter()))
+	// COEChar nullptr 검사와 COEChar->GetCharacter()->IsFalling()으로 공중에있는지 체크
+	if (!IsValid(COEChar) || COEChar->GetCharacterMovement()->IsFalling())
 	{
-		Char->DefaultAttack();
+		UE_LOG(LogTemp, Log, TEXT("COEChar == nullptr || bIsFalling == true"));
+		return;
 	}
-
+	// 문제없을 시 COECharacter의 DefaultAttack() 실행
+	COEChar->DefaultAttack();
 }

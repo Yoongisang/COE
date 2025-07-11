@@ -46,8 +46,9 @@ public:
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
 public:
-	void BeginPlay() override;
+	virtual void BeginPlay() override;
 	/** 기본공격*/
+	UFUNCTION(BlueprintCallable, Category = "Action")
 	void DefaultAttack();
 };
 

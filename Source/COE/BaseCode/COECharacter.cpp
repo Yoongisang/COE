@@ -80,7 +80,7 @@ void ACOECharacter::DefaultAttack()
 
 }
 
-void ACOECharacter::DoDefaultAttck()
+void ACOECharacter::DoDefaultAttack()
 {
 	FHitResult HitResult;
 	FCollisionQueryParams Params;

@@ -93,6 +93,6 @@ void UCOEAnimInstance::AnimNotify_End()
 
 void UCOEAnimInstance::AnimNotify_DoDefaultAttack()
 {
-	Character->DoDefaultAttck();
+	Character->DoDefaultAttack();
 	UE_LOG(LogTemp, Log, TEXT("DoDefaultAttack"));
 }

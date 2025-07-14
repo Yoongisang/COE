@@ -134,7 +134,7 @@ void ACOEPlayerController::DoDefaultAttack()
 		UE_LOG(LogTemp, Log, TEXT("COEChar == nullptr && bIsFalling == true"));
 		return;
 	}
-
+	// 공격중이라면 입력 X
 	if (COEChar->bIsAttacking)
 	{
 		UE_LOG(LogTemp, Log, TEXT("bIsAttacking == true"));

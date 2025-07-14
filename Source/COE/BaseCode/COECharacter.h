@@ -55,7 +55,7 @@ public:
 	void DefaultAttack();
 	/** 기본공격 충돌처리 */
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void DoDefaultAttck();
+	void DoDefaultAttack();
 	/**  받은 데미지 처리 */
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 

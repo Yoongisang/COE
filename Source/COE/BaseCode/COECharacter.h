@@ -37,6 +37,9 @@ public:
 	/** Constructor */
 	ACOECharacter();	
 
+	/** If true, the character is currently playing an attack animation */
+	bool bIsAttacking = false;
+
 public:
 
 	/** Returns CameraBoom subobject **/
@@ -50,5 +53,11 @@ public:
 	/** 기본공격*/
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void DefaultAttack();
+	/** 기본공격 충돌처리 */
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	void DoDefaultAttck();
+	/**  받은 데미지 처리 */
+	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+
 };
 

@@ -13,6 +13,7 @@
 #include "GameFramework/Controller.h"
 #include "GameFramework/PlayerController.h" 
 #include "COECharacter.h"
+#include "COEAnimInstance.h"
 
 void ACOEPlayerController::SetupInputComponent()
 {
@@ -127,12 +128,19 @@ void ACOEPlayerController::DoJumpEnd()
 
 void ACOEPlayerController::DoDefaultAttack()
 {
-	// COEChar nullptr 검사와 COEChar->GetCharacter()->IsFalling()으로 공중에있는지 체크
+	// COEChar nullptr 검사와 COEChar->GetCharacter()->IsFalling()으로 공중에있는지 이미 공격 중인지 체크
 	if (!IsValid(COEChar) || COEChar->GetCharacterMovement()->IsFalling())
 	{
-		UE_LOG(LogTemp, Log, TEXT("COEChar == nullptr || bIsFalling == true"));
+		UE_LOG(LogTemp, Log, TEXT("COEChar == nullptr && bIsFalling == true"));
+		return;
+	}
+
+	if (COEChar->bIsAttacking)
+	{
+		UE_LOG(LogTemp, Log, TEXT("bIsAttacking == true"));
 		return;
 	}
 	// 문제없을 시 COECharacter의 DefaultAttack() 실행
 	COEChar->DefaultAttack();
+	COEChar->bIsAttacking = true;
 }

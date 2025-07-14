@@ -59,5 +59,8 @@ public:
 public:
 	UFUNCTION(BlueprintCallable, Category = "Animation")
 	void DefaultAttackAnim();
-
+	UFUNCTION(BlueprintCallable, Category = "Animation")
+	void AnimNotify_End();
+	UFUNCTION(BlueprintCallable, Category = "Animation")
+	void AnimNotify_DoDefaultAttack();
 };

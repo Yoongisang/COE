@@ -73,14 +73,26 @@ void UCOEAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 
 void UCOEAnimInstance::DefaultAttackAnim()
 {
-
+	// DefaultAttackMontage가 할당되어있고 Montage가 실행중이 아닐경우 Montage실행
 	if (IsValid(DefaultAttackMontage))
 	{
 		if (!Montage_IsPlaying(DefaultAttackMontage))
 		{
 			Montage_Play(DefaultAttackMontage);
+
 		}
 
 	}
+}
 
+void UCOEAnimInstance::AnimNotify_End()
+{
+	Character->bIsAttacking = false;
+	UE_LOG(LogTemp, Log, TEXT("bIsAttacking == false"));
+}
+
+void UCOEAnimInstance::AnimNotify_DoDefaultAttack()
+{
+	Character->DoDefaultAttck();
+	UE_LOG(LogTemp, Log, TEXT("DoDefaultAttack"));
 }

@@ -8,6 +8,8 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/Controller.h"
 #include "COEAnimInstance.h"
+#include "Kismet/GameplayStatics.h"
+
 
 //#include "EnhancedInputComponent.h"
 //#include "EnhancedInputSubsystems.h"
@@ -62,9 +64,12 @@ void ACOECharacter::BeginPlay()
 
 void ACOECharacter::DefaultAttack()
 {
+	//공격 상태
+	
 	//AnimInstance가 nullptr이 아니라면 DefaultAttackAnim 실행
 	if (IsValid(AnimInstance))
 	{
+		
 		AnimInstance->DefaultAttackAnim();
 	}
 	else
@@ -72,6 +77,57 @@ void ACOECharacter::DefaultAttack()
 		UE_LOG(LogTemp, Log, TEXT("Null"));
 	}
 	UE_LOG(LogTemp, Log, TEXT("DefaultAttack"));
+
+}
+
+void ACOECharacter::DoDefaultAttck()
+{
+	FHitResult HitResult;
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this);
+
+	float AttackRange = 100.f;
+	float AttackRadius = 50.f;
+	FVector StartPos = GetActorLocation();
+	FVector EndPos = GetActorLocation() + GetActorForwardVector() * AttackRange;
+
+	bool Result = GetWorld()->SweepSingleByChannel
+	(
+		HitResult,									//충돌 결과를 저장할 변수					
+		StartPos,									//시작 지점
+		EndPos,										//끝 지점
+		FQuat::Identity,							//회전 (기본 값)
+		ECC_GameTraceChannel3,						//충돌 채널 (Visibilirty)
+		FCollisionShape::MakeSphere(AttackRange),	//형태 : Sphere(구) MakeSphere(반지름)
+		Params										//충돌 쿼리 파라미터
+	);
+
+
+	
+	FVector Vec = GetActorForwardVector() * AttackRange;
+	FVector Center = GetActorLocation() + Vec * 0.5f;
+	float HalfHeight = AttackRange * 0.5f + AttackRadius;
+	FQuat Rotation = FRotationMatrix::MakeFromZ(Vec).ToQuat();
+	FColor DrawColor;
+
+	DrawColor = Result ? FColor::Green : FColor::Red;
+
+	DrawDebugCapsule(GetWorld(), Center, HalfHeight, AttackRadius, Rotation, DrawColor, false, 2.f);
+
+	if (Result && HitResult.GetActor())
+	{
+		UE_LOG(LogTemp, Log, TEXT("Hit : %s"), *HitResult.GetActor()->GetName());
+		//공격판정이 들어가면 데미지 적용
+		UGameplayStatics::ApplyDamage(HitResult.GetActor(), 10.f, GetInstigatorController(), this, nullptr);
+	}
+
+}
+
+float ACOECharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	//받은 데미지 표시
+	UE_LOG(LogTemp, Log, TEXT("Damaged : %f"), DamageAmount);
+	return 0.f;
 }
 
 

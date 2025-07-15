@@ -46,6 +46,7 @@ ACOECharacter::ACOECharacter()
 	CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->TargetArmLength = 400.0f;
 	CameraBoom->bUsePawnControlRotation = true;
+	CameraBoom->SocketOffset = FVector(200.f,80.f, 50.f);
 
 	// Create a follow camera
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
@@ -123,11 +124,104 @@ void ACOECharacter::DoDefaultAttack()
 
 }
 
+void ACOECharacter::Fire()
+{
+	UE_LOG(LogTemp, Log, TEXT("Fire"));
+
+	if (IsValid(AnimInstance))
+	{
+		//bIsShooting = true;
+
+		//AnimInstance->PlayAttackMontage();
+
+		float AttackRange = 10000.f;
+
+		FHitResult HitResult;
+
+		//auto
+		APlayerCameraManager* CameraManager = UGameplayStatics::GetPlayerCameraManager(this, 0);
+
+		FVector AimLocation = CameraManager->GetCameraLocation();
+		FVector TargetLocation = AimLocation + CameraManager->GetActorForwardVector() * AttackRange;
+		FCollisionQueryParams Params;
+		Params.AddIgnoredActor(this);
+
+		bool Result = GetWorld()->LineTraceSingleByChannel
+		(
+			OUT HitResult,
+			AimLocation,
+			TargetLocation,
+			ECollisionChannel::ECC_GameTraceChannel3,
+			Params
+
+		);
+
+		if (Result)
+		{
+			TargetLocation = HitResult.ImpactPoint;
+			DrawDebugLine(GetWorld(), AimLocation, TargetLocation, FColor::Green, false, 2.f);
+			UE_LOG(LogTemp, Log, TEXT("Hit : %s"), *HitResult.GetActor()->GetName());
+
+			//공격판정이 들어가면 데미지 적용
+			UGameplayStatics::ApplyDamage(HitResult.GetActor(), 10.f, GetInstigatorController(), this, nullptr);
+		}
+		else
+		{
+			DrawDebugLine(GetWorld(), AimLocation, TargetLocation, FColor::Red, false, 2.f);
+		}
+
+		// 원거리 Montage 적용시 소켓 위치에서 Aim ImpactPoint로 공격이 갈 수 있게 조정
+		//FTransform SocketTransform = GetMesh()->GetSocketTransform(FName("ArrowSocket"));
+		//SocketLocation = SocketTransform.GetLocation();
+		//FVector DeltaVector = TargetLocation - SocketLocation;
+		//SocketRotation = FRotationMatrix::MakeFromX(DeltaVector).Rotator();
+
+	}
+}
+
+void ACOECharacter::SetAiming(bool bNewAiming)
+{
+	bIsAiming = bNewAiming;
+	GetWorldTimerManager().ClearTimer(AimingInterpTimerHandle); // 이전 타이머 정리
+
+	StartSocketOffset = CameraBoom->SocketOffset;
+	TargetSocketOffset = bIsAiming
+		? FVector(300.f, 80.f, 50.f)
+		: FVector(200.f, 80.f, 50.f);
+
+
+	InterpAlpha = 0.f;
+	bInterpToAiming = bIsAiming;
+
+	GetWorldTimerManager().SetTimer
+	(
+		AimingInterpTimerHandle,
+		this,
+		&ACOECharacter::UpdateAimingInterp,
+		0.01f, // 10ms 간격
+		true   // 반복 실행
+	);
+}
+
 float ACOECharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	//받은 데미지 표시
 	UE_LOG(LogTemp, Log, TEXT("Damaged : %f"), DamageAmount);
 	return 0.f;
+}
+
+void ACOECharacter::UpdateAimingInterp()
+{
+	InterpAlpha +=  0.05f; // 0~1로 점점 증가 (속도 조절 가능)
+
+	FVector NewOffset = FMath::Lerp(StartSocketOffset, TargetSocketOffset, InterpAlpha);
+	CameraBoom->SocketOffset = NewOffset;
+
+	if (InterpAlpha >= 1.0f)
+	{
+		CameraBoom->SocketOffset = TargetSocketOffset;
+		GetWorldTimerManager().ClearTimer(AimingInterpTimerHandle);
+	}
 }
 
 

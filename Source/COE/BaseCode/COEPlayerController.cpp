@@ -45,6 +45,13 @@ void ACOEPlayerController::SetupInputComponent()
 
 		//DefaultAttack
 		EnhancedInputComponent->BindAction(DefaultAttack, ETriggerEvent::Triggered, this, &ACOEPlayerController::DoDefaultAttack);
+
+		//MouseLeftClick
+		EnhancedInputComponent->BindAction(MouseLeftClick, ETriggerEvent::Triggered, this, &ACOEPlayerController::DoMouseLeftClick);
+
+		//MouseRightClick
+		EnhancedInputComponent->BindAction(MouseRightClick, ETriggerEvent::Started, this, &ACOEPlayerController::DoMouseRightClickStart);
+		EnhancedInputComponent->BindAction(MouseRightClick, ETriggerEvent::Completed, this, &ACOEPlayerController::DoMouseRightClickEnd);
 	}
 	else
 	{
@@ -143,4 +150,31 @@ void ACOEPlayerController::DoDefaultAttack()
 	// 문제없을 시 COECharacter의 DefaultAttack() 실행
 	COEChar->DefaultAttack();
 	COEChar->bIsAttacking = true;
+}
+
+void ACOEPlayerController::DoMouseLeftClick()
+{
+	if (COEChar->bIsAiming)
+	{
+		UE_LOG(LogTemp, Log, TEXT("MouseLeftClick"));
+		COEChar->Fire();
+	}
+}
+
+void ACOEPlayerController::DoMouseRightClickStart()
+{
+	UE_LOG(LogTemp, Log, TEXT("MouseRightClickStart"));
+	if (IsValid(COEChar))
+	{
+		COEChar->SetAiming(true);
+	}
+}
+
+void ACOEPlayerController::DoMouseRightClickEnd()
+{
+	UE_LOG(LogTemp, Log, TEXT("MouseRightClickEnd"));
+	if (IsValid(COEChar))
+	{
+		COEChar->SetAiming(false);
+	}
 }

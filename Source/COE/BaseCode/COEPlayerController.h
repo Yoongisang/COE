@@ -49,6 +49,14 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	TObjectPtr<UInputAction> DefaultAttack;
 
+	/** 마우스 좌클릭 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	TObjectPtr<UInputAction> MouseLeftClick;
+
+	/** 마우스 우클릭 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	TObjectPtr<UInputAction> MouseRightClick;
+
 	/** Input mapping context setup */
 	virtual void SetupInputComponent();
 
@@ -81,8 +89,20 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Input")
 	virtual void DoJumpEnd();
 
-	/** 기본공격 인풋  */
+	/** 기본공격 Input  */
 	UFUNCTION(BlueprintCallable, Category = "Input")
 	virtual void DoDefaultAttack();
+
+	/** 마우스 좌클릭 Input  */
+	UFUNCTION(BlueprintCallable, Category = "Input")
+	virtual void DoMouseLeftClick();
+
+	/** 마우스 우클릭 Input  */
+	UFUNCTION(BlueprintCallable, Category = "Input")
+	virtual void DoMouseRightClickStart();
+
+	/** 마우스 우클릭 End  */
+	UFUNCTION(BlueprintCallable, Category = "Input")
+	virtual void DoMouseRightClickEnd();
 
 };

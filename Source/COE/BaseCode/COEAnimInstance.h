@@ -35,6 +35,9 @@ public:
 	//XY 벡터크기
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ani", meta = (AllowPrivateAccess = "true"))
 	float GroundSpeed;
+	//가속도
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ani", meta = (AllowPrivateAccess = "true"))
+	FVector Acceleration;
 	//조준 방향과 이동방향 좌우 각도 차이
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ani", meta = (AllowPrivateAccess = "true"))
 	float YawOffset;

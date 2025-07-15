@@ -49,7 +49,7 @@ void UCOEAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		//속도 XY기준크기 == 평지 속력
 		GroundSpeed = Velocity.Size2D();
 		//캐릭터 가속도
-		FVector Acceleration = CharacterMovement->GetCurrentAcceleration();
+		Acceleration = CharacterMovement->GetCurrentAcceleration();
 		if (GroundSpeed >= 3.0 /* && Acceleration != FVector::Zero()*/)
 		{
 			ShouldMove = true;

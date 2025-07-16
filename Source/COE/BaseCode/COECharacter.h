@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
+#include "FCharacterStats.h"
 #include "COECharacter.generated.h"
 
 class USpringArmComponent;
@@ -16,6 +17,39 @@ class UCameraComponent;
  *  A simple player-controllable third person character
  *  Implements a controllable orbiting camera
  */
+//USTRUCT(BlueprintType)
+//struct FCharacterStats
+//{
+//	GENERATED_BODY()
+//public:
+//	/** HPMAX */
+//	UPROPERTY(BlueprintReadOnly, Category = "Status")
+//	float HPMAX;
+//
+//	/** HP */
+//	UPROPERTY(BlueprintReadOnly, Category = "Status")
+//	float CurrentHP;
+//
+//	/** Vitality */
+//	UPROPERTY(BlueprintReadOnly, Category = "Status")
+//	float Vitality;
+//
+//	/** AttackPower */
+//	UPROPERTY(BlueprintReadOnly, Category = "Status")
+//	float AttackPower;
+//
+//	/** Defense */
+//	UPROPERTY(BlueprintReadOnly, Category = "Status")
+//	float Defense;
+//
+//	/** Agility */
+//	UPROPERTY(BlueprintReadOnly, Category = "Status")
+//	float Agility;
+//
+//	/** Luck */
+//	UPROPERTY(BlueprintReadOnly, Category = "Status")
+//	float Luck;
+//};
 UCLASS(abstract)
 class ACOECharacter : public ACharacter
 {
@@ -28,6 +62,7 @@ class ACOECharacter : public ACharacter
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UCameraComponent> FollowCamera;
+
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AnimInstance", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UCOEAnimInstance> AnimInstance;
@@ -62,6 +97,9 @@ public:
 	/** SocketRotation */
 	UPROPERTY(BlueprintReadOnly, Category = "Socket")
 	FRotator SocketRotation;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Stats")
+	FCharacterStats CharacterStats;
 
 public:
 

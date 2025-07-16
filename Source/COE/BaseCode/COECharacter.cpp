@@ -54,6 +54,10 @@ ACOECharacter::ACOECharacter()
 	FollowCamera->bUsePawnControlRotation = true; //컨트롤러 따라가게 바꿈
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+
+	CharacterStats.MAXHP = 50;
+
+	
 }
 
 void ACOECharacter::BeginPlay()
@@ -61,6 +65,8 @@ void ACOECharacter::BeginPlay()
 	Super::BeginPlay();
 	//AnimInstance 캐스트
 	AnimInstance = Cast<UCOEAnimInstance>(GetMesh()->GetAnimInstance());
+	CharacterStats.CurrentHP = CharacterStats.MAXHP;
+	UE_LOG(LogTemp, Log, TEXT("Damaged : %f"), CharacterStats.CurrentHP);
 }
 
 void ACOECharacter::DefaultAttack()
@@ -206,7 +212,18 @@ void ACOECharacter::SetAiming(bool bNewAiming)
 float ACOECharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	//받은 데미지 표시
-	UE_LOG(LogTemp, Log, TEXT("Damaged : %f"), DamageAmount);
+	float HP = CharacterStats.CurrentHP;
+
+	HP -= DamageAmount;
+	CharacterStats.CurrentHP = HP;
+
+	if (HP <= 0)
+	{
+		SetLifeSpan(2.f);
+	}
+
+
+	UE_LOG(LogTemp, Log, TEXT("Damaged : %f"), HP);
 	return 0.f;
 }
 

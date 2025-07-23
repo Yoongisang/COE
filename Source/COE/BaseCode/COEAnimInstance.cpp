@@ -29,7 +29,7 @@ void UCOEAnimInstance::NativeBeginPlay()
 			//CharacterMovement에 연결된 폰의 움직임 받아옴
 			CharacterMovement = Character->GetCharacterMovement();
 		}
-
+		
 	}
 }
 

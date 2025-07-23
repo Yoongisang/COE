@@ -26,9 +26,12 @@ protected:
 	TArray<UInputMappingContext*> DefaultMappingContexts;
 
 public:
+
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class ACOECharacter> COEChar;
+
 protected:
+
 	/** Jump Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	TObjectPtr<UInputAction> JumpAction;

@@ -15,9 +15,8 @@ class ACOEGameMode : public AGameModeBase
 	GENERATED_BODY()
 
 public:
-	
-	/** Constructor */
-	ACOEGameMode();
+
+	virtual void BeginPlay() override;
 };
 
 

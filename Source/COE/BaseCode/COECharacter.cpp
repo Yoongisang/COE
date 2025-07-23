@@ -9,6 +9,8 @@
 #include "GameFramework/Controller.h"
 #include "COEAnimInstance.h"
 #include "Kismet/GameplayStatics.h"
+#include "COEGameInstance.h"
+#include "Exploration/ExplorationEnemy.h"
 
 
 //#include "EnhancedInputComponent.h"
@@ -92,6 +94,8 @@ void ACOECharacter::DoDefaultAttack()
 	FHitResult HitResult;
 	FCollisionQueryParams Params;
 	Params.AddIgnoredActor(this);
+	Params.bTraceComplex = false;
+	Params.bReturnPhysicalMaterial = false;
 
 	float AttackRange = 100.f;
 	float AttackRadius = 50.f;
@@ -126,8 +130,30 @@ void ACOECharacter::DoDefaultAttack()
 		UE_LOG(LogTemp, Log, TEXT("Hit : %s"), *HitResult.GetActor()->GetName());
 		//공격판정이 들어가면 데미지 적용
 		UGameplayStatics::ApplyDamage(HitResult.GetActor(), 10.f, GetInstigatorController(), this, nullptr);
-	}
+		//Enemy로 탐색상태의 적 캐스팅
+		if (AExplorationEnemy* Enemy = Cast<AExplorationEnemy>(HitResult.GetActor()))
+		{	
+			//전투맵 리스트 확인
+			if (Enemy->PossibleBattleLevels.Num() > 0)
+			{
+				//SelectedBattleMap에 전투맵 리스트 할당
+				FName SelectedBattleMap = Enemy->PossibleBattleLevels[FMath::RandRange(0, Enemy->PossibleBattleLevels.Num() - 1)];
+				//GameInstance에 전투 정보 저장
+				if (UCOEGameInstance* GI = Cast<UCOEGameInstance>(UGameplayStatics::GetGameInstance(this)))
+				{
+					GI->bPlayerInitiative = true; // 플레이어가 먼저 공격
+					GI->bPlayerWasDetected = false;
+					GI->ReturnLocation = GetActorLocation();
+					GI->ReturnMapName = FName("Lvl_ThirdPerson"); // 실제 탐색맵 이름으로 바꿔야 함
+					GI->EnemyToRemove = HitResult.GetActor();
+				}
 
+				//전투맵으로 이동
+				UGameplayStatics::OpenLevel(this, SelectedBattleMap);
+			}
+		}
+	}
+	UE_LOG(LogTemp, Warning, TEXT("DefaultAttack() called in TurnBattleLevel!"));
 }
 
 void ACOECharacter::Fire()

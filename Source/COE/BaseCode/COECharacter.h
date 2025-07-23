@@ -13,47 +13,12 @@ class UCameraComponent;
 
 //DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
-/**
- *  A simple player-controllable third person character
- *  Implements a controllable orbiting camera
- */
-//USTRUCT(BlueprintType)
-//struct FCharacterStats
-//{
-//	GENERATED_BODY()
-//public:
-//	/** HPMAX */
-//	UPROPERTY(BlueprintReadOnly, Category = "Status")
-//	float HPMAX;
-//
-//	/** HP */
-//	UPROPERTY(BlueprintReadOnly, Category = "Status")
-//	float CurrentHP;
-//
-//	/** Vitality */
-//	UPROPERTY(BlueprintReadOnly, Category = "Status")
-//	float Vitality;
-//
-//	/** AttackPower */
-//	UPROPERTY(BlueprintReadOnly, Category = "Status")
-//	float AttackPower;
-//
-//	/** Defense */
-//	UPROPERTY(BlueprintReadOnly, Category = "Status")
-//	float Defense;
-//
-//	/** Agility */
-//	UPROPERTY(BlueprintReadOnly, Category = "Status")
-//	float Agility;
-//
-//	/** Luck */
-//	UPROPERTY(BlueprintReadOnly, Category = "Status")
-//	float Luck;
-//};
 UCLASS(abstract)
 class ACOECharacter : public ACharacter
 {
 	GENERATED_BODY()
+
+protected:
 
 	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -63,8 +28,9 @@ class ACOECharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UCameraComponent> FollowCamera;
 
-private:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AnimInstance", meta = (AllowPrivateAccess = "true"))
+protected:
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimInstance", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UCOEAnimInstance> AnimInstance;
 
 	/** 조준 상태 전환 시 보간을 위한 변수 */
@@ -113,7 +79,7 @@ public:
 
 	virtual void BeginPlay() override;
 
-	/** 기본공격*/
+	/** 기본공격 */
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void DefaultAttack();
 
@@ -132,6 +98,6 @@ public:
 	/**  받은 데미지 처리 */
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
-	virtual void UpdateAimingInterp();
+	void UpdateAimingInterp();
 };
 

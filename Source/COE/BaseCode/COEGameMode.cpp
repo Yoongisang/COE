@@ -2,7 +2,7 @@
 
 #include "COEGameMode.h"
 
-ACOEGameMode::ACOEGameMode()
+void ACOEGameMode::BeginPlay()
 {
-	// stub
+	Super::BeginPlay();
 }

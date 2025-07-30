@@ -97,33 +97,33 @@ void ACOECharacter::DoDefaultAttack()
 	Params.bTraceComplex = false;
 	Params.bReturnPhysicalMaterial = false;
 
-	float AttackRange = 100.f;
+	float AttackRange = 250.f;
 	float AttackRadius = 50.f;
 	FVector StartPos = GetActorLocation();
 	FVector EndPos = GetActorLocation() + GetActorForwardVector() * AttackRange;
-
+	FQuat Rot = FRotationMatrix::MakeFromZ(EndPos - StartPos).ToQuat();
 	bool Result = GetWorld()->SweepSingleByChannel
 	(
 		HitResult,									//충돌 결과를 저장할 변수					
 		StartPos,									//시작 지점
 		EndPos,										//끝 지점
-		FQuat::Identity,							//회전 (기본 값)
+		Rot,							//회전 (기본 값)
 		ECC_GameTraceChannel3,						//충돌 채널 (Visibilirty)
-		FCollisionShape::MakeSphere(AttackRange),	//형태 : Sphere(구) MakeSphere(반지름)
+		FCollisionShape::MakeSphere(AttackRadius),	//형태 : Sphere(구) MakeSphere(반지름)
 		Params										//충돌 쿼리 파라미터
 	);
 
 
 	
-	FVector Vec = GetActorForwardVector() * AttackRange;
-	FVector Center = GetActorLocation() + Vec * 0.5f;
-	float HalfHeight = AttackRange * 0.5f + AttackRadius;
-	FQuat Rotation = FRotationMatrix::MakeFromZ(Vec).ToQuat();
+	//FVector Vec = GetActorForwardVector() * AttackRange;
+	FVector Center = (StartPos + EndPos) * 0.5f;
+	float HalfHeight = AttackRange * 0.5f;
+	//FQuat Rotation = FRotationMatrix::MakeFromZ(Vec).ToQuat();
 	FColor DrawColor;
 
 	DrawColor = Result ? FColor::Green : FColor::Red;
 
-	DrawDebugCapsule(GetWorld(), Center, HalfHeight, AttackRadius, Rotation, DrawColor, false, 2.f);
+	DrawDebugCapsule(GetWorld(), Center, HalfHeight, AttackRadius, Rot, DrawColor, false, 2.f);
 
 	if (Result && HitResult.GetActor())
 	{
@@ -150,6 +150,10 @@ void ACOECharacter::DoDefaultAttack()
 
 				//전투맵으로 이동
 				UGameplayStatics::OpenLevel(this, SelectedBattleMap);
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Enemy has no PossibleBattleLevels!"));
 			}
 		}
 	}

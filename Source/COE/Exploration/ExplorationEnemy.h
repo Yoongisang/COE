@@ -18,4 +18,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	TArray<FName> PossibleBattleLevels;
 	
+//public:
+	/** 플레이어 탐색 */
+	//virtual void DetectPlayer();
 };

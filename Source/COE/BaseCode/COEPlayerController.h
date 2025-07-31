@@ -61,14 +61,14 @@ protected:
 	TObjectPtr<UInputAction> MouseRightClick;
 
 	/** Input mapping context setup */
-	virtual void SetupInputComponent();
+	virtual void SetupInputComponent() override;
 
 protected:
 
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
 
-		/** Called for looking input */
+	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
 
 public:

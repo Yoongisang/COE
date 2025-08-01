@@ -38,5 +38,6 @@ public:
 
 	/** 전투에서 대상이 된 적 */
 	UPROPERTY(BlueprintReadOnly, Category = "Combat")
-	TWeakObjectPtr<AActor> EnemyToRemove;
+	TArray<FName> EnemyToRemoveName;
+	//TWeakObjectPtr<AActor> EnemyToRemove;
 };

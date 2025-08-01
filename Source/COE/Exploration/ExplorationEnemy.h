@@ -17,4 +17,5 @@ public:
 	//TrunLevel วาด็
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	TArray<FName> PossibleBattleLevels;
+
 };

@@ -43,11 +43,13 @@ void UDetectPlayerComponent::HandleBeginOverlap(UPrimitiveComponent* OverlappedC
             //GameInstance에 전투 정보 저장
             if (UCOEGameInstance* GI = Cast<UCOEGameInstance>(UGameplayStatics::GetGameInstance(this)))
             {
+                FString CurrLevel = UGameplayStatics::GetCurrentLevelName(this, true);
+
                 GI->bPlayerInitiative = false; // 감지당해 넘어가는 것이므로 적이 우선
-                GI->bPlayerWasDetected = false;
+                GI->bPlayerWasDetected = true;
                 GI->ReturnLocation = OtherActor->GetActorLocation();
-                GI->ReturnMapName = FName("Lvl_ThirdPerson"); // 실제 탐색맵 이름으로 바꿔야 함
-                GI->EnemyToRemove = Enemy;
+                GI->ReturnMapName = FName(*CurrLevel); // 실제 탐색맵 이름으로 바꿔야 함
+                GI->EnemyToRemoveName.AddUnique(Enemy->GetFName());
             }
 
             //전투맵으로 이동

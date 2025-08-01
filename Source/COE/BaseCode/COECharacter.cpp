@@ -11,7 +11,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "COEGameInstance.h"
 #include "Exploration/ExplorationEnemy.h"
-
+#include "EngineUtils.h"
 
 //#include "EnhancedInputComponent.h"
 //#include "EnhancedInputSubsystems.h"
@@ -69,6 +69,47 @@ void ACOECharacter::BeginPlay()
 	AnimInstance = Cast<UCOEAnimInstance>(GetMesh()->GetAnimInstance());
 	CharacterStats.CurrentHP = CharacterStats.MAXHP;
 	UE_LOG(LogTemp, Log, TEXT("Damaged : %f"), CharacterStats.CurrentHP);
+
+	auto* GI = GetWorld()->GetGameInstance<UCOEGameInstance>();
+	if (!GI) return;
+
+	// 1) 플레이어 위치 복원
+	FString Curr = UGameplayStatics::GetCurrentLevelName(this, true);
+	if (GI->ReturnMapName.ToString() == Curr)
+	{
+		if (auto* PC = Cast<ACOECharacter>(UGameplayStatics::GetPlayerPawn(this, 0)))
+		{
+			PC->SetActorLocation(GI->ReturnLocation);
+			UE_LOG(LogTemp, Log, TEXT("[ExplorationGM] 위치 복원 → %s"),
+				*GI->ReturnLocation.ToString());
+		}
+
+		// 2) 쓰러진 적 제거
+		if (GI->EnemyToRemoveName.Num() > 0)
+		{
+			for (const FName& EnemyName : GI->EnemyToRemoveName)
+			{
+				for (TActorIterator<AExplorationEnemy> It(GetWorld()); It; ++It)
+				{
+					// 탐색 모드에서 사용된 적 클래스로 캐스팅
+					if (It->GetFName() == EnemyName)
+					{
+						It->Destroy();
+						UE_LOG(LogTemp, Log, TEXT("[ExplorationGM] 제거된 적 → %s"),
+							*EnemyName.ToString());
+						break;
+					}
+				}
+			}
+		
+		}
+
+		GI->bPlayerInitiative = false; // 플레이어가 먼저 공격
+		GI->bPlayerWasDetected = false;
+		GI->ReturnLocation = FVector::ZeroVector;
+		GI->ReturnMapName = NAME_None; // 실제 탐색맵 이름으로 바꿔야 함
+		//GI->EnemyToRemoveName = NAME_None;
+	}
 }
 
 void ACOECharacter::DefaultAttack()
@@ -141,11 +182,14 @@ void ACOECharacter::DoDefaultAttack()
 				//GameInstance에 전투 정보 저장
 				if (UCOEGameInstance* GI = Cast<UCOEGameInstance>(UGameplayStatics::GetGameInstance(this)))
 				{
+					FString CurrLevel = UGameplayStatics::GetCurrentLevelName(this, true);
+					FName ThisEnemyName = HitResult.GetActor()->GetFName();
+					
 					GI->bPlayerInitiative = true; // 플레이어가 먼저 공격
 					GI->bPlayerWasDetected = false;
 					GI->ReturnLocation = GetActorLocation();
-					GI->ReturnMapName = FName("Lvl_ThirdPerson"); // 실제 탐색맵 이름으로 바꿔야 함
-					GI->EnemyToRemove = HitResult.GetActor();
+					GI->ReturnMapName = FName(*CurrLevel); // 실제 탐색맵 이름으로 바꿔야 함
+					GI->EnemyToRemoveName.AddUnique(ThisEnemyName);
 				}
 
 				//전투맵으로 이동

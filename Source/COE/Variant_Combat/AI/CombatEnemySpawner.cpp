@@ -68,6 +68,7 @@ void ACombatEnemySpawner::SpawnEnemy()
 	}
 }
 
+
 void ACombatEnemySpawner::OnEnemyDied()
 {
 	// decrease the spawn counter

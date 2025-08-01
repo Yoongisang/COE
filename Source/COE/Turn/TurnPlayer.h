@@ -13,5 +13,4 @@ UCLASS()
 class COE_API ATurnPlayer : public ACOECharacter
 {
 	GENERATED_BODY()
-	
 };

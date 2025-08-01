@@ -13,4 +13,6 @@ UCLASS()
 class COE_API AExplorationPlayer : public ACOECharacter
 {
 	GENERATED_BODY()
+
+
 };

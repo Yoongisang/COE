@@ -7,9 +7,9 @@
 #include "DetectPlayerComponent.generated.h"
 
 //  Acotr가 탐지스피어에 들어왔을때 Delegate 호출
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDetectedSignature, AActor*, OtherActor)
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDetectedSignature, AActor*, OtherActor);
 // Acotr가 탐지스피어에서 벗어났을때 Delegate 호출
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLostSignature, AActor*, OtherActor)
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLostSignature, AActor*, OtherActor);
 /**
  * 
  */

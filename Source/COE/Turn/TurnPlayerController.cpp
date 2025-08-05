@@ -110,11 +110,13 @@ void ATurnPlayerController::OnSkillD()
 
 void ATurnPlayerController::DoMouseLeftClick()
 {
-	if (TurnChar->bIsAiming)
-	{
+	if (!TurnChar->bIsAiming)
+		return;
+		
+
 		UE_LOG(LogTemp, Log, TEXT("MouseLeftClick"));
 		TurnChar->Fire();
-	}
+
 }
 
 void ATurnPlayerController::DoMouseRightClickStart()

@@ -19,6 +19,8 @@ class COE_API ATurnEnemy : public ACOECharacter
 public:
     ATurnEnemy();
 
+public:
+
     /** 죽었을 때 브로드캐스트되는 이벤트 */
     FOnTurnEnemyDead OnDead;
 

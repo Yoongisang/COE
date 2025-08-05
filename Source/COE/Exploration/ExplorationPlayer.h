@@ -13,6 +13,7 @@ UCLASS()
 class COE_API AExplorationPlayer : public ACOECharacter
 {
 	GENERATED_BODY()
-
+public:
+	virtual void BeginPlay() override;
 
 };

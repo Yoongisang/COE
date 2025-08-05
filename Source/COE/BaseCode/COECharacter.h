@@ -93,7 +93,7 @@ public:
 
 	/** 우클릭 Aiming */
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void SetAiming(bool bNewAiming);
+	virtual void SetAiming(bool bNewAiming);
 
 	/**  받은 데미지 처리 */
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;

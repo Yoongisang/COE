@@ -45,7 +45,7 @@ public:
 	/** Constructor */
 	ACOECharacter();	
 
-	/** CombatBridge로  */
+	/** CombatBridge 블루프린트 바인딩 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat|Bridge", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UTurnCombatBridgeComponent> TurnBridge;
 

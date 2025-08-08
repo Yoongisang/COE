@@ -36,6 +36,7 @@ void ACombatManager::StartCombat()
     EnterState(static_cast<uint8>(ECombatState::Setup)); // 전투 준비 상태 진입
     OnCombatStarted.Broadcast();             // UI/사운드 등 외부 시스템에 전투 시작 신호
     BeginNextTurn();                         // 첫 턴 진입(인덱스는 BuildTurnOrder에서 -1로 초기화됨)
+    UE_LOG(LogTemp, Warning, TEXT("[CombatManager] StartCombat()"));
 }
 
 void ACombatManager::EndCombat(bool bPlayerWon)
@@ -100,6 +101,7 @@ void ACombatManager::BeginNextTurn()
     ACOECharacter* Active = GetActiveCharacter();        // 현재 턴 주체
     if (!IsValid(Active)) { BeginNextTurn(); return; }   // 파괴/무효면 스킵하고 다음 턴으로(안전 장치)
 
+    UE_LOG(LogTemp, Warning, TEXT("[CM] OnTurnStarted -> %s (Round %d)"), *Active->GetName(), Round);
     EnterState(static_cast<uint8>(ECombatState::PreTurn)); // 입력 대기/연출 준비 단계
     OnTurnStarted.Broadcast(Active, Round);               // UI/사운드/로그 등 외부 시스템 통지
 }

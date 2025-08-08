@@ -22,7 +22,7 @@ void UTurnCombatBridgeComponent::BeginPlay()
 
     FindCombatManager();                                    // 매니저 탐색
     BindToManagerDelegates();                               // 델리게이트 연결(있으면)
-
+    UE_LOG(LogTemp, Warning, TEXT("[Bridge] Bound delegates: %s"), *OwnerCharacter->GetName());
     if (bAutoRegisterOnBeginPlay)
     {
         InitializeForCombat();                              // 자동 등록/세팅
@@ -57,6 +57,7 @@ void UTurnCombatBridgeComponent::InitializeForCombat()
     if (Manager && OwnerCharacter)
     {
         Manager->RegisterParticipant(OwnerCharacter);      // 전투 참가 등록
+        UE_LOG(LogTemp, Warning, TEXT("[Bridge] RegisterParticipant"));
     }
 }
 

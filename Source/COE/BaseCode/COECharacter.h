@@ -45,6 +45,10 @@ public:
 	/** Constructor */
 	ACOECharacter();	
 
+	/** CombatBridge·Î  */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat|Bridge", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UTurnCombatBridgeComponent> TurnBridge;
+
 	/** If true, the character is currently playing an attack animation */
 	UPROPERTY(BlueprintReadOnly, Category = "Combat")
 

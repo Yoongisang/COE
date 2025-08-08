@@ -12,7 +12,7 @@
 #include "COEGameInstance.h"
 #include "Exploration/ExplorationEnemy.h"
 #include "EngineUtils.h"
-
+#include "Turn/TurnCombatBridgeComponent.h"
 //#include "EnhancedInputComponent.h"
 //#include "EnhancedInputSubsystems.h"
 //#include "InputActionValue.h"

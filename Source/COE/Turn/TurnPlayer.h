@@ -52,7 +52,7 @@ public:
 	virtual void SetAiming(bool bNewAiming) override;
 
 	// ===== 액션/스킬 =====
-	/** Q: 기본공격(턴 유지, AP +1) */
+	/** Q: 기본공격(턴 종료, AP +1) */
 	void UseSkill_Q();
 
 	/** 코스트 소비형 스킬(성공 시 즉시 턴 종료) */

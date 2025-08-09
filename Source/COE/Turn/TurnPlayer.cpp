@@ -98,6 +98,9 @@ void ATurnPlayer::UseSkill_Q()
 	CharacterStats.CurrentAP = FMath::Clamp(CharacterStats.CurrentAP + 1, 0, CharacterStats.MAXAP);
 
 	UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] Used Q skill ¡æ CurrentAP: %d"), CharacterStats.CurrentAP);
+
+	RequestEndTurn();
+	UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] Used Q skill, TurnEnd"));
 }
 
 bool ATurnPlayer::UseSkill_WithCost(int32 Cost)

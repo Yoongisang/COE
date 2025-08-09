@@ -91,10 +91,6 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Combat|Teams")
 	bool HasTeamAlive(ECombatTeam Team) const;
 
-	// ---- 이니셔티브 ----
-	UFUNCTION(BlueprintCallable, Category = "Combat|Initiative")
-	void SetInitiative(ACOECharacter* Character, int32 Value);
-
 	UFUNCTION(BlueprintPure, Category = "Combat|Initiative")
 	int32 GetInitiative(ACOECharacter* Character) const;
 
@@ -115,7 +111,4 @@ private:
 	UPROPERTY()
 	TSet<TWeakObjectPtr<ACOECharacter>> DeadSet;
 
-	// 캐릭터 → 이니셔티브(턴 정렬 기준)
-	UPROPERTY()
-	TMap<TWeakObjectPtr<ACOECharacter>, int32> InitiativeOf;
 };

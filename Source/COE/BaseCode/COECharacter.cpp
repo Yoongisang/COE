@@ -57,8 +57,6 @@ ACOECharacter::ACOECharacter()
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 
-	CharacterStats.MAXHP = 50;
-
 	
 }
 
@@ -108,7 +106,7 @@ void ACOECharacter::BeginPlay()
 		GI->bPlayerWasDetected = false;
 		GI->ReturnLocation = FVector::ZeroVector;
 		GI->ReturnMapName = NAME_None; // ½ÇÁ¦ Å½»ö¸Ê ÀÌ¸§À¸·Î ¹Ù²ã¾ß ÇÔ
-		//GI->EnemyToRemoveName = NAME_None;
+		
 	}
 }
 

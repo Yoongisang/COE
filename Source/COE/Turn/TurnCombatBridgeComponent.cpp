@@ -47,10 +47,6 @@ void UTurnCombatBridgeComponent::InitializeForCombat()
     {
         GI->AutoAssignTeam(OwnerCharacter);                // TurnPlayer→Player, TurnEnemy→Enemy
         GI->SetAlive(OwnerCharacter, true);                // 전투 시작 시 생존 처리
-        if (DefaultInitiative != INT32_MIN)
-        {
-            GI->SetInitiative(OwnerCharacter, DefaultInitiative); // 기본 이니셔티브 세팅
-        }
     }
 
     if (!Manager) FindCombatManager();

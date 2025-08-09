@@ -80,6 +80,11 @@ void ATurnPlayerController::DoLook(float Yaw, float Pitch)
 
 void ATurnPlayerController::OnSkillQ()
 {
+	if (!TurnChar->bIsAttacking)
+		return;
+
+	TurnChar->UseSkill_Q();
+
 	UE_LOG(LogTemp, Log, TEXT("Input : Q"));
 }
 

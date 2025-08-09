@@ -26,10 +26,6 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat|Bridge")
     bool bAutoRegisterOnBeginPlay = true;
 
-    // 자동 등록 시 기본 이니셔티브(별도 시스템이 있으면 0으로 두고 코드에서 SetInitiative 호출)
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat|Bridge")
-    int32 DefaultInitiative = 10;
-
     // 내 턴/종료를 컴포넌트 이벤트로 브로드캐스트(BP에서 위젯/AI 트리거 연결)
     UPROPERTY(BlueprintAssignable, Category = "Combat|Bridge|Events")
     FOnMyTurnSimple OnMyTurnStarted;

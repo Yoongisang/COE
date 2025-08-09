@@ -83,25 +83,16 @@ bool UCOEGameInstance::HasTeamAlive(ECombatTeam Team) const
     return false;
 }
 
-// 캐릭터의 이니셔티브 값 설정
-void UCOEGameInstance::SetInitiative(ACOECharacter* Character, int32 Value)
-{
-    if (!IsValid(Character)) return;
-    InitiativeOf.FindOrAdd(Character) = Value;
-    UE_LOG(LogTemp, Log, TEXT("[GI] SetInitiative: %s -> %d"), *Character->GetName(), Value);
-}
-
-// 캐릭터의 이니셔티브 값 반환
+// 캐릭터의 Agility값 반환
 int32 UCOEGameInstance::GetInitiative(ACOECharacter* Character) const
 {
     if (!IsValid(Character)) return 0;
-    if (const int32* Found = InitiativeOf.Find(Character))
-    {
-        UE_LOG(LogTemp, Log, TEXT("[GI] GetInitiative: %s -> %d"), *Character->GetName(), *Found);
-        return *Found;
-    }
-    UE_LOG(LogTemp, Log, TEXT("[GI] GetInitiative: %s -> default 10"), *Character->GetName());
-    return 10;
+
+    const int32 FromAgi = FMath::RoundToInt(Character->CharacterStats.Agility);
+    UE_LOG(LogTemp, Log, TEXT("[GI] GetInitiative: %s -> Agility = %d"),
+        *Character->GetName(), FromAgi);
+
+    return FromAgi;
 }
 
 // 전투 관련 데이터 초기화
@@ -109,7 +100,6 @@ void UCOEGameInstance::ResetCombatData()
 {
     CombatState = ECombatState::None;
     DeadSet.Reset();
-    InitiativeOf.Reset();
-    UE_LOG(LogTemp, Log, TEXT("[GI] ResetCombatData: CombatState reset, DeadSet cleared, InitiativeOf cleared"));
+    UE_LOG(LogTemp, Log, TEXT("[GI] ResetCombatData: CombatState reset, DeadSet cleared"));
     // TeamOf.Reset(); // 필요 시 주석 해제
 }

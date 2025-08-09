@@ -5,6 +5,7 @@
 #include "GameFramework/PlayerController.h"    
 #include "GameFramework/InputSettings.h"  
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Turn/TurnCombatBridgeComponent.h"
 
 ATurnPlayer::ATurnPlayer()
 {
@@ -16,12 +17,17 @@ void ATurnPlayer::BeginPlay()
 {
 	Super::BeginPlay();
 
+	//스탯 설정
+	CharacterStats.Agility = 10.f;
+
 	PlayerController = Cast<APlayerController>(GetController());
 	if (PlayerController)
 	{
 		SavedControlRotation = PlayerController->GetControlRotation();
 		bHasSavedRotation = false;
 	}
+
+	
 
 	UpdateCursor();
 }
@@ -81,4 +87,80 @@ void ATurnPlayer::SetAiming(bool bNewAiming)
 	bIsAiming = bNewAiming;
 	//커서 상태 갱신
 	UpdateCursor();
+}
+
+void ATurnPlayer::UseSkill_Q()
+{
+	// 기본 공격 처리
+	DefaultAttack();
+
+	// AP +1 (클램프)
+	CharacterStats.CurrentAP = FMath::Clamp(CharacterStats.CurrentAP + 1, 0, CharacterStats.MAXAP);
+
+	UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] Used Q skill → CurrentAP: %d"), CharacterStats.CurrentAP);
+}
+
+bool ATurnPlayer::UseSkill_WithCost(int32 Cost)
+{
+	if (Cost > 0)
+	{
+		if (CharacterStats.CurrentAP < Cost)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] Not enough AP for skill. Need: %d, Cur: %d"),
+				Cost, CharacterStats.CurrentAP);
+			return false;
+		}
+
+		CharacterStats.CurrentAP = FMath::Clamp(CharacterStats.CurrentAP - Cost, 0, CharacterStats.MAXAP);
+	}
+
+	// 스킬 효과 실행...
+	// TODO: 실제 스킬 로직 구현
+
+	// 규칙: 코스트형 스킬은 성공 시 즉시 턴 종료
+	RequestEndTurn();
+
+	return true;
+}
+
+void ATurnPlayer::Fire()
+{
+	// 우클릭 조준일 때만 AP 소모
+	const bool bShouldSpendAP = bIsAiming;
+	const int32 APCost = 1;
+
+	if (bShouldSpendAP)
+	{
+		if (CharacterStats.CurrentAP < APCost)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] Not enough AP to Fire. CurrentAP: %d"),
+				CharacterStats.CurrentAP);
+			return; // AP 부족 → 발사 안 함
+		}
+		// AP 차감
+		CharacterStats.CurrentAP = FMath::Clamp(CharacterStats.CurrentAP - APCost, 0, CharacterStats.MAXAP);
+	}
+
+	// 부모 Fire() 실행 (기존 발사 처리)
+	Super::Fire();
+
+	// AP 소모했고, 0이 되었으면 턴 종료
+	if (bShouldSpendAP && CharacterStats.CurrentAP == 0)
+	{
+		UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] AP reached 0 → Ending turn"));
+		RequestEndTurn();
+	}
+}
+
+void ATurnPlayer::RequestEndTurn()
+{
+	if (TurnBridge)
+	{
+		//강제로 턴을 넘기는 경우를 위해 남겨둠
+		TurnBridge->NotifySkillFinished();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] RequestEndTurn called but TurnBridge is null"));
+	}
 }

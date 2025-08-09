@@ -93,7 +93,7 @@ public:
 
 	/** 좌클릭 Fire */
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void Fire();
+	virtual void Fire();
 
 	/** 우클릭 Aiming */
 	UFUNCTION(BlueprintCallable, Category = "Action")

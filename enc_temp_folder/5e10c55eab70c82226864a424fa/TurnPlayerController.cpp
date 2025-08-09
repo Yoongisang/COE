@@ -80,7 +80,7 @@ void ATurnPlayerController::DoLook(float Yaw, float Pitch)
 
 void ATurnPlayerController::OnSkillQ()
 {
-	if (TurnChar->bIsAttacking)
+	if (!TurnChar->bIsAttacking)
 		return;
 
 	TurnChar->UseSkill_Q();

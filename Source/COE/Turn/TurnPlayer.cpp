@@ -5,7 +5,10 @@
 #include "GameFramework/PlayerController.h"    
 #include "GameFramework/InputSettings.h"  
 #include "GameFramework/CharacterMovementComponent.h"
-#include "Turn/TurnCombatBridgeComponent.h"
+#include "BaseCode/COEGameInstance.h"
+#include "TurnCombatBridgeComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Exploration/ExplorationPlayer.h"
 
 ATurnPlayer::ATurnPlayer()
 {
@@ -27,6 +30,7 @@ void ATurnPlayer::BeginPlay()
 		bHasSavedRotation = false;
 	}
 
+	GI = GetCOEGameInstance();
 	
 
 	UpdateCursor();
@@ -153,6 +157,53 @@ void ATurnPlayer::Fire()
 		UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] AP reached 0 → Ending turn"));
 		RequestEndTurn();
 	}
+}
+
+void ATurnPlayer::UseHPPotion()
+{
+	if (!GI->TryConsumeHPPotion())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] No HP potion left."));
+		return;
+	}
+
+	// GI 기본값 기반 + 캐릭터 보정
+	float Heal = GI->BaseHPPotionAmount;
+	CharacterStats.CurrentHP += Heal;
+	ClampHPAP();          // 범위 보정
+	RequestEndTurn();     // 즉시 턴 종료
+	UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] UseHPPotion."));
+}
+
+void ATurnPlayer::UseAPPotion()
+{
+	if (GI)
+	{
+		if (!GI->TryConsumeAPPotion())
+		{
+			UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] No AP potion left."));
+			return;
+		}
+
+		// GI 기본값 기반 + 캐릭터 보정 (정수화)
+		float raw = static_cast<float>(GI->BaseAPPotionAmount);
+		const int32 Gain = FMath::Max(0, FMath::RoundToInt(raw));
+		CharacterStats.CurrentAP += Gain;
+		ClampHPAP();          // 범위 보정
+		RequestEndTurn();     // 즉시 턴 종료
+		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] UseAPPotion."));
+	}
+}
+
+UCOEGameInstance* ATurnPlayer::GetCOEGameInstance() const
+{
+	return GetGameInstance<UCOEGameInstance>();
+}
+
+void ATurnPlayer::ClampHPAP()
+{
+	CharacterStats.CurrentHP = FMath::Clamp(CharacterStats.CurrentHP, 0.f, CharacterStats.MAXHP);
+	CharacterStats.CurrentAP = FMath::Clamp(CharacterStats.CurrentAP, 0, CharacterStats.MAXAP);
 }
 
 void ATurnPlayer::RequestEndTurn()

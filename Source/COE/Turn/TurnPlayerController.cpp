@@ -90,11 +90,13 @@ void ATurnPlayerController::OnSkillQ()
 
 void ATurnPlayerController::OnSkillW()
 {
+	TurnChar->UseHPPotion();
 	UE_LOG(LogTemp, Log, TEXT("Input : W"));
 }
 
 void ATurnPlayerController::OnSkillE()
 {
+	TurnChar->UseAPPotion();
 	UE_LOG(LogTemp, Log, TEXT("Input : E"));
 }
 

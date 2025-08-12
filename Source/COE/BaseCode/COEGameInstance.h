@@ -36,6 +36,45 @@ UCLASS()
 class COE_API UCOEGameInstance : public UGameInstance
 {
 	GENERATED_BODY()
+public:
+
+	/** 생성자 */
+	UCOEGameInstance();
+
+public:
+
+	/** TurnLevel 회복 아이템 공용 카운트: HP회복 아이템 최대 갯수*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Consumable|Combat")
+	int32 MaxHPPotions = 3;
+	
+	/** TurnLevel 회복 아이템 공용 카운트: HP회복 아이템 현재 갯수*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Consumable|Combat")
+	int32  CurrentHPPotions;
+
+	/** TurnLevel 회복 아이템 공용 카운트: AP회복 아이템 최대 갯수*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Consumable|Combat")
+	int32 MaxAPPotions = 2;
+	
+	/** TurnLevel 회복 아이템 공용 카운트: AP회복 아이템 현재 갯수*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Consumable|Combat")
+	int32  CurrentAPPotions;
+
+	/** ExplorationLevel 회복 아이템 공용 카운트: HP회복 아이템 최대 갯수*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Consumable|Exploration")
+	int32 MaxExplorationHeal = 3;
+
+	/** ExplorationLevel 회복 아이템 공용 카운트: HP회복 아이템 현재 갯수*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Consumable|Exploration")
+	int32  CurrentExplorationHeal;
+
+
+	/** TrunLevel HP회복아이템 기본 회복 수치 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Consumable|Tuning")
+	float BaseHPPotionAmount = 50.f;     // HP 포션 기본 회복량(절대값)
+
+	/** TrunLevel AP회복아이템 기본 회복 수치 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Consumable|Tuning")
+	int32 BaseAPPotionAmount = 2;        // AP 포션 기본 회복량(정수)
 
 public:
 
@@ -97,6 +136,42 @@ public:
 	// ---- 리셋 ----
 	UFUNCTION(BlueprintCallable, Category = "Combat|State")
 	void ResetCombatData();                           // 새 전투 시작 전 호출(귀환정보/플래그 유지)
+
+public:
+
+	/** 사용 가능 여부*/
+	UFUNCTION(BlueprintCallable, Category = "Consumable|Combat")
+	bool HasHPPotion() const { return CurrentHPPotions > 0; }
+
+	UFUNCTION(BlueprintCallable, Category = "Consumable|Combat")
+	bool HasAPPotion() const { return CurrentAPPotions > 0; }
+
+	UFUNCTION(BlueprintCallable, Category = "Consumable|Exploration")
+	bool HasExplorationHeal() const { return CurrentExplorationHeal > 0; }
+
+	/** 사용(차감) 시도 */
+	UFUNCTION(BlueprintCallable, Category = "Consumable|Combat")
+	bool TryConsumeHPPotion();
+
+	UFUNCTION(BlueprintCallable, Category = "Consumable|Combat")
+	bool TryConsumeAPPotion();
+
+	UFUNCTION(BlueprintCallable, Category = "Consumable|Exploration")
+	bool TryConsumeExplorationHeal();
+
+	/** 전부 충전 */
+	UFUNCTION(BlueprintCallable, Category = "Consumable")
+	void RefillAllConsumables();
+
+	/** 업그레이드용 API */
+	UFUNCTION(BlueprintCallable, Category = "Consumable|Upgrade")
+	void UpgradeHPPotionCapacity(int32 Delta) { MaxHPPotions = FMath::Max(0, MaxHPPotions + Delta); }
+
+	UFUNCTION(BlueprintCallable, Category = "Consumable|Upgrade")
+	void UpgradeAPPotionCapacity(int32 Delta) { MaxAPPotions = FMath::Max(0, MaxAPPotions + Delta); }
+
+	UFUNCTION(BlueprintCallable, Category = "Consumable|Upgrade")
+	void UpgradeExplorationHealCapacity(int32 Delta) { MaxExplorationHeal = FMath::Max(0, MaxExplorationHeal + Delta); }
 
 private:
 	// 현재 전투 상태(엔진 틱과 무관)

@@ -6,6 +6,11 @@
 #include "Turn/TurnPlayer.h"
 #include "Turn/TurnEnemy.h"
 
+UCOEGameInstance::UCOEGameInstance()
+{
+    RefillAllConsumables();
+}
+
 // 특정 캐릭터를 지정된 팀으로 설정
 void UCOEGameInstance::SetTeam(ACOECharacter* Character, ECombatTeam Team)
 {
@@ -102,4 +107,41 @@ void UCOEGameInstance::ResetCombatData()
     DeadSet.Reset();
     UE_LOG(LogTemp, Log, TEXT("[GI] ResetCombatData: CombatState reset, DeadSet cleared"));
     // TeamOf.Reset(); // 필요 시 주석 해제
+}
+
+bool UCOEGameInstance::TryConsumeHPPotion()
+{
+    if (CurrentHPPotions > 0)
+    {
+        --CurrentHPPotions;
+        return true;
+    }
+    return false;
+}
+
+bool UCOEGameInstance::TryConsumeAPPotion()
+{
+    if (CurrentAPPotions > 0)
+    {
+        --CurrentAPPotions;
+        return true;
+    }
+    return false;
+}
+
+bool UCOEGameInstance::TryConsumeExplorationHeal()
+{
+    if (CurrentExplorationHeal > 0)
+    {
+        --CurrentExplorationHeal;
+        return true;
+    }
+    return false;
+}
+
+void UCOEGameInstance::RefillAllConsumables()
+{
+    CurrentHPPotions = MaxHPPotions;
+    CurrentAPPotions = MaxAPPotions;
+    CurrentExplorationHeal = MaxExplorationHeal;
 }

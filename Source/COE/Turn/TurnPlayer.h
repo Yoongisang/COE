@@ -14,6 +14,10 @@ class COE_API ATurnPlayer : public ACOECharacter
 {
 	GENERATED_BODY()
 
+public:
+
+	TObjectPtr<class UCOEGameInstance> GI;
+
 private:
 	// 조준 전 뷰 회전 저장 플래그와 값
 	bool bHasSavedRotation = false;
@@ -60,4 +64,17 @@ public:
 
 	/** 좌클릭 Fire (우클릭 조준 상태에서만 AP 1 소모, 0이면 자동 턴 종료) */
 	virtual void Fire() override;
+
+	/** 회복 아이템 사용 */
+	UFUNCTION(BlueprintCallable, Category = "Consumable|Combat")
+	void UseHPPotion();
+
+	UFUNCTION(BlueprintCallable, Category = "Consumable|Combat")
+	void UseAPPotion();
+
+private:
+	/** GI 캐스팅 헬퍼 */
+	UCOEGameInstance* GetCOEGameInstance() const;
+	/** HP/AP범위 보정 */
+	void ClampHPAP();                              
 };

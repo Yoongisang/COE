@@ -45,6 +45,10 @@ public:
 	/** Constructor */
 	ACOECharacter();	
 
+	/** CombatBridge 블루프린트 바인딩 */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat|Bridge", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UTurnCombatBridgeComponent> TurnBridge;
+
 	/** If true, the character is currently playing an attack animation */
 	UPROPERTY(BlueprintReadOnly, Category = "Combat")
 
@@ -89,7 +93,7 @@ public:
 
 	/** 좌클릭 Fire */
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void Fire();
+	virtual void Fire();
 
 	/** 우클릭 Aiming */
 	UFUNCTION(BlueprintCallable, Category = "Action")

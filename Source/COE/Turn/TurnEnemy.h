@@ -20,6 +20,9 @@ public:
     ATurnEnemy();
 
 public:
+    virtual void BeginPlay() override;
+
+public:
 
     /** 죽었을 때 브로드캐스트되는 이벤트 */
     FOnTurnEnemyDead OnDead;

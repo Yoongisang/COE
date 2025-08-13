@@ -7,6 +7,13 @@ ATurnEnemy::ATurnEnemy()
 {
 }
 
+void ATurnEnemy::BeginPlay()
+{
+    Super::BeginPlay();
+
+    CharacterStats.Agility = 8.f;
+}
+
 float ATurnEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
     //부모에서 받은 데미지를 AcualDamage로 반환

@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Turn/TurnGameMode.h"
@@ -6,31 +6,75 @@
 #include "TurnEnemy.h"
 #include "Kismet/GameplayStatics.h"
 #include "BaseCode/COEGameInstance.h"
+#include "BaseCode/COECharacter.h"       // ì „íˆ¬ ì°¸ê°€ì ë² ì´ìŠ¤
+#include "TurnCombatBridgeComponent.h"   // ë¸Œë¦¬ì§€
+#include "CombatManager.h"               // ë§¤ë‹ˆì €
+#include "TimerManager.h"                // ì§€ì—° í˜¸ì¶œìš©
 
 void ATurnGameMode::BeginPlay()
 {
     Super::BeginPlay();
-
-    // TurnEnemy Å¬·¡½º ¸ğµÎ Ã£¾Æ ¹ÙÀÎµù
+    
+    // TurnEnemy í´ë˜ìŠ¤ ëª¨ë‘ ì°¾ì•„ ë°”ì¸ë”© 
     for (TActorIterator<ATurnEnemy> It(GetWorld()); It; ++It)
     {
         ATurnEnemy* Enemy = *It;
         if (Enemy)
         {
             RemainingEnemies++;
-            //Enemy°¡ OnDaed.Broadcast()¸¦ È£ÃâÇÒ ¶§¸¶´Ù µî·ÏµÈ ATurnGameMode::OnEnemyDied°¡ ½ÇÇàµÇµµ·Ï
+            //Enemyê°€ OnDaed.Broadcast()ë¥¼ í˜¸ì¶œí•  ë•Œë§ˆë‹¤ ë“±ë¡ëœ ATurnGameMode::OnEnemyDiedê°€ ì‹¤í–‰ë˜ë„ë¡
             Enemy->OnDead.AddUObject(this, &ATurnGameMode::OnEnemyDied);
         }
     }
 
-    // ¸¸¾à ÀûÀÌ ÇÏ³ªµµ ¾øÀ¸¸é Áï½Ã Á¾·á Ã³¸®
+    // ë§Œì•½ ì ì´ í•˜ë‚˜ë„ ì—†ìœ¼ë©´ ì¦‰ì‹œ ì¢…ë£Œ ì²˜ë¦¬
     CheckEndOfCombat();
+    // ---------------------------ê¸°ì¡´ì½”ë“œ êµ¬ë¶„----------------------------//
+ // 1) CombatManager ì°¾ê¸° (ë°°ì¹˜ë˜ì–´ ìˆë‹¤ê³  ê°€ì •)
+    ACombatManager* Manager = nullptr;
+    for (TActorIterator<ACombatManager> It(GetWorld()); It; ++It)
+    {
+        Manager = *It; break;
+    }
+    if (!Manager)
+    {
+        UE_LOG(LogTemp, Error, TEXT("[TurnGM] CombatManager not found in level"));
+        return;
+    }
+
+    // 2) ëª¨ë“  ì „íˆ¬ ìºë¦­í„°ì˜ ë¸Œë¦¬ì§€ ì´ˆê¸°í™” -> íŒ€/ìƒì¡´/ì´ë‹ˆì…”í‹°ë¸Œ ì„¸íŒ… + ì°¸ê°€ì ë“±ë¡ + ë¸ë¦¬ê²Œì´íŠ¸ ë°”ì¸ë”©
+    int32 InitCount = 0;
+    for (TActorIterator<ACOECharacter> It(GetWorld()); It; ++It)
+    {
+        if (auto* Bridge = It->FindComponentByClass<UTurnCombatBridgeComponent>())
+        {
+            Bridge->InitializeForCombat();
+            InitCount++;
+        }
+    }
+    UE_LOG(LogTemp, Warning, TEXT("[TurnGM] Initialized Bridges: %d"), InitCount);
+
+    // 3) ì „íˆ¬ ì‹œì‘ (ì§€ì—° í˜¸ì¶œë¡œ ì°¸ê°€ì ë“±ë¡/ë°”ì¸ë”© ì™„ë£Œ ë³´ì¥)
+    UE_LOG(LogTemp, Warning, TEXT("[TurnGM] StartCombat() scheduled (0.1s)"));
+    FTimerHandle StartCombatHandle;
+    GetWorld()->GetTimerManager().SetTimer(
+        StartCombatHandle,
+        [Manager]()
+        {
+            if (!Manager) return;
+            UE_LOG(LogTemp, Warning, TEXT("[TurnGM] StartCombat()"));
+            Manager->StartCombat(); // ì—¬ê¸°ì„œ ë‹¨ í•œ ë²ˆë§Œ í˜¸ì¶œ
+        },
+        0.1f, false
+    );
+
+
 }
 
 void ATurnGameMode::OnEnemyDied()
 {
     RemainingEnemies--;
-    UE_LOG(LogTemp, Log, TEXT("[TurnGameMode] OnEnemyDied ¡æ RemainingEnemies = %d"), RemainingEnemies);
+    UE_LOG(LogTemp, Log, TEXT("[TurnGameMode] OnEnemyDied â†’ RemainingEnemies = %d"), RemainingEnemies);
     CheckEndOfCombat();
 }
 
@@ -41,22 +85,22 @@ void ATurnGameMode::CheckEndOfCombat()
 
     UE_LOG(LogTemp, Warning, TEXT("[TurnGM] CheckEndOfCombat: RemainingEnemies=%d"), RemainingEnemies);
 
-    // -- 1) GameInstance¸¦ ¾ÈÀüÇÏ°Ô °¡Á®¿À±â --
+    // -- 1) GameInstanceë¥¼ ì•ˆì „í•˜ê²Œ ê°€ì ¸ì˜¤ê¸° --
     UCOEGameInstance* GI = GetWorld()->GetGameInstance<UCOEGameInstance>();
     if (!GI)
     {
-        UE_LOG(LogTemp, Error, TEXT("[TurnGM] GameInstance Ä³½ºÆ® ½ÇÆĞ!"));
+        UE_LOG(LogTemp, Error, TEXT("[TurnGM] GameInstance ìºìŠ¤íŠ¸ ì‹¤íŒ¨!"));
         return;
     }
 
-    // -- 2) ÀúÀåµÈ ¸Ê ÀÌ¸§ À¯È¿¼º Ã¼Å©(Optional) --
+    // -- 2) ì €ì¥ëœ ë§µ ì´ë¦„ ìœ íš¨ì„± ì²´í¬(Optional) --
     if (GI->ReturnMapName.IsNone())
     {
-        UE_LOG(LogTemp, Error, TEXT("[TurnGM] ReturnMapNameÀÌ ¼³Á¤µÇÁö ¾Ê¾Ò½À´Ï´Ù."));
+        UE_LOG(LogTemp, Error, TEXT("[TurnGM] ReturnMapNameì´ ì„¤ì •ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤."));
         return;
     }
 
-    // -- 3) ·¹º§ ÀüÈ¯Àº ¿©±â¼­ ´Ü ÇÑ ¹ø¸¸ --
-    UE_LOG(LogTemp, Warning, TEXT("[TurnGM] ·¹º§ ÀüÈ¯ ½Ãµµ: %s"), *GI->ReturnMapName.ToString());
+    // -- 3) ë ˆë²¨ ì „í™˜ì€ ì—¬ê¸°ì„œ ë‹¨ í•œ ë²ˆë§Œ --
+    UE_LOG(LogTemp, Warning, TEXT("[TurnGM] ë ˆë²¨ ì „í™˜ ì‹œë„: %s"), *GI->ReturnMapName.ToString());
     UGameplayStatics::OpenLevel(GetWorld(), GI->ReturnMapName);
 }

@@ -88,6 +88,21 @@ bool UCOEGameInstance::HasTeamAlive(ECombatTeam Team) const
     return false;
 }
 
+TArray<ACOECharacter*> UCOEGameInstance::GetAliveTeamMembers(ECombatTeam Team) const
+{
+    TArray<ACOECharacter*> Result;
+    for (const auto& P : TeamOf)
+    {
+        ACOECharacter* Char = P.Key.Get();
+        if (!IsValid(Char)) continue;
+        if (P.Value == Team && !DeadSet.Contains(Char))
+        {
+            Result.Add(Char);
+        }
+    }
+    return Result;
+}
+
 // 캐릭터의 Agility값 반환
 int32 UCOEGameInstance::GetInitiative(ACOECharacter* Character) const
 {

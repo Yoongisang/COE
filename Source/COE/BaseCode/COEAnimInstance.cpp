@@ -6,6 +6,9 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Animation/AnimMontage.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Turn/TurnPlayer.h"
+#include "Turn/TurnCombatBridgeComponent.h"
+#include "Turn/CombatManager.h"
 
 UCOEAnimInstance::UCOEAnimInstance()
 {
@@ -86,9 +89,31 @@ void UCOEAnimInstance::DefaultAttackAnim()
 
 void UCOEAnimInstance::AnimNotify_End()
 {
+	if (!Character) 
+		return;
+
 	Character->bIsAttacking = false;
+
+	// TurnBridge가 있고 Manager가 있으면 턴 전투 중으로 간주
+	if (auto* TurnPlayer = Cast<ATurnPlayer>(Character))
+	{
+		if (TurnPlayer->TurnBridge && TurnPlayer->TurnBridge->GetOwner())
+		{
+			if (TurnPlayer->TurnBridge->GetManager() != nullptr)
+			{
+				FTimerHandle DelayHandle;
+				GetWorld()->GetTimerManager().SetTimer(DelayHandle, [TurnPlayer]()
+					{
+						TurnPlayer->RequestEndTurn();
+					}, 0.3f, false);
+				UE_LOG(LogTemp, Log, TEXT("[AnimNotify_End] Bridge/Manager OK -> TurnEnd"));
+			}
+		}
+	}
 	UE_LOG(LogTemp, Log, TEXT("bIsAttacking == false"));
+
 }
+
 
 void UCOEAnimInstance::AnimNotify_DoDefaultAttack()
 {

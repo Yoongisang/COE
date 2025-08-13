@@ -7,6 +7,8 @@
 #include "BaseCode/COECharacter.h"               // ACOECharacter
 #include "Kismet/GameplayStatics.h"     // GetGameInstance, GetAllActorsOfClass
 #include "GameFramework/Actor.h"
+#include "TurnPlayer.h"
+#include "TurnEnemy.h"
 
 UTurnCombatBridgeComponent::UTurnCombatBridgeComponent()
 {
@@ -163,6 +165,49 @@ void UTurnCombatBridgeComponent::UnbindFromManagerDelegates()
 
 void UTurnCombatBridgeComponent::HandleTurnStarted(ACOECharacter* ActiveCharacter, int32 Round)
 {
+    if (!ActiveCharacter) return;
+
+    if (!GI) GI = Cast<UCOEGameInstance>(UGameplayStatics::GetGameInstance(this));
+    if (!GI) return;
+
+    APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
+    if (!PC) return;
+
+    const ECombatTeam Team = GI->GetTeam(ActiveCharacter);
+
+    if (Team == ECombatTeam::Player)
+    {
+        // Player 턴: 해당 플레이어를 시점+조작 대상으로
+        if (APawn* Pawn = Cast<APawn>(ActiveCharacter))
+        {
+            PC->SetViewTargetWithBlend(ActiveCharacter, 0.8f, EViewTargetBlendFunction::VTBlend_Cubic);
+            PC->Possess(Pawn);
+
+            // ★ 소유 완료 후 입력모드/커서/룩 입력 상태를 게임용으로
+            PC->SetInputMode(FInputModeGameOnly());
+            PC->bShowMouseCursor = true;   // 커서 보이게 할지 정책에 맞춰 조절
+            PC->SetIgnoreLookInput(false); // 룩 입력 허용
+
+            // (선택) 새로 소유된 Pawn의 커서 로직 강제 반영
+            if (auto* TP = Cast<ATurnPlayer>(Pawn))
+            {
+                TP->UpdateCursor();
+            }
+        }
+    }
+    else
+    {
+        // Enemy 턴: 살아있는 Player 중 랜덤 선택해 카메라만 전환
+        const TArray<ACOECharacter*> AlivePlayers = GI->GetAliveTeamMembers(ECombatTeam::Player);
+        if (AlivePlayers.Num() > 0)
+        {
+            ACOECharacter* Target = AlivePlayers[FMath::RandHelper(AlivePlayers.Num())];
+            PC->SetViewTargetWithBlend(Target, 0.8f, EViewTargetBlendFunction::VTBlend_Cubic);
+            // 적 턴이므로 Possess()는 하지 않음
+        }
+    }
+
+
     if (ActiveCharacter == OwnerCharacter)
     {
         // 내 턴 시작: UI 열기, 입력 허용, AI 트리거 등은 BP에서 바인딩하여 처리

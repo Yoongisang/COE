@@ -33,6 +33,10 @@ public:
     UPROPERTY(BlueprintAssignable, Category = "Combat|Bridge|Events")
     FOnMyTurnSimple OnMyTurnEnded;
 
+public:
+
+    /** CombatManager 반환 */
+    ACombatManager* GetManager() const { return Manager; }
 protected:
     virtual void BeginPlay() override; // GI/Manager 캐싱 + 선택적 자동 등록
     virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override; // 안전한 해제

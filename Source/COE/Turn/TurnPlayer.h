@@ -37,6 +37,8 @@ private:
 		CharacterStats.CurrentAP = FMath::Clamp(CharacterStats.CurrentAP + Amount, 0, CharacterStats.MAXAP);
 	}
 
+public:
+
 	// CombatManager에 턴 종료 요청(브리지를 통해)
 	void RequestEndTurn();
 
@@ -76,5 +78,9 @@ private:
 	/** GI 캐스팅 헬퍼 */
 	UCOEGameInstance* GetCOEGameInstance() const;
 	/** HP/AP범위 보정 */
-	void ClampHPAP();                              
+	void ClampHPAP();     
+
+protected:
+	virtual void PossessedBy(AController* NewController) override;
+	virtual void UnPossessed() override;
 };

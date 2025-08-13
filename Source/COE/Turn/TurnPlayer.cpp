@@ -14,6 +14,7 @@ ATurnPlayer::ATurnPlayer()
 {
 	GetCharacterMovement()->bOrientRotationToMovement = false; // 이동 방향으로 자동 회전 꺼기
 	bUseControllerRotationYaw = true;
+
 }
 
 void ATurnPlayer::BeginPlay()
@@ -28,6 +29,11 @@ void ATurnPlayer::BeginPlay()
 	{
 		SavedControlRotation = PlayerController->GetControlRotation();
 		bHasSavedRotation = false;
+	}
+
+	if (!TurnBridge)
+	{
+		TurnBridge = FindComponentByClass<UTurnCombatBridgeComponent>();
 	}
 
 	GI = GetCOEGameInstance();
@@ -103,8 +109,6 @@ void ATurnPlayer::UseSkill_Q()
 
 	UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] Used Q skill → CurrentAP: %d"), CharacterStats.CurrentAP);
 
-	RequestEndTurn();
-	UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] Used Q skill, TurnEnd"));
 }
 
 bool ATurnPlayer::UseSkill_WithCost(int32 Cost)
@@ -204,6 +208,24 @@ void ATurnPlayer::ClampHPAP()
 {
 	CharacterStats.CurrentHP = FMath::Clamp(CharacterStats.CurrentHP, 0.f, CharacterStats.MAXHP);
 	CharacterStats.CurrentAP = FMath::Clamp(CharacterStats.CurrentAP, 0, CharacterStats.MAXAP);
+}
+
+void ATurnPlayer::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+
+	PlayerController = Cast<APlayerController>(NewController);
+	if (PlayerController)
+	{
+		SavedControlRotation = PlayerController->GetControlRotation();
+	}
+	UpdateCursor(); // 소유권 변경 즉시 UI/입력 상태 반영
+}
+
+void ATurnPlayer::UnPossessed()
+{
+	Super::UnPossessed();
+	PlayerController = nullptr;
 }
 
 void ATurnPlayer::RequestEndTurn()

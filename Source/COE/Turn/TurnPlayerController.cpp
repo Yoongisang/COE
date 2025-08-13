@@ -62,9 +62,26 @@ void ATurnPlayerController::Look(const FInputActionValue& Value)
 
 }
 
+void ATurnPlayerController::OnPossess(APawn* InPawn)
+{
+	Super::OnPossess(InPawn);
+	TurnChar = Cast<ATurnPlayer>(InPawn);
+	UE_LOG(LogTemp, Log, TEXT("[TPC] OnPossess -> %s"), *GetNameSafe(TurnChar));
+}
+
+void ATurnPlayerController::OnUnPossess()
+{
+	Super::OnUnPossess();
+	TurnChar = nullptr;
+	UE_LOG(LogTemp, Log, TEXT("[TPC] OnUnPossess"));
+
+}
+
 
 void ATurnPlayerController::BeginPlay()
 {
+	Super::BeginPlay();
+
 	TurnChar = Cast<ATurnPlayer>(GetCharacter());
 }
 
@@ -80,12 +97,13 @@ void ATurnPlayerController::DoLook(float Yaw, float Pitch)
 
 void ATurnPlayerController::OnSkillQ()
 {
-	if (TurnChar->bIsAttacking)
+	if (!TurnChar || TurnChar->bIsAttacking)
 		return;
 
-	TurnChar->UseSkill_Q();
+		TurnChar->UseSkill_Q();
 
-	UE_LOG(LogTemp, Log, TEXT("Input : Q"));
+		UE_LOG(LogTemp, Log, TEXT("Input : Q"));
+
 }
 
 void ATurnPlayerController::OnSkillW()

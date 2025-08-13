@@ -73,6 +73,9 @@ protected:
 protected:
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
+	/** Player º¯°æ */
+	virtual void OnPossess(APawn* InPawn) override;
+	virtual void OnUnPossess() override;
 public:
 
 	/** BeginPlay */

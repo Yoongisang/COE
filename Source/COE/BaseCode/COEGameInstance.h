@@ -130,6 +130,9 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Combat|Teams")
 	bool HasTeamAlive(ECombatTeam Team) const;
 
+	UFUNCTION(BlueprintPure, Category = "Combat|Teams")
+	TArray<ACOECharacter*> GetAliveTeamMembers(ECombatTeam Team) const;
+
 	UFUNCTION(BlueprintPure, Category = "Combat|Initiative")
 	int32 GetInitiative(ACOECharacter* Character) const;
 

@@ -11,6 +11,7 @@
 #include "Engine/LocalPlayer.h"      
 #include "GameFramework/Character.h"
 
+
 void ATurnPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
@@ -100,64 +101,143 @@ void ATurnPlayerController::OnSkillQ()
 	if (!TurnChar || TurnChar->bIsAttacking)
 		return;
 
-		TurnChar->UseSkill_Q();
+	// Enemy Turn 중이면 패링 모드
+	if (TurnChar->IsEnemyTurnActive())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] 패링!"));
+		return;
+	}
 
-		UE_LOG(LogTemp, Log, TEXT("Input : Q"));
+	TurnChar->UseSkill_Q();
+	UE_LOG(LogTemp, Log, TEXT("Input : Q"));
 
 }
 
 void ATurnPlayerController::OnSkillW()
 {
+	if (!TurnChar || TurnChar->bIsAttacking)
+		return;
+
+	// Enemy Turn 중이면 패링 모드
+	if (TurnChar->IsEnemyTurnActive())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] 회피!"));
+		return;
+	}
+
 	TurnChar->UseHPPotion();
 	UE_LOG(LogTemp, Log, TEXT("Input : W"));
 }
 
 void ATurnPlayerController::OnSkillE()
 {
+	if (!TurnChar || TurnChar->bIsAttacking)
+		return;
+
+	// Enemy Turn 중이면 동작하지 않음
+	if (TurnChar->IsEnemyTurnActive())
+	{
+		UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] E - Enemy Turn 중 비활성"));
+		return;
+	}
+
 	TurnChar->UseAPPotion();
 	UE_LOG(LogTemp, Log, TEXT("Input : E"));
 }
 
 void ATurnPlayerController::OnSkillA()
 {
+	if (!TurnChar || TurnChar->bIsAttacking)
+		return;
+
+	// Enemy Turn 중이면 동작하지 않음
+	if (TurnChar->IsEnemyTurnActive())
+	{
+		UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] A - Enemy Turn 중 비활성"));
+		return;
+	}
+
 	UE_LOG(LogTemp, Log, TEXT("Input : A"));
 }
 
 void ATurnPlayerController::OnSkillS()
 {
+	if (!TurnChar || TurnChar->bIsAttacking)
+		return;
+
+	// Enemy Turn 중이면 동작하지 않음
+	if (TurnChar->IsEnemyTurnActive())
+	{
+		UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] S - Enemy Turn 중 비활성"));
+		return;
+	}
+
 	UE_LOG(LogTemp, Log, TEXT("Input : S"));
 }
 
 void ATurnPlayerController::OnSkillD()
 {
+	if (!TurnChar || TurnChar->bIsAttacking)
+		return;
+
+	// Enemy Turn 중이면 동작하지 않음
+	if (TurnChar->IsEnemyTurnActive())
+	{
+		UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] D - Enemy Turn 중 비활성"));
+		return;
+	}
 	UE_LOG(LogTemp, Log, TEXT("Input : D"));
 }
 
 void ATurnPlayerController::DoMouseLeftClick()
 {
+	if (!TurnChar)
+		return;
+
+	// Enemy Turn 중이면 동작하지 않음
+	if (TurnChar->IsEnemyTurnActive())
+	{
+		UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] Mouse Left Click - Enemy Turn 중 비활성"));
+		return;
+	}
+
 	if (!TurnChar->bIsAiming)
 		return;
 		
-
-		UE_LOG(LogTemp, Log, TEXT("MouseLeftClick"));
-		TurnChar->Fire();
+	UE_LOG(LogTemp, Log, TEXT("MouseLeftClick"));
+	TurnChar->Fire();
 
 }
 
 void ATurnPlayerController::DoMouseRightClickStart()
 {
-	UE_LOG(LogTemp, Log, TEXT("MouseRightClickStart"));
-	if (IsValid(TurnChar))
+	if (!TurnChar)
+		return;
+
+	// Enemy Turn 중이면 동작하지 않음
+	if (TurnChar->IsEnemyTurnActive())
 	{
-		TurnChar->SetAiming(true);
+		UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] Mouse Right Click Start - Enemy Turn 중 비활성"));
+		return;
 	}
+
+	UE_LOG(LogTemp, Log, TEXT("MouseRightClickStart"));
+	TurnChar->SetAiming(true);
+
 }
 
 void ATurnPlayerController::DoMouseRightClickEnd()
 {
-	UE_LOG(LogTemp, Log, TEXT("MouseRightClickEnd"));
-	if (IsValid(TurnChar))
+	if (!TurnChar)
+		return;
+
+	// Enemy Turn 중이면 동작하지 않음
+	if (TurnChar->IsEnemyTurnActive())
 	{
-		TurnChar->SetAiming(false);
+		UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] Mouse Right Click End - Enemy Turn 중 비활성"));
+		return;
 	}
+
+	TurnChar->SetAiming(false);
+	UE_LOG(LogTemp, Log, TEXT("MouseRightClickEnd"));
 }

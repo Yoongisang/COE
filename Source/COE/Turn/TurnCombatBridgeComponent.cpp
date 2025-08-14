@@ -177,22 +177,29 @@ void UTurnCombatBridgeComponent::HandleTurnStarted(ACOECharacter* ActiveCharacte
 
     if (Team == ECombatTeam::Player)
     {
-        // Player 턴: 해당 플레이어를 시점+조작 대상으로
+        // Player 턴: 카메라 전환 → 딜레이 → Possess 순서로 처리
         if (APawn* Pawn = Cast<APawn>(ActiveCharacter))
         {
-            PC->SetViewTargetWithBlend(ActiveCharacter, 0.8f, EViewTargetBlendFunction::VTBlend_Cubic);
-            PC->Possess(Pawn);
+            // 1단계: 먼저 부드럽게 카메라만 이동
+            PC->SetViewTargetWithBlend(ActiveCharacter, 1.2f, EViewTargetBlendFunction::VTBlend_Cubic);
 
-            // ★ 소유 완료 후 입력모드/커서/룩 입력 상태를 게임용으로
-            PC->SetInputMode(FInputModeGameOnly());
-            PC->bShowMouseCursor = true;   // 커서 보이게 할지 정책에 맞춰 조절
-            PC->SetIgnoreLookInput(false); // 룩 입력 허용
+            // 2단계: 카메라 블렌드 완료 후 Possess (지연 실행)
+            FTimerHandle PossessDelayHandle;
+            GetWorld()->GetTimerManager().SetTimer(PossessDelayHandle, [this, PC, Pawn]()
+                {
+                    PC->Possess(Pawn);
 
-            // (선택) 새로 소유된 Pawn의 커서 로직 강제 반영
-            if (auto* TP = Cast<ATurnPlayer>(Pawn))
-            {
-                TP->UpdateCursor();
-            }
+                    // 3단계: Possess 후 입력 설정
+                    PC->SetInputMode(FInputModeGameOnly());
+                    PC->bShowMouseCursor = true;
+                    PC->SetIgnoreLookInput(false);
+
+                    if (auto* TP = Cast<ATurnPlayer>(Pawn))
+                    {
+                        TP->UpdateCursor();
+                    }
+
+                }, 1.3f, false); // 블렌드 시간보다 약간 길게
         }
     }
     else
@@ -201,9 +208,42 @@ void UTurnCombatBridgeComponent::HandleTurnStarted(ACOECharacter* ActiveCharacte
         const TArray<ACOECharacter*> AlivePlayers = GI->GetAliveTeamMembers(ECombatTeam::Player);
         if (AlivePlayers.Num() > 0)
         {
-            ACOECharacter* Target = AlivePlayers[FMath::RandHelper(AlivePlayers.Num())];
-            PC->SetViewTargetWithBlend(Target, 0.8f, EViewTargetBlendFunction::VTBlend_Cubic);
-            // 적 턴이므로 Possess()는 하지 않음
+            // 현재 ViewTarget이 살아있는 Player인지 확인
+            AActor* CurrentTarget = PC->GetViewTarget();
+            bool bCurrentTargetValid = false;
+
+            for (ACOECharacter* Player : AlivePlayers)
+            {
+                if (CurrentTarget == Player)
+                {
+                    bCurrentTargetValid = true;
+                    break;
+                }
+            }
+
+            // 현재 타겟이 유효하지 않을 때만 카메라 이동
+            if (!bCurrentTargetValid)
+            {
+                ACOECharacter* BestTarget = AlivePlayers[0]; // 첫 번째 살아있는 Player
+                PC->SetViewTargetWithBlend(BestTarget, 0.8f, EViewTargetBlendFunction::VTBlend_Cubic);
+                UE_LOG(LogTemp, Log, TEXT("[Camera] Enemy turn - switching to valid Player target: %s"),
+                    *BestTarget->GetName());
+            }
+            else
+            {
+                UE_LOG(LogTemp, Log, TEXT("[Camera] Enemy turn - keeping current valid target"));
+            }
+        }
+
+        // 새로 추가: Enemy 자동 행동 시작 
+        if (auto* TurnEnemy = Cast<ATurnEnemy>(ActiveCharacter))
+        {
+            // 현재 활성 캐릭터와 이 컴포넌트의 소유자가 같을 때만 실행
+            if (ActiveCharacter == OwnerCharacter)
+            {
+                UE_LOG(LogTemp, Warning, TEXT("[Bridge] Starting action for Enemy: %s"), *TurnEnemy->GetName());
+                TurnEnemy->ExecuteEnemyTurn();
+            }
         }
     }
 

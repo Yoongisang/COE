@@ -74,6 +74,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Consumable|Combat")
 	void UseAPPotion();
 
+	/** Enemy Turn 중인지 확인하는 함수 */
+	UFUNCTION(BlueprintPure, Category = "Combat")
+	bool IsEnemyTurnActive() const;
+
 private:
 	/** GI 캐스팅 헬퍼 */
 	UCOEGameInstance* GetCOEGameInstance() const;

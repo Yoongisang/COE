@@ -9,6 +9,7 @@
 #include "Turn/TurnPlayer.h"
 #include "Turn/TurnCombatBridgeComponent.h"
 #include "Turn/CombatManager.h"
+#include "Turn/TurnEnemy.h"
 
 UCOEAnimInstance::UCOEAnimInstance()
 {
@@ -94,24 +95,41 @@ void UCOEAnimInstance::AnimNotify_End()
 
 	Character->bIsAttacking = false;
 
-	// TurnBridge가 있고 Manager가 있으면 턴 전투 중으로 간주
-	if (auto* TurnPlayer = Cast<ATurnPlayer>(Character))
+	// TurnBridge가 있고 Manager가 있으면 턴 종료 처리를 지연
+// ACOECharacter로 캐스트하여 TurnPlayer와 TurnEnemy 모두 처리
+	if (auto* COEChar = Cast<ACOECharacter>(Character))
 	{
-		if (TurnPlayer->TurnBridge && TurnPlayer->TurnBridge->GetOwner())
+		if (COEChar->TurnBridge && COEChar->TurnBridge->GetOwner())
 		{
-			if (TurnPlayer->TurnBridge->GetManager() != nullptr)
+			if (COEChar->TurnBridge->GetManager() != nullptr)
 			{
 				FTimerHandle DelayHandle;
-				GetWorld()->GetTimerManager().SetTimer(DelayHandle, [TurnPlayer]()
+				GetWorld()->GetTimerManager().SetTimer(DelayHandle, [COEChar]()
 					{
-						TurnPlayer->RequestEndTurn();
+						// TurnPlayer인 경우 RequestEndTurn() 호출
+						if (auto* TurnPlayer = Cast<ATurnPlayer>(COEChar))
+						{
+							TurnPlayer->RequestEndTurn();
+							UE_LOG(LogTemp, Log, TEXT("[AnimNotify_End] TurnPlayer RequestEndTurn called"));
+						}
+						// TurnEnemy인 경우 FinishEnemyTurn() 호출
+						else if (auto* TurnEnemy = Cast<ATurnEnemy>(COEChar))
+						{
+							TurnEnemy->FinishEnemyTurn();
+							UE_LOG(LogTemp, Log, TEXT("[AnimNotify_End] TurnEnemy FinishEnemyTurn called"));
+						}
+						// 일반적인 경우 브리지를 통해 턴 종료
+						else
+						{
+							COEChar->TurnBridge->NotifySkillFinished();
+							UE_LOG(LogTemp, Log, TEXT("[AnimNotify_End] Generic NotifySkillFinished called"));
+						}
 					}, 0.3f, false);
-				UE_LOG(LogTemp, Log, TEXT("[AnimNotify_End] Bridge/Manager OK -> TurnEnd"));
+				UE_LOG(LogTemp, Log, TEXT("[AnimNotify_End] Bridge/Manager OK -> TurnEnd scheduled"));
 			}
 		}
 	}
 	UE_LOG(LogTemp, Log, TEXT("bIsAttacking == false"));
-
 }
 
 

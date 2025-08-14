@@ -106,7 +106,13 @@ void ACOECharacter::BeginPlay()
 		GI->bPlayerWasDetected = false;
 		GI->ReturnLocation = FVector::ZeroVector;
 		GI->ReturnMapName = NAME_None; // 실제 탐색맵 이름으로 바꿔야 함
-		
+
+	}
+
+	//TurnBComvatBridegeComponent 할당
+	if (!TurnBridge)
+	{
+		TurnBridge = FindComponentByClass<UTurnCombatBridgeComponent>();
 	}
 }
 

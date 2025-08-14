@@ -31,4 +31,27 @@ public:
     /** 데미지를 받는 함수 (예시) */
     virtual float TakeDamage(float DamageAmount,struct FDamageEvent const& DamageEvent,AController* EventInstigator, AActor* DamageCauser) override;
 
+public:
+    /** Enemy 턴에서 자동으로 행동을 수행하는 함수 */
+    UFUNCTION(BlueprintCallable, Category = "Combat|AI")
+    void ExecuteEnemyTurn();
+
+    /** 현재 자신의 턴인지 확인하는 함수 */
+    UFUNCTION(BlueprintPure, Category = "Combat")
+    bool IsMyTurnActive() const;
+
+    /** 기본공격 오버라이드 (Enemy 전용) */
+    virtual void DefaultAttack() override;
+
+    /** Enemy 턴 종료 처리 */
+    void FinishEnemyTurn();
+
+private:
+    /** Enemy 공격 로직 */
+    void PerformEnemyAttack();
+
+    /** 스킬 공격 함수 (추후 구현) */
+    void PerformSkill();
+
+
 };

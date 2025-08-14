@@ -85,7 +85,7 @@ public:
 
 	/** 기본공격 */
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void DefaultAttack();
+	virtual void DefaultAttack();
 
 	/** 기본공격 충돌처리 */
 	UFUNCTION(BlueprintCallable, Category = "Action")

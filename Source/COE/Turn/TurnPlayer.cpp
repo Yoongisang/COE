@@ -31,11 +31,6 @@ void ATurnPlayer::BeginPlay()
 		bHasSavedRotation = false;
 	}
 
-	if (!TurnBridge)
-	{
-		TurnBridge = FindComponentByClass<UTurnCombatBridgeComponent>();
-	}
-
 	GI = GetCOEGameInstance();
 	
 
@@ -197,6 +192,23 @@ void ATurnPlayer::UseAPPotion()
 		RequestEndTurn();     // 즉시 턴 종료
 		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] UseAPPotion."));
 	}
+}
+
+bool ATurnPlayer::IsEnemyTurnActive() const
+{
+	if (!GI) return false;
+
+	// CombatManager를 통해 현재 활성 캐릭터 확인
+	if (TurnBridge && TurnBridge->GetManager())
+	{
+		ACOECharacter* ActiveChar = TurnBridge->GetManager()->GetActiveCharacter();
+		if (!ActiveChar) return false;
+
+		ECombatTeam ActiveTeam = GI->GetTeam(ActiveChar);
+		return ActiveTeam == ECombatTeam::Enemy;
+	}
+
+	return false;
 }
 
 UCOEGameInstance* ATurnPlayer::GetCOEGameInstance() const

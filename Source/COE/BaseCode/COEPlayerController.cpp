@@ -88,7 +88,7 @@ void ACOEPlayerController::BeginPlay()
 
 void ACOEPlayerController::DoMove(float Right, float Forward)
 {
-	if (IsValid(COEChar))
+	if (IsValid(COEChar) && !COEChar->bIsAiming && !COEChar->bIsAttacking)
 	{
 		// find out which way is forward
 		const FRotator Rotation = COEChar->GetControlRotation();

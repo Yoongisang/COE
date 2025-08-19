@@ -152,7 +152,7 @@ void ACOECharacter::DoDefaultAttack()
 		HitResult,									//충돌 결과를 저장할 변수					
 		StartPos,									//시작 지점
 		EndPos,										//끝 지점
-		Rot,							//회전 (기본 값)
+		Rot,										//회전 (기본 값)
 		ECC_GameTraceChannel3,						//충돌 채널 (Visibilirty)
 		FCollisionShape::MakeSphere(AttackRadius),	//형태 : Sphere(구) MakeSphere(반지름)
 		Params										//충돌 쿼리 파라미터
@@ -169,6 +169,9 @@ void ACOECharacter::DoDefaultAttack()
 	DrawColor = Result ? FColor::Green : FColor::Red;
 
 	DrawDebugCapsule(GetWorld(), Center, HalfHeight, AttackRadius, Rot, DrawColor, false, 2.f);
+
+	// 파티클 스폰
+	SpawnDefaultAttackEmitter();
 
 	if (Result && HitResult.GetActor())
 	{
@@ -255,11 +258,12 @@ void ACOECharacter::Fire()
 		}
 
 		// 원거리 Montage 적용시 소켓 위치에서 Aim ImpactPoint로 공격이 갈 수 있게 조정
-		//FTransform SocketTransform = GetMesh()->GetSocketTransform(FName("ArrowSocket"));
-		//SocketLocation = SocketTransform.GetLocation();
-		//FVector DeltaVector = TargetLocation - SocketLocation;
-		//SocketRotation = FRotationMatrix::MakeFromX(DeltaVector).Rotator();
+		FTransform SocketTransform = GetMesh()->GetSocketTransform(FName("RangedSocket"));
+		SocketLocation = SocketTransform.GetLocation();
+		FVector DeltaVector = TargetLocation - SocketLocation;
+		SocketRotation = FRotationMatrix::MakeFromX(DeltaVector).Rotator();
 
+		SpawnRangedEmitter(TargetLocation);
 	}
 }
 
@@ -316,6 +320,54 @@ void ACOECharacter::UpdateAimingInterp()
 	{
 		CameraBoom->SocketOffset = TargetSocketOffset;
 		GetWorldTimerManager().ClearTimer(AimingInterpTimerHandle);
+	}
+}
+
+void ACOECharacter::SpawnRangedEmitter(FVector TargetLocation)
+{
+	   // 파티클 스폰
+	   // 1. RangedSocket에서 발사 효과
+	if (MuzzleFlashParticle)
+	{
+		UGameplayStatics::SpawnEmitterAttached(
+			MuzzleFlashParticle,
+			GetMesh(),
+			FName("RangedSocket"),  // 소켓에 직접 부착
+			FVector::ZeroVector,
+			FRotator::ZeroRotator,
+			EAttachLocation::SnapToTarget,
+			true  // Auto Destroy
+		);
+	}
+
+	// 2. ImpactPoint에서 충돌 효과
+	if (ImpactParticle)
+	{
+		UGameplayStatics::SpawnEmitterAtLocation(
+			GetWorld(),
+			ImpactParticle,
+			TargetLocation,  // 충돌 지점
+			FRotator::ZeroRotator,
+			FVector(1.0f),
+			true  // Auto Destroy
+		);
+	}
+}
+
+void ACOECharacter::SpawnDefaultAttackEmitter()
+{
+	// 기본공격 파티클 스폰
+	if (DefaultAttackParticle)
+	{
+		UGameplayStatics::SpawnEmitterAttached(
+			DefaultAttackParticle,
+			GetMesh(),
+			FName("DefaultAttackSocket"),  // 소켓에 직접 부착
+			FVector::ZeroVector,
+			FRotator::ZeroRotator,
+			EAttachLocation::SnapToTarget,
+			true  // Auto Destroy
+		);
 	}
 }
 

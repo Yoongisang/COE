@@ -18,11 +18,28 @@ UCOEAnimInstance::UCOEAnimInstance()
 void UCOEAnimInstance::NativeInitializeAnimation()
 {
 	Super::NativeInitializeAnimation();
+
+	if (IsValid(Character)) return;
+
+	APawn* Pawn = TryGetPawnOwner();
+	if (IsValid(Pawn))
+	{
+		Character = Cast<ACOECharacter>(Pawn);
+		if (IsValid(Character))
+		{
+			//CharacterMovement에 연결된 폰의 움직임 받아옴
+			CharacterMovement = Character->GetCharacterMovement();
+		}
+
+	}
 }
 
 void UCOEAnimInstance::NativeBeginPlay()
 {
 	Super::NativeBeginPlay();
+
+	if (IsValid(Character)) return;
+
 	APawn* Pawn = TryGetPawnOwner();
 	if (IsValid(Pawn))
 	{

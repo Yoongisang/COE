@@ -50,14 +50,14 @@ public:
 	TObjectPtr<class UTurnCombatBridgeComponent> TurnBridge;
 
 	/** If true, the character is currently playing an attack animation */
-	UPROPERTY(BlueprintReadOnly, Category = "Combat")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
 
 	bool bIsAttacking = false;
 	/** 조준 중인지 */
-	UPROPERTY(BlueprintReadOnly, Category = "Combat")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
 	bool bIsAiming = false;
 	/** 발사 했는지 */
-	UPROPERTY(BlueprintReadOnly, Category = "Combat")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
 	bool bIsShooting = false;
 
 	/** SocketLocation */
@@ -70,6 +70,18 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, Category = "Stats")
 	FCharacterStats CharacterStats;
+
+	/** 발사 위치 파티클 (RangedSocket) */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VFX")
+	class UParticleSystem* MuzzleFlashParticle;
+
+	/** 충돌 지점 파티클 (ImpactPoint) */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VFX")
+	class UParticleSystem* ImpactParticle;
+
+	/** 기본공격 파티클 (DefaultAttackSocket) */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VFX")
+	class UParticleSystem* DefaultAttackParticle;
 
 public:
 
@@ -103,6 +115,14 @@ public:
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
 	void UpdateAimingInterp();
+
+	/** 원거리 공격 파티클 스폰 함수 */
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	void SpawnRangedEmitter(FVector TargetLocation);
+
+	/** 기본공격 파티클 스폰 함수 */
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	void SpawnDefaultAttackEmitter();
 
 };
 

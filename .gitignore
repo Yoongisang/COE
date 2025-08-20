@@ -72,3 +72,9 @@ Plugins/**/Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
+
+# 대용량 파일 
+Content/ParagonMinions/
+Content/ParagonProps/
+Content/SampleMap/
+Content/KiteDemo/

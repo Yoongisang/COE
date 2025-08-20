@@ -119,7 +119,11 @@ void ACOECharacter::BeginPlay()
 void ACOECharacter::DefaultAttack()
 {
 	//공격 상태
-	
+	if (bIsAttacking)
+		return;
+
+	bIsAttacking = true;
+
 	//AnimInstance가 nullptr이 아니라면 DefaultAttackAnim 실행
 	if (IsValid(AnimInstance))
 	{

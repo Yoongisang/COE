@@ -4,6 +4,7 @@
 #include "TurnEnemy.h"
 #include "BaseCode/COEAnimInstance.h"
 #include "TurnCombatBridgeComponent.h"
+#include "CombatManager.h"
 
 ATurnEnemy::ATurnEnemy()
 {
@@ -13,7 +14,6 @@ void ATurnEnemy::BeginPlay()
 {
     Super::BeginPlay();
 
-    CharacterStats.Agility = 8.f;
 }
 
 float ATurnEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)

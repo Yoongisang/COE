@@ -100,17 +100,19 @@ void ATurnPlayerController::OnSkillQ()
 {
 	if (!TurnChar || TurnChar->bIsAttacking)
 		return;
+	
 
+	if (TurnChar->CanPerformAction())
+	{
+		TurnChar->UseSkill_Q();
+		UE_LOG(LogTemp, Log, TEXT("Input : Q"));
+	}
 	// Enemy Turn 중이면 패링 모드
-	if (TurnChar->IsEnemyTurnActive())
+	else if (TurnChar->IsEnemyTurnActive())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] 패링!"));
 		return;
 	}
-
-	TurnChar->UseSkill_Q();
-	UE_LOG(LogTemp, Log, TEXT("Input : Q"));
-
 }
 
 void ATurnPlayerController::OnSkillW()
@@ -118,15 +120,17 @@ void ATurnPlayerController::OnSkillW()
 	if (!TurnChar || TurnChar->bIsAttacking)
 		return;
 
+	if (TurnChar->CanPerformAction())
+	{
+		TurnChar->UseHPPotion();
+		UE_LOG(LogTemp, Log, TEXT("Input : W"));
+	}
 	// Enemy Turn 중이면 패링 모드
-	if (TurnChar->IsEnemyTurnActive())
+	else if (TurnChar->IsEnemyTurnActive())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] 회피!"));
 		return;
 	}
-
-	TurnChar->UseHPPotion();
-	UE_LOG(LogTemp, Log, TEXT("Input : W"));
 }
 
 void ATurnPlayerController::OnSkillE()

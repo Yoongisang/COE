@@ -61,7 +61,7 @@ public:
 	/** Q: 기본공격(턴 종료, AP +1) */
 	void UseSkill_Q();
 
-	/** 코스트 소비형 스킬(성공 시 즉시 턴 종료) */
+	/** 코스트 소비형 스킬(성공 시 즉시 턴 종료)
 	bool UseSkill_WithCost(int32 Cost);
 
 	/** 좌클릭 Fire (우클릭 조준 상태에서만 AP 1 소모, 0이면 자동 턴 종료) */
@@ -77,6 +77,10 @@ public:
 	/** Enemy Turn 중인지 확인하는 함수 */
 	UFUNCTION(BlueprintPure, Category = "Combat")
 	bool IsEnemyTurnActive() const;
+
+	/** 현재 행동 가능한 상태인지 체크 */
+	UFUNCTION(BlueprintPure, Category = "Combat")
+	bool CanPerformAction() const;
 
 private:
 	/** GI 캐스팅 헬퍼 */

@@ -9,6 +9,7 @@
 #include "TurnCombatBridgeComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Exploration/ExplorationPlayer.h"
+#include "CombatManager.h"
 
 ATurnPlayer::ATurnPlayer()
 {
@@ -20,9 +21,6 @@ ATurnPlayer::ATurnPlayer()
 void ATurnPlayer::BeginPlay()
 {
 	Super::BeginPlay();
-
-	//스탯 설정
-	CharacterStats.Agility = 10.f;
 
 	PlayerController = Cast<APlayerController>(GetController());
 	if (PlayerController)
@@ -86,6 +84,9 @@ void ATurnPlayer::UpdateCursor()
 
 void ATurnPlayer::SetAiming(bool bNewAiming)
 {
+	if (!CanPerformAction())
+		return;
+
 	//부모로직 실행(ACOECharacter)
 	Super::SetAiming(bNewAiming);
 	//자식 bIsAiming 갱신
@@ -97,37 +98,40 @@ void ATurnPlayer::SetAiming(bool bNewAiming)
 void ATurnPlayer::UseSkill_Q()
 {
 	// 기본 공격 처리
-	DefaultAttack();
-
-	// AP +1 (클램프)
-	CharacterStats.CurrentAP = FMath::Clamp(CharacterStats.CurrentAP + 1, 0, CharacterStats.MAXAP);
-
-	UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] Used Q skill → CurrentAP: %d"), CharacterStats.CurrentAP);
-
-}
-
-bool ATurnPlayer::UseSkill_WithCost(int32 Cost)
-{
-	if (Cost > 0)
+	if (!bIsAttacking)
 	{
-		if (CharacterStats.CurrentAP < Cost)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] Not enough AP for skill. Need: %d, Cur: %d"),
-				Cost, CharacterStats.CurrentAP);
-			return false;
-		}
+		DefaultAttack();
+		// AP +1 (클램프)
+		CharacterStats.CurrentAP = FMath::Clamp(CharacterStats.CurrentAP + 1, 0, CharacterStats.MAXAP);
 
-		CharacterStats.CurrentAP = FMath::Clamp(CharacterStats.CurrentAP - Cost, 0, CharacterStats.MAXAP);
+		UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] Used Q skill → CurrentAP: %d"), CharacterStats.CurrentAP);
+
 	}
 
-	// 스킬 효과 실행...
-	// TODO: 실제 스킬 로직 구현
-
-	// 규칙: 코스트형 스킬은 성공 시 즉시 턴 종료
-	RequestEndTurn();
-
-	return true;
 }
+
+//bool ATurnPlayer::UseSkill_WithCost(int32 Cost)
+//{
+//	if (Cost > 0)
+//	{
+//		if (CharacterStats.CurrentAP < Cost)
+//		{
+//			UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] Not enough AP for skill. Need: %d, Cur: %d"),
+//				Cost, CharacterStats.CurrentAP);
+//			return false;
+//		}
+//
+//		CharacterStats.CurrentAP = FMath::Clamp(CharacterStats.CurrentAP - Cost, 0, CharacterStats.MAXAP);
+//	}
+//
+//	// 스킬 효과 실행...
+//	// TODO: 실제 스킬 로직 구현
+//
+//	// 규칙: 코스트형 스킬은 성공 시 즉시 턴 종료
+//	RequestEndTurn();
+//
+//	return true;
+//}
 
 void ATurnPlayer::Fire()
 {
@@ -153,8 +157,8 @@ void ATurnPlayer::Fire()
 	// AP 소모했고, 0이 되었으면 턴 종료
 	if (bShouldSpendAP && CharacterStats.CurrentAP == 0)
 	{
-		UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] AP reached 0 → Ending turn"));
-		RequestEndTurn();
+		UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] AP reached 0"));
+		//RequestEndTurn();
 	}
 }
 
@@ -209,6 +213,21 @@ bool ATurnPlayer::IsEnemyTurnActive() const
 	}
 
 	return false;
+}
+
+bool ATurnPlayer::CanPerformAction() const
+{
+	// 공격 중이면 불가
+	if (bIsAttacking) 
+		return false;
+
+	// 자신의 턴이 아니면 불가
+	if (!TurnBridge || !TurnBridge->GetManager()) 
+		return false;
+
+	ACOECharacter* ActiveChar = TurnBridge->GetManager()->GetActiveCharacter();
+	return (ActiveChar == this);
+
 }
 
 UCOEGameInstance* ATurnPlayer::GetCOEGameInstance() const

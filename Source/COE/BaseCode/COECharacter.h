@@ -68,7 +68,7 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Socket")
 	FRotator SocketRotation;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Stats")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")
 	FCharacterStats CharacterStats;
 
 	/** 발사 위치 파티클 (RangedSocket) */

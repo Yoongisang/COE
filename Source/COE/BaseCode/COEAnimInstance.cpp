@@ -110,10 +110,9 @@ void UCOEAnimInstance::AnimNotify_End()
 	if (!Character) 
 		return;
 
-	Character->bIsAttacking = false;
 
 	// TurnBridge가 있고 Manager가 있으면 턴 종료 처리를 지연
-// ACOECharacter로 캐스트하여 TurnPlayer와 TurnEnemy 모두 처리
+	// ACOECharacter로 캐스트하여 TurnPlayer와 TurnEnemy 모두 처리
 	if (auto* COEChar = Cast<ACOECharacter>(Character))
 	{
 		if (COEChar->TurnBridge && COEChar->TurnBridge->GetOwner())
@@ -141,12 +140,18 @@ void UCOEAnimInstance::AnimNotify_End()
 							COEChar->TurnBridge->NotifySkillFinished();
 							UE_LOG(LogTemp, Log, TEXT("[AnimNotify_End] Generic NotifySkillFinished called"));
 						}
+
+						COEChar->bIsAttacking = false;
 					}, 0.3f, false);
 				UE_LOG(LogTemp, Log, TEXT("[AnimNotify_End] Bridge/Manager OK -> TurnEnd scheduled"));
+				return;
 			}
 		}
+		// Exploration 모드 (TurnBridge 없음)
+		COEChar->bIsAttacking = false;
+		UE_LOG(LogTemp, Log, TEXT("[AnimNotify_End] Exploration mode - bIsAttacking = false"));
 	}
-	UE_LOG(LogTemp, Log, TEXT("bIsAttacking == false"));
+	
 }
 
 

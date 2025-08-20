@@ -30,38 +30,38 @@ public:
 	}
 
 	/** MAXHP */
-	UPROPERTY(BlueprintReadOnly, Category = "Status")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
 	float MAXHP;
 
 	/** HP */
-	UPROPERTY(BlueprintReadOnly, Category = "Status")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
 	float CurrentHP;
 
 	/** Vitality */
-	UPROPERTY(BlueprintReadOnly, Category = "Status")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
 	float Vitality;
 
 	/** AttackPower */
-	UPROPERTY(BlueprintReadOnly, Category = "Status")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
 	float AttackPower;
 
 	/** Defense */
-	UPROPERTY(BlueprintReadOnly, Category = "Status")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
 	float Defense;
 
 	/** Agility */
-	UPROPERTY(BlueprintReadOnly, Category = "Status")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
 	float Agility;
 
 	/** Luck */
-	UPROPERTY(BlueprintReadOnly, Category = "Status")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
 	float Luck;
 
 	/** MAX ActionPoint */
-	UPROPERTY(BlueprintReadOnly, Category = "Status")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
 	int32 MAXAP;
 
 	/** Current ActionPoint */
-	UPROPERTY(BlueprintReadOnly, Category = "Status")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
 	int32 CurrentAP;
 };

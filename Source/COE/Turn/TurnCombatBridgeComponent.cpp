@@ -208,31 +208,11 @@ void UTurnCombatBridgeComponent::HandleTurnStarted(ACOECharacter* ActiveCharacte
         const TArray<ACOECharacter*> AlivePlayers = GI->GetAliveTeamMembers(ECombatTeam::Player);
         if (AlivePlayers.Num() > 0)
         {
-            // 현재 ViewTarget이 살아있는 Player인지 확인
-            AActor* CurrentTarget = PC->GetViewTarget();
-            bool bCurrentTargetValid = false;
-
-            for (ACOECharacter* Player : AlivePlayers)
-            {
-                if (CurrentTarget == Player)
-                {
-                    bCurrentTargetValid = true;
-                    break;
-                }
-            }
-
-            // 현재 타겟이 유효하지 않을 때만 카메라 이동
-            if (!bCurrentTargetValid)
-            {
-                ACOECharacter* BestTarget = AlivePlayers[0]; // 첫 번째 살아있는 Player
-                PC->SetViewTargetWithBlend(BestTarget, 0.8f, EViewTargetBlendFunction::VTBlend_Cubic);
-                UE_LOG(LogTemp, Log, TEXT("[Camera] Enemy turn - switching to valid Player target: %s"),
-                    *BestTarget->GetName());
-            }
-            else
-            {
-                UE_LOG(LogTemp, Log, TEXT("[Camera] Enemy turn - keeping current valid target"));
-            }
+            // 완전 랜덤 선택 (현재 타겟 상관없이)
+            ACOECharacter* RandomTarget = AlivePlayers[FMath::RandRange(0, AlivePlayers.Num() - 1)];
+            PC->SetViewTargetWithBlend(RandomTarget, 0.8f, EViewTargetBlendFunction::VTBlend_Cubic);
+            UE_LOG(LogTemp, Log, TEXT("[Camera] Enemy turn - random target selected: %s"),
+                *RandomTarget->GetName());
         }
 
         // 새로 추가: Enemy 자동 행동 시작 

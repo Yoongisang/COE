@@ -14,6 +14,7 @@ ACombatManager::ACombatManager()
 void ACombatManager::BeginPlay()
 {
     Super::BeginPlay();
+
     // 전역 전투 메타데이터를 보관하는 GameInstance를 캐싱해 매 프레임 조회를 피함
     GI = Cast<UCOEGameInstance>(UGameplayStatics::GetGameInstance(this)); // GI는 null일 수 있음
 }
@@ -73,12 +74,66 @@ void ACombatManager::BuildTurnOrder()
         ACOECharacter* C = P.Get();                     // 약포인터 → 실제 포인터
         if (!IsValid(C)) continue;                      // 무효 참가자 스킵
         if (GI && !GI->IsAlive(C)) continue;            // 사망자는 턴 대상 제외
+        
+        // 기존 GI의 bPlayerInitiative를 활용한 팀 우선권 계산
+        const ECombatTeam Team = GI ? GI->GetTeam(C) : ECombatTeam::Enemy;
+        int32 TeamPriority = 50; // 기본값
+
+        if (GI)
+        {
+            if (GI->bPlayerInitiative)
+            {
+                // 플레이어 선공: Player팀 우선권 높게
+                TeamPriority = (Team == ECombatTeam::Player) ? 100 : 50;
+            }
+            else
+            {
+                // 적 탐지 시: Enemy팀 우선권 높게
+                TeamPriority = (Team == ECombatTeam::Enemy) ? 100 : 50;
+            }
+        }
+
         const int32 Ini = GI ? GI->GetInitiative(C) : 10; // 이니셔티브 조회(기본 10)
-        FTurnEntry E; E.Character = C; E.Initiative = Ini; E.TieBreak = FMath::Rand(); // 동률 시 TieBreak로 정렬 안정화
+
+        FTurnEntry E;
+        E.Character = C;
+        E.TeamPriority = TeamPriority;                  // 팀 우선권 설정
+        E.Initiative = Ini;
+        E.TieBreak = FMath::Rand();                     // 동점 시 TieBreak은 난수 랜덤화
+
         TurnOrder.Add(E);
+
+        UE_LOG(LogTemp, Log, TEXT("[BuildTurnOrder] %s - Team: %s, TeamPriority: %d, Initiative: %d"),
+            *C->GetName(),
+            *UEnum::GetValueAsString(Team),
+            TeamPriority,
+            Ini);
+
     }
     TurnOrder.Sort();                                    // 높은 Initiative 우선, 동률은 TieBreak 오름차순
     CurrentIndex = -1;                                   // BeginNextTurn에서 ++되어 0부터 시작하도록 준비
+
+    // 정렬 결과 로깅
+    if (GI)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("[BuildTurnOrder] bPlayerInitiative: %s"),
+            GI->bPlayerInitiative ? TEXT("True (Player First)") : TEXT("False (Enemy First)"));
+    }
+
+    UE_LOG(LogTemp, Warning, TEXT("[BuildTurnOrder] Final Turn Order:"));
+    for (int32 i = 0; i < TurnOrder.Num(); i++)
+    {
+        if (ACOECharacter* C = TurnOrder[i].Character.Get())
+        {
+            const ECombatTeam Team = GI ? GI->GetTeam(C) : ECombatTeam::Enemy;
+            UE_LOG(LogTemp, Warning, TEXT("  %d. %s (%s) - TeamPriority: %d, Initiative: %d"),
+                i + 1,
+                *C->GetName(),
+                *UEnum::GetValueAsString(Team),
+                TurnOrder[i].TeamPriority,
+                TurnOrder[i].Initiative);
+        }
+    }
 }
 
 void ACombatManager::BeginNextTurn()

@@ -23,6 +23,9 @@ struct FTurnEntry
     TWeakObjectPtr<ACOECharacter> Character; // 액티브로 행동할 전투 캐릭터
 
     UPROPERTY()
+    int32 TeamPriority = 0;                  // 팀 우선권 (높을수록 먼저)
+
+    UPROPERTY()
     int32 Initiative = 0;                    // 우선도(높을수록 먼저)
 
     UPROPERTY()
@@ -30,8 +33,15 @@ struct FTurnEntry
 
     bool operator<(const FTurnEntry& Other) const
     {
+        // 1순위: 팀 우선권 비교
+        if (TeamPriority != Other.TeamPriority) return TeamPriority > Other.TeamPriority;
+
+        // 2순위: Initiative (Agility) 비교  
         if (Initiative != Other.Initiative) return Initiative > Other.Initiative; // 내림차순
+
+        // 3순위: TieBreak 비교
         return TieBreak < Other.TieBreak;                                         // 오름차순
+    
     }
 };
 

@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "TurnPlayer.h"
@@ -13,7 +13,7 @@
 
 ATurnPlayer::ATurnPlayer()
 {
-	GetCharacterMovement()->bOrientRotationToMovement = false; // ÀÌµ¿ ¹æÇâÀ¸·Î ÀÚµ¿ È¸Àü ²¨±â
+	GetCharacterMovement()->bOrientRotationToMovement = false; // ì´ë™ ë°©í–¥ìœ¼ë¡œ ìë™ íšŒì „ êº¼ê¸°
 	bUseControllerRotationYaw = true;
 
 }
@@ -37,42 +37,42 @@ void ATurnPlayer::BeginPlay()
 
 void ATurnPlayer::UpdateCursor()
 {
-	//ÀÚ½ÅÀÇ ÄÁÆ®·Ñ·¯°¡ PlayerContoller·Î Ä³½ºÆ®
+	//ìì‹ ì˜ ì»¨íŠ¸ë¡¤ëŸ¬ê°€ PlayerContollerë¡œ ìºìŠ¤íŠ¸
 	if (PlayerController)
 	{
-		//Á¶ÁØ ÁßÀÌ°Å³ª °ø°İ ÁßÀÏ¶§´Â Ä¿¼­°¡ ¾Èº¸ÀÌ°Ô
+		//ì¡°ì¤€ ì¤‘ì´ê±°ë‚˜ ê³µê²© ì¤‘ì¼ë•ŒëŠ” ì»¤ì„œê°€ ì•ˆë³´ì´ê²Œ
 		if (bIsAiming || bIsAttacking)
 		{
-			// Á¶ÁØ ÁßÀÌ°Å³ª °ø°İ ÁßÀÏ ¶§
+			// ì¡°ì¤€ ì¤‘ì´ê±°ë‚˜ ê³µê²© ì¤‘ì¼ ë•Œ
 			PlayerController->bShowMouseCursor = false;
 			PlayerController->bEnableClickEvents = false;
 			PlayerController->bEnableMouseOverEvents = false;
 			PlayerController->SetInputMode(FInputModeGameOnly());
-			//¸¶¿ì½º ·è Â÷´Ü ÇØÁ¦
+			//ë§ˆìš°ìŠ¤ ë£© ì°¨ë‹¨ í•´ì œ
 			PlayerController->SetIgnoreLookInput(false);
-			//Rotation º¯È­ Ã¼Å©
+			//Rotation ë³€í™” ì²´í¬
 			bHasSavedRotation = true;
 		}
-		//Á¶ÁØ ÁßÀÌ ¾Æ´Ï°Å³ª °ø°İ ÁßÀÌ ¾Æ´Ò¶§´Â Ä¿¼­°¡ º¸ÀÌ°Ô
+		//ì¡°ì¤€ ì¤‘ì´ ì•„ë‹ˆê±°ë‚˜ ê³µê²© ì¤‘ì´ ì•„ë‹ë•ŒëŠ” ì»¤ì„œê°€ ë³´ì´ê²Œ
 		else
 		{
-			//¸¶¿ì½º Ä¿¼­ Ç¥½Ã
+			//ë§ˆìš°ìŠ¤ ì»¤ì„œ í‘œì‹œ
 			PlayerController->bShowMouseCursor = true;
-			//Å¬¸¯/¿À¹ö ÀÌº¥Æ® È°¼ºÈ­
+			//í´ë¦­/ì˜¤ë²„ ì´ë²¤íŠ¸ í™œì„±í™”
 			PlayerController->bEnableClickEvents = true;
 			PlayerController->bEnableMouseOverEvents = true;
-			//¸¶¿ì½º ·è Â÷´Ü
+			//ë§ˆìš°ìŠ¤ ë£© ì°¨ë‹¨
 			PlayerController->SetIgnoreLookInput(true);
 
-			//Game + UI ¸ğµå·Î ÀüÈ¯ UI ÀÔ·Áµµ ¹Şµµ·Ï ¼³Á¤
+			//Game + UI ëª¨ë“œë¡œ ì „í™˜ UI ì…ë ¤ë„ ë°›ë„ë¡ ì„¤ì •
 			FInputModeGameAndUI InputMode;
-			//ºäÆ÷Æ®¿¡¼­ ¸¶¿ì½º°¡ ³ª°¡Áö ¾Êµµ·Ï
+			//ë·°í¬íŠ¸ì—ì„œ ë§ˆìš°ìŠ¤ê°€ ë‚˜ê°€ì§€ ì•Šë„ë¡
 			InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-			//¸¶¿ì½º ÁÂÅ¬¸¯À»ÇØµµ Ä¿¼­ À¯Áö
+			//ë§ˆìš°ìŠ¤ ì¢Œí´ë¦­ì„í•´ë„ ì»¤ì„œ ìœ ì§€
 			InputMode.SetHideCursorDuringCapture(false);
 			PlayerController->SetInputMode(InputMode);
 		
-			//Rotationº¯È­°¡ ÀÖ¾ú´Ù¸é ÃÊ±â RotationÀ¸·Î º¯°æ
+			//Rotationë³€í™”ê°€ ìˆì—ˆë‹¤ë©´ ì´ˆê¸° Rotationìœ¼ë¡œ ë³€ê²½
 			if (bHasSavedRotation)
 			{
 				PlayerController->SetControlRotation(SavedControlRotation);
@@ -87,24 +87,24 @@ void ATurnPlayer::SetAiming(bool bNewAiming)
 	if (!CanPerformAction())
 		return;
 
-	//ºÎ¸ğ·ÎÁ÷ ½ÇÇà(ACOECharacter)
+	//ë¶€ëª¨ë¡œì§ ì‹¤í–‰(ACOECharacter)
 	Super::SetAiming(bNewAiming);
-	//ÀÚ½Ä bIsAiming °»½Å
+	//ìì‹ bIsAiming ê°±ì‹ 
 	bIsAiming = bNewAiming;
-	//Ä¿¼­ »óÅÂ °»½Å
+	//ì»¤ì„œ ìƒíƒœ ê°±ì‹ 
 	UpdateCursor();
 }
 
 void ATurnPlayer::UseSkill_Q()
 {
-	// ±âº» °ø°İ Ã³¸®
+	// ê¸°ë³¸ ê³µê²© ì²˜ë¦¬
 	if (!bIsAttacking)
 	{
 		DefaultAttack();
-		// AP +1 (Å¬·¥ÇÁ)
+		// AP +1 (í´ë¨í”„)
 		CharacterStats.CurrentAP = FMath::Clamp(CharacterStats.CurrentAP + 1, 0, CharacterStats.MAXAP);
 
-		UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] Used Q skill ¡æ CurrentAP: %d"), CharacterStats.CurrentAP);
+		UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] Used Q skill â†’ CurrentAP: %d"), CharacterStats.CurrentAP);
 
 	}
 
@@ -124,10 +124,10 @@ void ATurnPlayer::UseSkill_Q()
 //		CharacterStats.CurrentAP = FMath::Clamp(CharacterStats.CurrentAP - Cost, 0, CharacterStats.MAXAP);
 //	}
 //
-//	// ½ºÅ³ È¿°ú ½ÇÇà...
-//	// TODO: ½ÇÁ¦ ½ºÅ³ ·ÎÁ÷ ±¸Çö
+//	// ìŠ¤í‚¬ íš¨ê³¼ ì‹¤í–‰...
+//	// TODO: ì‹¤ì œ ìŠ¤í‚¬ ë¡œì§ êµ¬í˜„
 //
-//	// ±ÔÄ¢: ÄÚ½ºÆ®Çü ½ºÅ³Àº ¼º°ø ½Ã Áï½Ã ÅÏ Á¾·á
+//	// ê·œì¹™: ì½”ìŠ¤íŠ¸í˜• ìŠ¤í‚¬ì€ ì„±ê³µ ì‹œ ì¦‰ì‹œ í„´ ì¢…ë£Œ
 //	RequestEndTurn();
 //
 //	return true;
@@ -135,7 +135,7 @@ void ATurnPlayer::UseSkill_Q()
 
 void ATurnPlayer::Fire()
 {
-	// ¿ìÅ¬¸¯ Á¶ÁØÀÏ ¶§¸¸ AP ¼Ò¸ğ
+	// ìš°í´ë¦­ ì¡°ì¤€ì¼ ë•Œë§Œ AP ì†Œëª¨
 	const bool bShouldSpendAP = bIsAiming;
 	const int32 APCost = 1;
 
@@ -145,16 +145,16 @@ void ATurnPlayer::Fire()
 		{
 			UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] Not enough AP to Fire. CurrentAP: %d"),
 				CharacterStats.CurrentAP);
-			return; // AP ºÎÁ· ¡æ ¹ß»ç ¾È ÇÔ
+			return; // AP ë¶€ì¡± â†’ ë°œì‚¬ ì•ˆ í•¨
 		}
-		// AP Â÷°¨
+		// AP ì°¨ê°
 		CharacterStats.CurrentAP = FMath::Clamp(CharacterStats.CurrentAP - APCost, 0, CharacterStats.MAXAP);
 	}
 
-	// ºÎ¸ğ Fire() ½ÇÇà (±âÁ¸ ¹ß»ç Ã³¸®)
+	// ë¶€ëª¨ Fire() ì‹¤í–‰ (ê¸°ì¡´ ë°œì‚¬ ì²˜ë¦¬)
 	Super::Fire();
 
-	// AP ¼Ò¸ğÇß°í, 0ÀÌ µÇ¾úÀ¸¸é ÅÏ Á¾·á
+	// AP ì†Œëª¨í–ˆê³ , 0ì´ ë˜ì—ˆìœ¼ë©´ í„´ ì¢…ë£Œ
 	if (bShouldSpendAP && CharacterStats.CurrentAP == 0)
 	{
 		UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] AP reached 0"));
@@ -170,11 +170,11 @@ void ATurnPlayer::UseHPPotion()
 		return;
 	}
 
-	// GI ±âº»°ª ±â¹İ + Ä³¸¯ÅÍ º¸Á¤
+	// GI ê¸°ë³¸ê°’ ê¸°ë°˜ + ìºë¦­í„° ë³´ì •
 	float Heal = GI->BaseHPPotionAmount;
 	CharacterStats.CurrentHP += Heal;
-	ClampHPAP();          // ¹üÀ§ º¸Á¤
-	RequestEndTurn();     // Áï½Ã ÅÏ Á¾·á
+	ClampHPAP();          // ë²”ìœ„ ë³´ì •
+	RequestEndTurn();     // ì¦‰ì‹œ í„´ ì¢…ë£Œ
 	UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] UseHPPotion."));
 }
 
@@ -188,12 +188,12 @@ void ATurnPlayer::UseAPPotion()
 			return;
 		}
 
-		// GI ±âº»°ª ±â¹İ + Ä³¸¯ÅÍ º¸Á¤ (Á¤¼öÈ­)
+		// GI ê¸°ë³¸ê°’ ê¸°ë°˜ + ìºë¦­í„° ë³´ì • (ì •ìˆ˜í™”)
 		float raw = static_cast<float>(GI->BaseAPPotionAmount);
 		const int32 Gain = FMath::Max(0, FMath::RoundToInt(raw));
 		CharacterStats.CurrentAP += Gain;
-		ClampHPAP();          // ¹üÀ§ º¸Á¤
-		RequestEndTurn();     // Áï½Ã ÅÏ Á¾·á
+		ClampHPAP();          // ë²”ìœ„ ë³´ì •
+		RequestEndTurn();     // ì¦‰ì‹œ í„´ ì¢…ë£Œ
 		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] UseAPPotion."));
 	}
 }
@@ -202,7 +202,7 @@ bool ATurnPlayer::IsEnemyTurnActive() const
 {
 	if (!GI) return false;
 
-	// CombatManager¸¦ ÅëÇØ ÇöÀç È°¼º Ä³¸¯ÅÍ È®ÀÎ
+	// CombatManagerë¥¼ í†µí•´ í˜„ì¬ í™œì„± ìºë¦­í„° í™•ì¸
 	if (TurnBridge && TurnBridge->GetManager())
 	{
 		ACOECharacter* ActiveChar = TurnBridge->GetManager()->GetActiveCharacter();
@@ -217,11 +217,11 @@ bool ATurnPlayer::IsEnemyTurnActive() const
 
 bool ATurnPlayer::CanPerformAction() const
 {
-	// °ø°İ ÁßÀÌ¸é ºÒ°¡
+	// ê³µê²© ì¤‘ì´ë©´ ë¶ˆê°€
 	if (bIsAttacking) 
 		return false;
 
-	// ÀÚ½ÅÀÇ ÅÏÀÌ ¾Æ´Ï¸é ºÒ°¡
+	// ìì‹ ì˜ í„´ì´ ì•„ë‹ˆë©´ ë¶ˆê°€
 	if (!TurnBridge || !TurnBridge->GetManager()) 
 		return false;
 
@@ -250,7 +250,7 @@ void ATurnPlayer::PossessedBy(AController* NewController)
 	{
 		SavedControlRotation = PlayerController->GetControlRotation();
 	}
-	UpdateCursor(); // ¼ÒÀ¯±Ç º¯°æ Áï½Ã UI/ÀÔ·Â »óÅÂ ¹İ¿µ
+	UpdateCursor(); // ì†Œìœ ê¶Œ ë³€ê²½ ì¦‰ì‹œ UI/ì…ë ¥ ìƒíƒœ ë°˜ì˜
 }
 
 void ATurnPlayer::UnPossessed()
@@ -263,7 +263,7 @@ void ATurnPlayer::RequestEndTurn()
 {
 	if (TurnBridge)
 	{
-		//°­Á¦·Î ÅÏÀ» ³Ñ±â´Â °æ¿ì¸¦ À§ÇØ ³²°ÜµÒ
+		//ê°•ì œë¡œ í„´ì„ ë„˜ê¸°ëŠ” ê²½ìš°ë¥¼ ìœ„í•´ ë‚¨ê²¨ë‘ 
 		TurnBridge->NotifySkillFinished();
 	}
 	else

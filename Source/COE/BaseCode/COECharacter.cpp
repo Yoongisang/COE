@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+ï»¿// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "COECharacter.h"
 #include "Engine/LocalPlayer.h"
@@ -27,11 +27,11 @@ ACOECharacter::ACOECharacter()
 		
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false; //
-	bUseControllerRotationYaw = true; //ÄÁÆ®·Ñ·¯ µû¶ó°¡°Ô ¹Ù²Ş
+	bUseControllerRotationYaw = true; //ì»¨íŠ¸ë¡¤ëŸ¬ ë”°ë¼ê°€ê²Œ ë°”ê¿ˆ
 	bUseControllerRotationRoll = false;
 
 	// Configure character movement
-	GetCharacterMovement()->bOrientRotationToMovement = false; //ÄÁÆ®·Ñ·¯ µû¶ó°¡°Ô ¹Ù²Ş
+	GetCharacterMovement()->bOrientRotationToMovement = false; //ì»¨íŠ¸ë¡¤ëŸ¬ ë”°ë¼ê°€ê²Œ ë°”ê¿ˆ
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f);
 
 	// Note: For faster iteration times these variables, and many more, can be tweaked in the Character Blueprint
@@ -53,7 +53,7 @@ ACOECharacter::ACOECharacter()
 	// Create a follow camera
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
-	FollowCamera->bUsePawnControlRotation = true; //ÄÁÆ®·Ñ·¯ µû¶ó°¡°Ô ¹Ù²Ş
+	FollowCamera->bUsePawnControlRotation = true; //ì»¨íŠ¸ë¡¤ëŸ¬ ë”°ë¼ê°€ê²Œ ë°”ê¿ˆ
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 
@@ -63,7 +63,7 @@ ACOECharacter::ACOECharacter()
 void ACOECharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	//AnimInstance Ä³½ºÆ®
+	//AnimInstance ìºìŠ¤íŠ¸
 	AnimInstance = Cast<UCOEAnimInstance>(GetMesh()->GetAnimInstance());
 	CharacterStats.CurrentHP = CharacterStats.MAXHP;
 	UE_LOG(LogTemp, Log, TEXT("Damaged : %f"), CharacterStats.CurrentHP);
@@ -71,29 +71,29 @@ void ACOECharacter::BeginPlay()
 	auto* GI = GetWorld()->GetGameInstance<UCOEGameInstance>();
 	if (!GI) return;
 
-	// 1) ÇÃ·¹ÀÌ¾î À§Ä¡ º¹¿ø
+	// 1) í”Œë ˆì´ì–´ ìœ„ì¹˜ ë³µì›
 	FString Curr = UGameplayStatics::GetCurrentLevelName(this, true);
 	if (GI->ReturnMapName.ToString() == Curr)
 	{
 		if (auto* PC = Cast<ACOECharacter>(UGameplayStatics::GetPlayerPawn(this, 0)))
 		{
 			PC->SetActorLocation(GI->ReturnLocation);
-			UE_LOG(LogTemp, Log, TEXT("[ExplorationGM] À§Ä¡ º¹¿ø ¡æ %s"),
+			UE_LOG(LogTemp, Log, TEXT("[ExplorationGM] ìœ„ì¹˜ ë³µì› â†’ %s"),
 				*GI->ReturnLocation.ToString());
 		}
 
-		// 2) ¾²·¯Áø Àû Á¦°Å
+		// 2) ì“°ëŸ¬ì§„ ì  ì œê±°
 		if (GI->EnemyToRemoveName.Num() > 0)
 		{
 			for (const FName& EnemyName : GI->EnemyToRemoveName)
 			{
 				for (TActorIterator<AExplorationEnemy> It(GetWorld()); It; ++It)
 				{
-					// Å½»ö ¸ğµå¿¡¼­ »ç¿ëµÈ Àû Å¬·¡½º·Î Ä³½ºÆÃ
+					// íƒìƒ‰ ëª¨ë“œì—ì„œ ì‚¬ìš©ëœ ì  í´ë˜ìŠ¤ë¡œ ìºìŠ¤íŒ…
 					if (It->GetFName() == EnemyName)
 					{
 						It->Destroy();
-						UE_LOG(LogTemp, Log, TEXT("[ExplorationGM] Á¦°ÅµÈ Àû ¡æ %s"),
+						UE_LOG(LogTemp, Log, TEXT("[ExplorationGM] ì œê±°ëœ ì  â†’ %s"),
 							*EnemyName.ToString());
 						break;
 					}
@@ -102,14 +102,14 @@ void ACOECharacter::BeginPlay()
 		
 		}
 
-		GI->bPlayerInitiative = false; // ÇÃ·¹ÀÌ¾î°¡ ¸ÕÀú °ø°İ
+		GI->bPlayerInitiative = false; // í”Œë ˆì´ì–´ê°€ ë¨¼ì € ê³µê²©
 		GI->bPlayerWasDetected = false;
 		GI->ReturnLocation = FVector::ZeroVector;
-		GI->ReturnMapName = NAME_None; // ½ÇÁ¦ Å½»ö¸Ê ÀÌ¸§À¸·Î ¹Ù²ã¾ß ÇÔ
+		GI->ReturnMapName = NAME_None; // ì‹¤ì œ íƒìƒ‰ë§µ ì´ë¦„ìœ¼ë¡œ ë°”ê¿”ì•¼ í•¨
 
 	}
 
-	//TurnBComvatBridegeComponent ÇÒ´ç
+	//TurnBComvatBridegeComponent í• ë‹¹
 	if (!TurnBridge)
 	{
 		TurnBridge = FindComponentByClass<UTurnCombatBridgeComponent>();
@@ -118,13 +118,13 @@ void ACOECharacter::BeginPlay()
 
 void ACOECharacter::DefaultAttack()
 {
-	//°ø°İ »óÅÂ
+	//ê³µê²© ìƒíƒœ
 	if (bIsAttacking)
 		return;
 
 	bIsAttacking = true;
 
-	//AnimInstance°¡ nullptrÀÌ ¾Æ´Ï¶ó¸é DefaultAttackAnim ½ÇÇà
+	//AnimInstanceê°€ nullptrì´ ì•„ë‹ˆë¼ë©´ DefaultAttackAnim ì‹¤í–‰
 	if (IsValid(AnimInstance))
 	{
 		
@@ -153,13 +153,13 @@ void ACOECharacter::DoDefaultAttack()
 	FQuat Rot = FRotationMatrix::MakeFromZ(EndPos - StartPos).ToQuat();
 	bool Result = GetWorld()->SweepSingleByChannel
 	(
-		HitResult,									//Ãæµ¹ °á°ú¸¦ ÀúÀåÇÒ º¯¼ö					
-		StartPos,									//½ÃÀÛ ÁöÁ¡
-		EndPos,										//³¡ ÁöÁ¡
-		Rot,										//È¸Àü (±âº» °ª)
-		ECC_GameTraceChannel3,						//Ãæµ¹ Ã¤³Î (Visibilirty)
-		FCollisionShape::MakeSphere(AttackRadius),	//ÇüÅÂ : Sphere(±¸) MakeSphere(¹İÁö¸§)
-		Params										//Ãæµ¹ Äõ¸® ÆÄ¶ó¹ÌÅÍ
+		HitResult,									//ì¶©ëŒ ê²°ê³¼ë¥¼ ì €ì¥í•  ë³€ìˆ˜					
+		StartPos,									//ì‹œì‘ ì§€ì 
+		EndPos,										//ë ì§€ì 
+		Rot,										//íšŒì „ (ê¸°ë³¸ ê°’)
+		ECC_GameTraceChannel3,						//ì¶©ëŒ ì±„ë„ (Visibilirty)
+		FCollisionShape::MakeSphere(AttackRadius),	//í˜•íƒœ : Sphere(êµ¬) MakeSphere(ë°˜ì§€ë¦„)
+		Params										//ì¶©ëŒ ì¿¼ë¦¬ íŒŒë¼ë¯¸í„°
 	);
 
 
@@ -174,36 +174,36 @@ void ACOECharacter::DoDefaultAttack()
 
 	DrawDebugCapsule(GetWorld(), Center, HalfHeight, AttackRadius, Rot, DrawColor, false, 2.f);
 
-	// ÆÄÆ¼Å¬ ½ºÆù
+	// íŒŒí‹°í´ ìŠ¤í°
 	SpawnDefaultAttackEmitter();
 
 	if (Result && HitResult.GetActor())
 	{
 		UE_LOG(LogTemp, Log, TEXT("Hit : %s"), *HitResult.GetActor()->GetName());
-		//°ø°İÆÇÁ¤ÀÌ µé¾î°¡¸é µ¥¹ÌÁö Àû¿ë
+		//ê³µê²©íŒì •ì´ ë“¤ì–´ê°€ë©´ ë°ë¯¸ì§€ ì ìš©
 		UGameplayStatics::ApplyDamage(HitResult.GetActor(), 10.f, GetInstigatorController(), this, nullptr);
-		//Enemy·Î Å½»ö»óÅÂÀÇ Àû Ä³½ºÆÃ
+		//Enemyë¡œ íƒìƒ‰ìƒíƒœì˜ ì  ìºìŠ¤íŒ…
 		if (AExplorationEnemy* Enemy = Cast<AExplorationEnemy>(HitResult.GetActor()))
 		{	
-			//ÀüÅõ¸Ê ¸®½ºÆ® È®ÀÎ
+			//ì „íˆ¬ë§µ ë¦¬ìŠ¤íŠ¸ í™•ì¸
 			if (Enemy->PossibleBattleLevels.Num() > 0)
 			{
-				//SelectedBattleMap¿¡ ÀüÅõ¸Ê ¸®½ºÆ® ÇÒ´ç
+				//SelectedBattleMapì— ì „íˆ¬ë§µ ë¦¬ìŠ¤íŠ¸ í• ë‹¹
 				FName SelectedBattleMap = Enemy->PossibleBattleLevels[FMath::RandRange(0, Enemy->PossibleBattleLevels.Num() - 1)];
-				//GameInstance¿¡ ÀüÅõ Á¤º¸ ÀúÀå
+				//GameInstanceì— ì „íˆ¬ ì •ë³´ ì €ì¥
 				if (UCOEGameInstance* GI = Cast<UCOEGameInstance>(UGameplayStatics::GetGameInstance(this)))
 				{
 					FString CurrLevel = UGameplayStatics::GetCurrentLevelName(this, true);
 					FName ThisEnemyName = HitResult.GetActor()->GetFName();
 					
-					GI->bPlayerInitiative = true; // ÇÃ·¹ÀÌ¾î°¡ ¸ÕÀú °ø°İ
+					GI->bPlayerInitiative = true; // í”Œë ˆì´ì–´ê°€ ë¨¼ì € ê³µê²©
 					GI->bPlayerWasDetected = false;
 					GI->ReturnLocation = GetActorLocation();
-					GI->ReturnMapName = FName(*CurrLevel); // ½ÇÁ¦ Å½»ö¸Ê ÀÌ¸§À¸·Î ¹Ù²ã¾ß ÇÔ
+					GI->ReturnMapName = FName(*CurrLevel); // ì‹¤ì œ íƒìƒ‰ë§µ ì´ë¦„ìœ¼ë¡œ ë°”ê¿”ì•¼ í•¨
 					GI->EnemyToRemoveName.AddUnique(ThisEnemyName);
 				}
 
-				//ÀüÅõ¸ÊÀ¸·Î ÀÌµ¿
+				//ì „íˆ¬ë§µìœ¼ë¡œ ì´ë™
 				UGameplayStatics::OpenLevel(this, SelectedBattleMap);
 			}
 			else
@@ -253,7 +253,7 @@ void ACOECharacter::Fire()
 			DrawDebugLine(GetWorld(), AimLocation, TargetLocation, FColor::Green, false, 2.f);
 			UE_LOG(LogTemp, Log, TEXT("Hit : %s"), *HitResult.GetActor()->GetName());
 
-			//°ø°İÆÇÁ¤ÀÌ µé¾î°¡¸é µ¥¹ÌÁö Àû¿ë
+			//ê³µê²©íŒì •ì´ ë“¤ì–´ê°€ë©´ ë°ë¯¸ì§€ ì ìš©
 			UGameplayStatics::ApplyDamage(HitResult.GetActor(), 10.f, GetInstigatorController(), this, nullptr);
 		}
 		else
@@ -261,7 +261,7 @@ void ACOECharacter::Fire()
 			DrawDebugLine(GetWorld(), AimLocation, TargetLocation, FColor::Red, false, 2.f);
 		}
 
-		// ¿ø°Å¸® Montage Àû¿ë½Ã ¼ÒÄÏ À§Ä¡¿¡¼­ Aim ImpactPoint·Î °ø°İÀÌ °¥ ¼ö ÀÖ°Ô Á¶Á¤
+		// ì›ê±°ë¦¬ Montage ì ìš©ì‹œ ì†Œì¼“ ìœ„ì¹˜ì—ì„œ Aim ImpactPointë¡œ ê³µê²©ì´ ê°ˆ ìˆ˜ ìˆê²Œ ì¡°ì •
 		FTransform SocketTransform = GetMesh()->GetSocketTransform(FName("RangedSocket"));
 		SocketLocation = SocketTransform.GetLocation();
 		FVector DeltaVector = TargetLocation - SocketLocation;
@@ -274,7 +274,7 @@ void ACOECharacter::Fire()
 void ACOECharacter::SetAiming(bool bNewAiming)
 {
 	bIsAiming = bNewAiming;
-	GetWorldTimerManager().ClearTimer(AimingInterpTimerHandle); // ÀÌÀü Å¸ÀÌ¸Ó Á¤¸®
+	GetWorldTimerManager().ClearTimer(AimingInterpTimerHandle); // ì´ì „ íƒ€ì´ë¨¸ ì •ë¦¬
 
 	StartSocketOffset = CameraBoom->SocketOffset;
 	TargetSocketOffset = bIsAiming
@@ -290,14 +290,14 @@ void ACOECharacter::SetAiming(bool bNewAiming)
 		AimingInterpTimerHandle,
 		this,
 		&ACOECharacter::UpdateAimingInterp,
-		0.01f, // 10ms °£°İ
-		true   // ¹İº¹ ½ÇÇà
+		0.01f, // 10ms ê°„ê²©
+		true   // ë°˜ë³µ ì‹¤í–‰
 	);
 }
 
 float ACOECharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-	//¹ŞÀº µ¥¹ÌÁö Ç¥½Ã
+	//ë°›ì€ ë°ë¯¸ì§€ í‘œì‹œ
 	float HP = CharacterStats.CurrentHP;
 
 	HP -= DamageAmount;
@@ -315,7 +315,7 @@ float ACOECharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEv
 
 void ACOECharacter::UpdateAimingInterp()
 {
-	InterpAlpha +=  0.05f; // 0~1·Î Á¡Á¡ Áõ°¡ (¼Óµµ Á¶Àı °¡´É)
+	InterpAlpha +=  0.05f; // 0~1ë¡œ ì ì  ì¦ê°€ (ì†ë„ ì¡°ì ˆ ê°€ëŠ¥)
 
 	FVector NewOffset = FMath::Lerp(StartSocketOffset, TargetSocketOffset, InterpAlpha);
 	CameraBoom->SocketOffset = NewOffset;
@@ -329,14 +329,14 @@ void ACOECharacter::UpdateAimingInterp()
 
 void ACOECharacter::SpawnRangedEmitter(FVector TargetLocation)
 {
-	   // ÆÄÆ¼Å¬ ½ºÆù
-	   // 1. RangedSocket¿¡¼­ ¹ß»ç È¿°ú
+	   // íŒŒí‹°í´ ìŠ¤í°
+	   // 1. RangedSocketì—ì„œ ë°œì‚¬ íš¨ê³¼
 	if (MuzzleFlashParticle)
 	{
 		UGameplayStatics::SpawnEmitterAttached(
 			MuzzleFlashParticle,
 			GetMesh(),
-			FName("RangedSocket"),  // ¼ÒÄÏ¿¡ Á÷Á¢ ºÎÂø
+			FName("RangedSocket"),  // ì†Œì¼“ì— ì§ì ‘ ë¶€ì°©
 			FVector::ZeroVector,
 			FRotator::ZeroRotator,
 			EAttachLocation::SnapToTarget,
@@ -344,13 +344,13 @@ void ACOECharacter::SpawnRangedEmitter(FVector TargetLocation)
 		);
 	}
 
-	// 2. ImpactPoint¿¡¼­ Ãæµ¹ È¿°ú
+	// 2. ImpactPointì—ì„œ ì¶©ëŒ íš¨ê³¼
 	if (ImpactParticle)
 	{
 		UGameplayStatics::SpawnEmitterAtLocation(
 			GetWorld(),
 			ImpactParticle,
-			TargetLocation,  // Ãæµ¹ ÁöÁ¡
+			TargetLocation,  // ì¶©ëŒ ì§€ì 
 			FRotator::ZeroRotator,
 			FVector(1.0f),
 			true  // Auto Destroy
@@ -360,13 +360,13 @@ void ACOECharacter::SpawnRangedEmitter(FVector TargetLocation)
 
 void ACOECharacter::SpawnDefaultAttackEmitter()
 {
-	// ±âº»°ø°İ ÆÄÆ¼Å¬ ½ºÆù
+	// ê¸°ë³¸ê³µê²© íŒŒí‹°í´ ìŠ¤í°
 	if (DefaultAttackParticle)
 	{
 		UGameplayStatics::SpawnEmitterAttached(
 			DefaultAttackParticle,
 			GetMesh(),
-			FName("DefaultAttackSocket"),  // ¼ÒÄÏ¿¡ Á÷Á¢ ºÎÂø
+			FName("DefaultAttackSocket"),  // ì†Œì¼“ì— ì§ì ‘ ë¶€ì°©
 			FVector::ZeroVector,
 			FRotator::ZeroRotator,
 			EAttachLocation::SnapToTarget,

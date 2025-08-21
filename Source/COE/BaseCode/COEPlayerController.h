@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+ï»¿// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
@@ -52,11 +52,11 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	TObjectPtr<UInputAction> DefaultAttack;
 
-	/** ¸¶¿ì½º ÁÂÅ¬¸¯ */
+	/** ë§ˆìš°ìŠ¤ ì¢Œí´ë¦­ */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	TObjectPtr<UInputAction> MouseLeftClick;
 
-	/** ¸¶¿ì½º ¿ìÅ¬¸¯ */
+	/** ë§ˆìš°ìŠ¤ ìš°í´ë¦­ */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	TObjectPtr<UInputAction> MouseRightClick;
 
@@ -92,19 +92,19 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Input")
 	virtual void DoJumpEnd();
 
-	/** ±âº»°ø°İ Input  */
+	/** ê¸°ë³¸ê³µê²© Input  */
 	UFUNCTION(BlueprintCallable, Category = "Input")
 	virtual void DoDefaultAttack();
 
-	/** ¸¶¿ì½º ÁÂÅ¬¸¯ Input  */
+	/** ë§ˆìš°ìŠ¤ ì¢Œí´ë¦­ Input  */
 	UFUNCTION(BlueprintCallable, Category = "Input")
 	virtual void DoMouseLeftClick();
 
-	/** ¸¶¿ì½º ¿ìÅ¬¸¯ Input  */
+	/** ë§ˆìš°ìŠ¤ ìš°í´ë¦­ Input  */
 	UFUNCTION(BlueprintCallable, Category = "Input")
 	virtual void DoMouseRightClickStart();
 
-	/** ¸¶¿ì½º ¿ìÅ¬¸¯ End  */
+	/** ë§ˆìš°ìŠ¤ ìš°í´ë¦­ End  */
 	UFUNCTION(BlueprintCallable, Category = "Input")
 	virtual void DoMouseRightClickEnd();
 

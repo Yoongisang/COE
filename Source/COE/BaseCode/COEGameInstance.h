@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -10,21 +10,21 @@
  * 
  */
 
- // ÀüÅõ »óÅÂ(·ÎÁ÷ »óÅÂ¸¸ Ç¥Çö: ¿¬Ãâ/Ä«¸Ş¶ó µîÀº º°µµ ½Ã½ºÅÛ¿¡¼­ Ã³¸®)
+ // ì „íˆ¬ ìƒíƒœ(ë¡œì§ ìƒíƒœë§Œ í‘œí˜„: ì—°ì¶œ/ì¹´ë©”ë¼ ë“±ì€ ë³„ë„ ì‹œìŠ¤í…œì—ì„œ ì²˜ë¦¬)
 UENUM(BlueprintType)
 enum class ECombatState : uint8
 {
-	None,       // ÀüÅõ ºñÈ°¼º
-	Setup,      // ÀüÅõ ÁØºñ(Âü°¡ÀÚ ¼öÁı, Á¤·Ä µî)
-	PreTurn,    // ÅÏ ½ÃÀÛ Á÷Àü(UI ¿­±â, ÀÔ·Â ´ë±â)
-	Acting,     // ½ºÅ³/¾Ö´Ô/Åõ»çÃ¼ ½ÇÇà Áß
-	PostTurn,   // ÅÏ Á¤¸®(¹öÇÁ/µğ¹öÇÁ Æ½, DOT)
-	Victory,    // ÇÃ·¹ÀÌ¾î ½Â¸®
-	Defeat,     // ÇÃ·¹ÀÌ¾î ÆĞ¹è
-	Paused      // ÀÏ½ÃÁ¤Áö(¸Ş´º/¿¬Ãâ)
+	None,       // ì „íˆ¬ ë¹„í™œì„±
+	Setup,      // ì „íˆ¬ ì¤€ë¹„(ì°¸ê°€ì ìˆ˜ì§‘, ì •ë ¬ ë“±)
+	PreTurn,    // í„´ ì‹œì‘ ì§ì „(UI ì—´ê¸°, ì…ë ¥ ëŒ€ê¸°)
+	Acting,     // ìŠ¤í‚¬/ì• ë‹˜/íˆ¬ì‚¬ì²´ ì‹¤í–‰ ì¤‘
+	PostTurn,   // í„´ ì •ë¦¬(ë²„í”„/ë””ë²„í”„ í‹±, DOT)
+	Victory,    // í”Œë ˆì´ì–´ ìŠ¹ë¦¬
+	Defeat,     // í”Œë ˆì´ì–´ íŒ¨ë°°
+	Paused      // ì¼ì‹œì •ì§€(ë©”ë‰´/ì—°ì¶œ)
 };
 
-// ÆÀ ±¸ºĞ(ÇÊ¿ä ½Ã Ally/Summon µîÀ¸·Î È®Àå °¡´É)
+// íŒ€ êµ¬ë¶„(í•„ìš” ì‹œ Ally/Summon ë“±ìœ¼ë¡œ í™•ì¥ ê°€ëŠ¥)
 UENUM(BlueprintType)
 enum class ECombatTeam : uint8
 {
@@ -38,83 +38,83 @@ class COE_API UCOEGameInstance : public UGameInstance
 	GENERATED_BODY()
 public:
 
-	/** »ı¼ºÀÚ */
+	/** ìƒì„±ì */
 	UCOEGameInstance();
 
 public:
 
-	/** TurnLevel È¸º¹ ¾ÆÀÌÅÛ °ø¿ë Ä«¿îÆ®: HPÈ¸º¹ ¾ÆÀÌÅÛ ÃÖ´ë °¹¼ö*/
+	/** TurnLevel íšŒë³µ ì•„ì´í…œ ê³µìš© ì¹´ìš´íŠ¸: HPíšŒë³µ ì•„ì´í…œ ìµœëŒ€ ê°¯ìˆ˜*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Consumable|Combat")
 	int32 MaxHPPotions = 3;
 	
-	/** TurnLevel È¸º¹ ¾ÆÀÌÅÛ °ø¿ë Ä«¿îÆ®: HPÈ¸º¹ ¾ÆÀÌÅÛ ÇöÀç °¹¼ö*/
+	/** TurnLevel íšŒë³µ ì•„ì´í…œ ê³µìš© ì¹´ìš´íŠ¸: HPíšŒë³µ ì•„ì´í…œ í˜„ì¬ ê°¯ìˆ˜*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Consumable|Combat")
 	int32  CurrentHPPotions;
 
-	/** TurnLevel È¸º¹ ¾ÆÀÌÅÛ °ø¿ë Ä«¿îÆ®: APÈ¸º¹ ¾ÆÀÌÅÛ ÃÖ´ë °¹¼ö*/
+	/** TurnLevel íšŒë³µ ì•„ì´í…œ ê³µìš© ì¹´ìš´íŠ¸: APíšŒë³µ ì•„ì´í…œ ìµœëŒ€ ê°¯ìˆ˜*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Consumable|Combat")
 	int32 MaxAPPotions = 2;
 	
-	/** TurnLevel È¸º¹ ¾ÆÀÌÅÛ °ø¿ë Ä«¿îÆ®: APÈ¸º¹ ¾ÆÀÌÅÛ ÇöÀç °¹¼ö*/
+	/** TurnLevel íšŒë³µ ì•„ì´í…œ ê³µìš© ì¹´ìš´íŠ¸: APíšŒë³µ ì•„ì´í…œ í˜„ì¬ ê°¯ìˆ˜*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Consumable|Combat")
 	int32  CurrentAPPotions;
 
-	/** ExplorationLevel È¸º¹ ¾ÆÀÌÅÛ °ø¿ë Ä«¿îÆ®: HPÈ¸º¹ ¾ÆÀÌÅÛ ÃÖ´ë °¹¼ö*/
+	/** ExplorationLevel íšŒë³µ ì•„ì´í…œ ê³µìš© ì¹´ìš´íŠ¸: HPíšŒë³µ ì•„ì´í…œ ìµœëŒ€ ê°¯ìˆ˜*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Consumable|Exploration")
 	int32 MaxExplorationHeal = 3;
 
-	/** ExplorationLevel È¸º¹ ¾ÆÀÌÅÛ °ø¿ë Ä«¿îÆ®: HPÈ¸º¹ ¾ÆÀÌÅÛ ÇöÀç °¹¼ö*/
+	/** ExplorationLevel íšŒë³µ ì•„ì´í…œ ê³µìš© ì¹´ìš´íŠ¸: HPíšŒë³µ ì•„ì´í…œ í˜„ì¬ ê°¯ìˆ˜*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Consumable|Exploration")
 	int32  CurrentExplorationHeal;
 
 
-	/** TrunLevel HPÈ¸º¹¾ÆÀÌÅÛ ±âº» È¸º¹ ¼öÄ¡ */
+	/** TrunLevel HPíšŒë³µì•„ì´í…œ ê¸°ë³¸ íšŒë³µ ìˆ˜ì¹˜ */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Consumable|Tuning")
-	float BaseHPPotionAmount = 50.f;     // HP Æ÷¼Ç ±âº» È¸º¹·®(Àı´ë°ª)
+	float BaseHPPotionAmount = 50.f;     // HP í¬ì…˜ ê¸°ë³¸ íšŒë³µëŸ‰(ì ˆëŒ€ê°’)
 
-	/** TrunLevel APÈ¸º¹¾ÆÀÌÅÛ ±âº» È¸º¹ ¼öÄ¡ */
+	/** TrunLevel APíšŒë³µì•„ì´í…œ ê¸°ë³¸ íšŒë³µ ìˆ˜ì¹˜ */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Consumable|Tuning")
-	int32 BaseAPPotionAmount = 2;        // AP Æ÷¼Ç ±âº» È¸º¹·®(Á¤¼ö)
+	int32 BaseAPPotionAmount = 2;        // AP í¬ì…˜ ê¸°ë³¸ íšŒë³µëŸ‰(ì •ìˆ˜)
 
 public:
 
-	/** ÇÃ·¹ÀÌ¾î°¡ ¼±°øÇÑ °æ¿ì true, ÀûÀÌ ¸ÕÀú °¨ÁöÇÑ °æ¿ì false */
+	/** í”Œë ˆì´ì–´ê°€ ì„ ê³µí•œ ê²½ìš° true, ì ì´ ë¨¼ì € ê°ì§€í•œ ê²½ìš° false */
 	UPROPERTY(BlueprintReadOnly, Category = "Combat")
 	bool bPlayerInitiative = false;
 
-	/** Àû¿¡°Ô °¨ÁöµÇ¾î ÀüÅõ¿¡ µé¾î°£ °æ¿ì true */
+	/** ì ì—ê²Œ ê°ì§€ë˜ì–´ ì „íˆ¬ì— ë“¤ì–´ê°„ ê²½ìš° true */
 	UPROPERTY(BlueprintReadOnly, Category = "Combat")
 	bool bPlayerWasDetected = false;
 
-	/** ÀüÅõ¿¡¼­ ½Â¸®Çß´ÂÁö ¿©ºÎ */
+	/** ì „íˆ¬ì—ì„œ ìŠ¹ë¦¬í–ˆëŠ”ì§€ ì—¬ë¶€ */
 	UPROPERTY(BlueprintReadOnly, Category = "Combat")
 	bool bCombatVictory = false;
 
-	/** ÀüÅõ Àü ÇÃ·¹ÀÌ¾îÀÇ À§Ä¡ */
+	/** ì „íˆ¬ ì „ í”Œë ˆì´ì–´ì˜ ìœ„ì¹˜ */
 	UPROPERTY(BlueprintReadOnly, Category = "Return")
 	FVector ReturnLocation;
 
-	/** ÀüÅõ Á¾·á ÈÄ µ¹¾Æ¿Ã ¸Ê ÀÌ¸§ */
+	/** ì „íˆ¬ ì¢…ë£Œ í›„ ëŒì•„ì˜¬ ë§µ ì´ë¦„ */
 	UPROPERTY(BlueprintReadOnly, Category = "Return")
 	FName ReturnMapName;
 
-	/** ÀüÅõ¿¡¼­ ´ë»óÀÌ µÈ Àû */
+	/** ì „íˆ¬ì—ì„œ ëŒ€ìƒì´ ëœ ì  */
 	UPROPERTY(BlueprintReadOnly, Category = "Combat")
 	TArray<FName> EnemyToRemoveName;
 
 public:
-	// ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡ Combat Meta API ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
+	// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Combat Meta API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 	UFUNCTION(BlueprintCallable, Category = "Combat|State")
 	void SetCombatState(ECombatState InState) { CombatState = InState; }
 
 	UFUNCTION(BlueprintPure, Category = "Combat|State")
 	ECombatState GetCombatState() const { return CombatState; }
 
-	// ---- ÆÀ/»ı»ç (ACOECharacter ±â¹İ) ----
+	// ---- íŒ€/ìƒì‚¬ (ACOECharacter ê¸°ë°˜) ----
 	UFUNCTION(BlueprintCallable, Category = "Combat|Teams")
 	void SetTeam(ACOECharacter* Character, ECombatTeam Team);
 
-	// TurnPlayer ¢¡ Player, TurnEnemy ¢¡ Enemy ·Î ÀÚµ¿ ºĞ·ù(±× ¿Ü´Â ¹«½Ã)
+	// TurnPlayer â‡’ Player, TurnEnemy â‡’ Enemy ë¡œ ìë™ ë¶„ë¥˜(ê·¸ ì™¸ëŠ” ë¬´ì‹œ)
 	UFUNCTION(BlueprintCallable, Category = "Combat|Teams")
 	void AutoAssignTeam(ACOECharacter* Character);
 
@@ -136,13 +136,13 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Combat|Initiative")
 	int32 GetInitiative(ACOECharacter* Character) const;
 
-	// ---- ¸®¼Â ----
+	// ---- ë¦¬ì…‹ ----
 	UFUNCTION(BlueprintCallable, Category = "Combat|State")
-	void ResetCombatData();                           // »õ ÀüÅõ ½ÃÀÛ Àü È£Ãâ(±ÍÈ¯Á¤º¸/ÇÃ·¡±× À¯Áö)
+	void ResetCombatData();                           // ìƒˆ ì „íˆ¬ ì‹œì‘ ì „ í˜¸ì¶œ(ê·€í™˜ì •ë³´/í”Œë˜ê·¸ ìœ ì§€)
 
 public:
 
-	/** »ç¿ë °¡´É ¿©ºÎ*/
+	/** ì‚¬ìš© ê°€ëŠ¥ ì—¬ë¶€*/
 	UFUNCTION(BlueprintCallable, Category = "Consumable|Combat")
 	bool HasHPPotion() const { return CurrentHPPotions > 0; }
 
@@ -152,7 +152,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Consumable|Exploration")
 	bool HasExplorationHeal() const { return CurrentExplorationHeal > 0; }
 
-	/** »ç¿ë(Â÷°¨) ½Ãµµ */
+	/** ì‚¬ìš©(ì°¨ê°) ì‹œë„ */
 	UFUNCTION(BlueprintCallable, Category = "Consumable|Combat")
 	bool TryConsumeHPPotion();
 
@@ -162,11 +162,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Consumable|Exploration")
 	bool TryConsumeExplorationHeal();
 
-	/** ÀüºÎ ÃæÀü */
+	/** ì „ë¶€ ì¶©ì „ */
 	UFUNCTION(BlueprintCallable, Category = "Consumable")
 	void RefillAllConsumables();
 
-	/** ¾÷±×·¹ÀÌµå¿ë API */
+	/** ì—…ê·¸ë ˆì´ë“œìš© API */
 	UFUNCTION(BlueprintCallable, Category = "Consumable|Upgrade")
 	void UpgradeHPPotionCapacity(int32 Delta) { MaxHPPotions = FMath::Max(0, MaxHPPotions + Delta); }
 
@@ -177,15 +177,15 @@ public:
 	void UpgradeExplorationHealCapacity(int32 Delta) { MaxExplorationHeal = FMath::Max(0, MaxExplorationHeal + Delta); }
 
 private:
-	// ÇöÀç ÀüÅõ »óÅÂ(¿£Áø Æ½°ú ¹«°ü)
+	// í˜„ì¬ ì „íˆ¬ ìƒíƒœ(ì—”ì§„ í‹±ê³¼ ë¬´ê´€)
 	UPROPERTY()
 	ECombatState CombatState = ECombatState::None;
 
-	// Ä³¸¯ÅÍ ¡æ ÆÀ
+	// ìºë¦­í„° â†’ íŒ€
 	UPROPERTY()
 	TMap<TWeakObjectPtr<ACOECharacter>, ECombatTeam> TeamOf;
 
-	// »ç¸ÁÇÑ Ä³¸¯ÅÍ(IsAlive´Â DeadSet ¹ÌÆ÷ÇÔ ¿©ºÎ·Î ÆÇ´Ü)
+	// ì‚¬ë§í•œ ìºë¦­í„°(IsAliveëŠ” DeadSet ë¯¸í¬í•¨ ì—¬ë¶€ë¡œ íŒë‹¨)
 	UPROPERTY()
 	TSet<TWeakObjectPtr<ACOECharacter>> DeadSet;
 

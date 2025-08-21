@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -31,27 +31,27 @@ protected:
 
 protected:
 
-	/** Q ½ºÅ³ ÀÔ·Â */
+	/** Q ìŠ¤í‚¬ ì…ë ¥ */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Skill")
 	TObjectPtr<UInputAction> QSkillAction;
 
-	/** W ½ºÅ³ ÀÔ·Â */
+	/** W ìŠ¤í‚¬ ì…ë ¥ */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Skill")
 	TObjectPtr<UInputAction> WSkillAction;
 
-	/** E ½ºÅ³ ÀÔ·Â */
+	/** E ìŠ¤í‚¬ ì…ë ¥ */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Skill")
 	TObjectPtr<UInputAction> ESkillAction;
 
-	/** A ½ºÅ³ ÀÔ·Â */
+	/** A ìŠ¤í‚¬ ì…ë ¥ */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Skill")
 	TObjectPtr<UInputAction> ASkillAction;
 
-	/** S ½ºÅ³ ÀÔ·Â */
+	/** S ìŠ¤í‚¬ ì…ë ¥ */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Skill")
 	TObjectPtr<UInputAction> SSkillAction;
 
-	/** D ½ºÅ³ ÀÔ·Â */
+	/** D ìŠ¤í‚¬ ì…ë ¥ */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Skill")
 	TObjectPtr<UInputAction> DSkillAction;
 
@@ -59,11 +59,11 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	TObjectPtr<UInputAction> MouseLookAction;
 
-	/** ¸¶¿ì½º ÁÂÅ¬¸¯ */
+	/** ë§ˆìš°ìŠ¤ ì¢Œí´ë¦­ */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	TObjectPtr<UInputAction> MouseLeftClick;
 
-	/** ¸¶¿ì½º ¿ìÅ¬¸¯ */
+	/** ë§ˆìš°ìŠ¤ ìš°í´ë¦­ */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	TObjectPtr<UInputAction> MouseRightClick;
 
@@ -73,7 +73,7 @@ protected:
 protected:
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
-	/** Player º¯°æ */
+	/** Player ë³€ê²½ */
 	virtual void OnPossess(APawn* InPawn) override;
 	virtual void OnUnPossess() override;
 public:
@@ -85,33 +85,33 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Input")
 	virtual void DoLook(float Yaw, float Pitch);
 
-	/** Q ½ºÅ³ */
+	/** Q ìŠ¤í‚¬ */
 	virtual void OnSkillQ();
 
-	/** W ½ºÅ³ */
+	/** W ìŠ¤í‚¬ */
 	virtual void OnSkillW();
 
-	/** E ½ºÅ³ */
+	/** E ìŠ¤í‚¬ */
 	virtual void OnSkillE();
 
-	/** A ½ºÅ³ */
+	/** A ìŠ¤í‚¬ */
 	virtual void OnSkillA();
 
-	/** S ½ºÅ³ */
+	/** S ìŠ¤í‚¬ */
 	virtual void OnSkillS();
 
-	/** D ½ºÅ³ */
+	/** D ìŠ¤í‚¬ */
 	virtual void OnSkillD();
 
-	/** ¸¶¿ì½º ÁÂÅ¬¸¯ Input  */
+	/** ë§ˆìš°ìŠ¤ ì¢Œí´ë¦­ Input  */
 	UFUNCTION(BlueprintCallable, Category = "Input")
 	virtual void DoMouseLeftClick();
 
-	/** ¸¶¿ì½º ¿ìÅ¬¸¯ Input  */
+	/** ë§ˆìš°ìŠ¤ ìš°í´ë¦­ Input  */
 	UFUNCTION(BlueprintCallable, Category = "Input")
 	virtual void DoMouseRightClickStart();
 
-	/** ¸¶¿ì½º ¿ìÅ¬¸¯ End  */
+	/** ë§ˆìš°ìŠ¤ ìš°í´ë¦­ End  */
 	UFUNCTION(BlueprintCallable, Category = "Input")
 	virtual void DoMouseRightClickEnd();
 };

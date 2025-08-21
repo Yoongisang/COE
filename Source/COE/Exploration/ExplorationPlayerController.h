@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -27,6 +27,6 @@ public:
 
 public:
 
-	/** ¸¶¿ì½º ÁÂÅ¬¸¯ Input  */
+	/** ë§ˆìš°ìŠ¤ ì¢Œí´ë¦­ Input  */
 	virtual void DoMouseLeftClick() override;
 };

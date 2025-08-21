@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+ï»¿// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
@@ -33,7 +33,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimInstance", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UCOEAnimInstance> AnimInstance;
 
-	/** Á¶ÁØ »óÅÂ ÀüÈ¯ ½Ã º¸°£À» À§ÇÑ º¯¼ö */
+	/** ì¡°ì¤€ ìƒíƒœ ì „í™˜ ì‹œ ë³´ê°„ì„ ìœ„í•œ ë³€ìˆ˜ */
 	FTimerHandle AimingInterpTimerHandle;
 	FVector StartSocketOffset;
 	FVector TargetSocketOffset;
@@ -45,7 +45,7 @@ public:
 	/** Constructor */
 	ACOECharacter();	
 
-	/** CombatBridge ºí·çÇÁ¸°Æ® ¹ÙÀÎµù */
+	/** CombatBridge ë¸”ë£¨í”„ë¦°íŠ¸ ë°”ì¸ë”© */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat|Bridge", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UTurnCombatBridgeComponent> TurnBridge;
 
@@ -53,10 +53,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
 
 	bool bIsAttacking = false;
-	/** Á¶ÁØ ÁßÀÎÁö */
+	/** ì¡°ì¤€ ì¤‘ì¸ì§€ */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
 	bool bIsAiming = false;
-	/** ¹ß»ç Çß´ÂÁö */
+	/** ë°œì‚¬ í–ˆëŠ”ì§€ */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
 	bool bIsShooting = false;
 
@@ -71,15 +71,15 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")
 	FCharacterStats CharacterStats;
 
-	/** ¹ß»ç À§Ä¡ ÆÄÆ¼Å¬ (RangedSocket) */
+	/** ë°œì‚¬ ìœ„ì¹˜ íŒŒí‹°í´ (RangedSocket) */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VFX")
 	class UParticleSystem* MuzzleFlashParticle;
 
-	/** Ãæµ¹ ÁöÁ¡ ÆÄÆ¼Å¬ (ImpactPoint) */
+	/** ì¶©ëŒ ì§€ì  íŒŒí‹°í´ (ImpactPoint) */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VFX")
 	class UParticleSystem* ImpactParticle;
 
-	/** ±âº»°ø°İ ÆÄÆ¼Å¬ (DefaultAttackSocket) */
+	/** ê¸°ë³¸ê³µê²© íŒŒí‹°í´ (DefaultAttackSocket) */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VFX")
 	class UParticleSystem* DefaultAttackParticle;
 
@@ -95,32 +95,32 @@ public:
 
 	virtual void BeginPlay() override;
 
-	/** ±âº»°ø°İ */
+	/** ê¸°ë³¸ê³µê²© */
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	virtual void DefaultAttack();
 
-	/** ±âº»°ø°İ Ãæµ¹Ã³¸® */
+	/** ê¸°ë³¸ê³µê²© ì¶©ëŒì²˜ë¦¬ */
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void DoDefaultAttack();
 
-	/** ÁÂÅ¬¸¯ Fire */
+	/** ì¢Œí´ë¦­ Fire */
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	virtual void Fire();
 
-	/** ¿ìÅ¬¸¯ Aiming */
+	/** ìš°í´ë¦­ Aiming */
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	virtual void SetAiming(bool bNewAiming);
 
-	/**  ¹ŞÀº µ¥¹ÌÁö Ã³¸® */
+	/**  ë°›ì€ ë°ë¯¸ì§€ ì²˜ë¦¬ */
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
 	void UpdateAimingInterp();
 
-	/** ¿ø°Å¸® °ø°İ ÆÄÆ¼Å¬ ½ºÆù ÇÔ¼ö */
+	/** ì›ê±°ë¦¬ ê³µê²© íŒŒí‹°í´ ìŠ¤í° í•¨ìˆ˜ */
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void SpawnRangedEmitter(FVector TargetLocation);
 
-	/** ±âº»°ø°İ ÆÄÆ¼Å¬ ½ºÆù ÇÔ¼ö */
+	/** ê¸°ë³¸ê³µê²© íŒŒí‹°í´ ìŠ¤í° í•¨ìˆ˜ */
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void SpawnDefaultAttackEmitter();
 

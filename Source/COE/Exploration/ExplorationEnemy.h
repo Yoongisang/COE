@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -14,7 +14,7 @@ class COE_API AExplorationEnemy : public ACOECharacter
 {
 	GENERATED_BODY()
 public:
-	//TrunLevel �Ҵ�
+	//TrunLevel 할당
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	TArray<FName> PossibleBattleLevels;
 

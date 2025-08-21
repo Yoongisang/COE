@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "COEGameInstance.h"
@@ -11,18 +11,18 @@ UCOEGameInstance::UCOEGameInstance()
     RefillAllConsumables();
 }
 
-// Æ¯Á¤ Ä³¸¯ÅÍ¸¦ ÁöÁ¤µÈ ÆÀÀ¸·Î ¼³Á¤
+// íŠ¹ì • ìºë¦­í„°ë¥¼ ì§€ì •ëœ íŒ€ìœ¼ë¡œ ì„¤ì •
 void UCOEGameInstance::SetTeam(ACOECharacter* Character, ECombatTeam Team)
 {
-    if (!IsValid(Character)) return; // À¯È¿ÇÏÁö ¾ÊÀº Æ÷ÀÎÅÍ ¹æÁö
-    TeamOf.FindOrAdd(Character) = Team; // ÀÌ¹Ì ÀÖÀ¸¸é µ¤¾î¾²±â, ¾øÀ¸¸é Ãß°¡
+    if (!IsValid(Character)) return; // ìœ íš¨í•˜ì§€ ì•Šì€ í¬ì¸í„° ë°©ì§€
+    TeamOf.FindOrAdd(Character) = Team; // ì´ë¯¸ ìˆìœ¼ë©´ ë®ì–´ì“°ê¸°, ì—†ìœ¼ë©´ ì¶”ê°€
     UE_LOG(LogTemp, Log, TEXT("[GI] SetTeam: %s -> %s"), *Character->GetName(), *UEnum::GetValueAsString(Team));
 }
 
-// Å¬·¡½º Å¸ÀÔ ±â¹İÀ¸·Î ÀÚµ¿ ÆÀ ¹èÁ¤
+// í´ë˜ìŠ¤ íƒ€ì… ê¸°ë°˜ìœ¼ë¡œ ìë™ íŒ€ ë°°ì •
 void UCOEGameInstance::AutoAssignTeam(ACOECharacter* Character)
 {
-    if (!IsValid(Character)) return; // ³Î Ã¼Å©
+    if (!IsValid(Character)) return; // ë„ ì²´í¬
 
     if (Character->IsA(ATurnPlayer::StaticClass()))
     {
@@ -36,7 +36,7 @@ void UCOEGameInstance::AutoAssignTeam(ACOECharacter* Character)
     }
 }
 
-// Ä³¸¯ÅÍÀÇ ÆÀ ¹İÈ¯
+// ìºë¦­í„°ì˜ íŒ€ ë°˜í™˜
 ECombatTeam UCOEGameInstance::GetTeam(ACOECharacter* Character) const
 {
     if (!IsValid(Character)) return ECombatTeam::Enemy;
@@ -44,7 +44,7 @@ ECombatTeam UCOEGameInstance::GetTeam(ACOECharacter* Character) const
     return ECombatTeam::Enemy;
 }
 
-// Ä³¸¯ÅÍÀÇ »ı»ç »óÅÂ ¼³Á¤
+// ìºë¦­í„°ì˜ ìƒì‚¬ ìƒíƒœ ì„¤ì •
 void UCOEGameInstance::SetAlive(ACOECharacter* Character, bool bAlive)
 {
     if (!IsValid(Character)) return;
@@ -61,7 +61,7 @@ void UCOEGameInstance::SetAlive(ACOECharacter* Character, bool bAlive)
     }
 }
 
-// Ä³¸¯ÅÍ°¡ »ì¾ÆÀÖ´ÂÁö ¿©ºÎ ¹İÈ¯
+// ìºë¦­í„°ê°€ ì‚´ì•„ìˆëŠ”ì§€ ì—¬ë¶€ ë°˜í™˜
 bool UCOEGameInstance::IsAlive(ACOECharacter* Character) const
 {
     if (!IsValid(Character)) return false;
@@ -70,7 +70,7 @@ bool UCOEGameInstance::IsAlive(ACOECharacter* Character) const
     return bResult;
 }
 
-// Æ¯Á¤ ÆÀ¿¡ »ì¾ÆÀÖ´Â Ä³¸¯ÅÍ°¡ ÀÖ´ÂÁö °Ë»ç
+// íŠ¹ì • íŒ€ì— ì‚´ì•„ìˆëŠ” ìºë¦­í„°ê°€ ìˆëŠ”ì§€ ê²€ì‚¬
 bool UCOEGameInstance::HasTeamAlive(ECombatTeam Team) const
 {
     for (const auto& P : TeamOf)
@@ -103,7 +103,7 @@ TArray<ACOECharacter*> UCOEGameInstance::GetAliveTeamMembers(ECombatTeam Team) c
     return Result;
 }
 
-// Ä³¸¯ÅÍÀÇ Agility°ª ¹İÈ¯
+// ìºë¦­í„°ì˜ Agilityê°’ ë°˜í™˜
 int32 UCOEGameInstance::GetInitiative(ACOECharacter* Character) const
 {
     if (!IsValid(Character)) return 0;
@@ -115,13 +115,13 @@ int32 UCOEGameInstance::GetInitiative(ACOECharacter* Character) const
     return FromAgi;
 }
 
-// ÀüÅõ °ü·Ã µ¥ÀÌÅÍ ÃÊ±âÈ­
+// ì „íˆ¬ ê´€ë ¨ ë°ì´í„° ì´ˆê¸°í™”
 void UCOEGameInstance::ResetCombatData()
 {
     CombatState = ECombatState::None;
     DeadSet.Reset();
     UE_LOG(LogTemp, Log, TEXT("[GI] ResetCombatData: CombatState reset, DeadSet cleared"));
-    // TeamOf.Reset(); // ÇÊ¿ä ½Ã ÁÖ¼® ÇØÁ¦
+    // TeamOf.Reset(); // í•„ìš” ì‹œ ì£¼ì„ í•´ì œ
 }
 
 bool UCOEGameInstance::TryConsumeHPPotion()

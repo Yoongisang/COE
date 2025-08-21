@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "COEAnimInstance.h"
@@ -27,7 +27,7 @@ void UCOEAnimInstance::NativeInitializeAnimation()
 		Character = Cast<ACOECharacter>(Pawn);
 		if (IsValid(Character))
 		{
-			//CharacterMovement¿¡ ¿¬°áµÈ ÆùÀÇ ¿òÁ÷ÀÓ ¹Ş¾Æ¿È
+			//CharacterMovementì— ì—°ê²°ëœ í°ì˜ ì›€ì§ì„ ë°›ì•„ì˜´
 			CharacterMovement = Character->GetCharacterMovement();
 		}
 
@@ -46,7 +46,7 @@ void UCOEAnimInstance::NativeBeginPlay()
 		Character = Cast<ACOECharacter>(Pawn);
 		if (IsValid(Character))
 		{
-			//CharacterMovement¿¡ ¿¬°áµÈ ÆùÀÇ ¿òÁ÷ÀÓ ¹Ş¾Æ¿È
+			//CharacterMovementì— ì—°ê²°ëœ í°ì˜ ì›€ì§ì„ ë°›ì•„ì˜´
 			CharacterMovement = Character->GetCharacterMovement();
 		}
 		
@@ -57,18 +57,18 @@ void UCOEAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
 	if (IsValid(CharacterMovement))
 	{
-		//Ä³¸¯ÅÍ ¼Óµµ, È¸Àü ¹Ş¾Æ¿À±â UnrotateVector´Â Ä³¸¯ÅÍ ±âÁØÀ¸·Î ¸¸µé¾îÁÖ´Â¿ë ±×¸®°í ´ÜÀ§º¤ÅÍ·Î ¸¸µé¾îÁÜ
+		//ìºë¦­í„° ì†ë„, íšŒì „ ë°›ì•„ì˜¤ê¸° UnrotateVectorëŠ” ìºë¦­í„° ê¸°ì¤€ìœ¼ë¡œ ë§Œë“¤ì–´ì£¼ëŠ”ìš© ê·¸ë¦¬ê³  ë‹¨ìœ„ë²¡í„°ë¡œ ë§Œë“¤ì–´ì¤Œ
 		Velocity = CharacterMovement->Velocity;
 		FRotator Rotation = Character->GetActorRotation();
 		FVector UnrotateVector = Rotation.UnrotateVector(Velocity);
 
 		UnrotateVector.Normalize();
-		//ÁÂ¿ì ¿òÁ÷ÀÓ ´ÜÀ§º¤ÅÍ
+		//ì¢Œìš° ì›€ì§ì„ ë‹¨ìœ„ë²¡í„°
 		Horizontal = UnrotateVector.Y;
 		Vertical = UnrotateVector.X;
-		//¼Óµµ XY±âÁØÅ©±â == ÆòÁö ¼Ó·Â
+		//ì†ë„ XYê¸°ì¤€í¬ê¸° == í‰ì§€ ì†ë ¥
 		GroundSpeed = Velocity.Size2D();
-		//Ä³¸¯ÅÍ °¡¼Óµµ
+		//ìºë¦­í„° ê°€ì†ë„
 		Acceleration = CharacterMovement->GetCurrentAcceleration();
 		if (GroundSpeed >= 3.0 /* && Acceleration != FVector::Zero()*/)
 		{
@@ -78,9 +78,9 @@ void UCOEAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		{
 			ShouldMove = false;
 		}
-		//Á¡ÇÁ || Ãß¶ô ÆÇÁ¤
+		//ì í”„ || ì¶”ë½ íŒì •
 		IsFalling = CharacterMovement->IsFalling();
-		//½Ã¾ß È¸Àü
+		//ì‹œì•¼ íšŒì „
 		AimRotation = Character->GetBaseAimRotation();
 		FRotator RotFromX = UKismetMathLibrary::MakeRotFromX(Velocity);
 
@@ -93,7 +93,7 @@ void UCOEAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 
 void UCOEAnimInstance::DefaultAttackAnim()
 {
-	// DefaultAttackMontage°¡ ÇÒ´çµÇ¾îÀÖ°í Montage°¡ ½ÇÇàÁßÀÌ ¾Æ´Ò°æ¿ì Montage½ÇÇà
+	// DefaultAttackMontageê°€ í• ë‹¹ë˜ì–´ìˆê³  Montageê°€ ì‹¤í–‰ì¤‘ì´ ì•„ë‹ê²½ìš° Montageì‹¤í–‰
 	if (IsValid(DefaultAttackMontage))
 	{
 		if (!Montage_IsPlaying(DefaultAttackMontage))
@@ -111,8 +111,8 @@ void UCOEAnimInstance::AnimNotify_End()
 		return;
 
 
-	// TurnBridge°¡ ÀÖ°í Manager°¡ ÀÖÀ¸¸é ÅÏ Á¾·á Ã³¸®¸¦ Áö¿¬
-	// ACOECharacter·Î Ä³½ºÆ®ÇÏ¿© TurnPlayer¿Í TurnEnemy ¸ğµÎ Ã³¸®
+	// TurnBridgeê°€ ìˆê³  Managerê°€ ìˆìœ¼ë©´ í„´ ì¢…ë£Œ ì²˜ë¦¬ë¥¼ ì§€ì—°
+	// ACOECharacterë¡œ ìºìŠ¤íŠ¸í•˜ì—¬ TurnPlayerì™€ TurnEnemy ëª¨ë‘ ì²˜ë¦¬
 	if (auto* COEChar = Cast<ACOECharacter>(Character))
 	{
 		if (COEChar->TurnBridge && COEChar->TurnBridge->GetOwner())
@@ -122,19 +122,19 @@ void UCOEAnimInstance::AnimNotify_End()
 				FTimerHandle DelayHandle;
 				GetWorld()->GetTimerManager().SetTimer(DelayHandle, [COEChar]()
 					{
-						// TurnPlayerÀÎ °æ¿ì RequestEndTurn() È£Ãâ
+						// TurnPlayerì¸ ê²½ìš° RequestEndTurn() í˜¸ì¶œ
 						if (auto* TurnPlayer = Cast<ATurnPlayer>(COEChar))
 						{
 							TurnPlayer->RequestEndTurn();
 							UE_LOG(LogTemp, Log, TEXT("[AnimNotify_End] TurnPlayer RequestEndTurn called"));
 						}
-						// TurnEnemyÀÎ °æ¿ì FinishEnemyTurn() È£Ãâ
+						// TurnEnemyì¸ ê²½ìš° FinishEnemyTurn() í˜¸ì¶œ
 						else if (auto* TurnEnemy = Cast<ATurnEnemy>(COEChar))
 						{
 							TurnEnemy->FinishEnemyTurn();
 							UE_LOG(LogTemp, Log, TEXT("[AnimNotify_End] TurnEnemy FinishEnemyTurn called"));
 						}
-						// ÀÏ¹İÀûÀÎ °æ¿ì ºê¸®Áö¸¦ ÅëÇØ ÅÏ Á¾·á
+						// ì¼ë°˜ì ì¸ ê²½ìš° ë¸Œë¦¬ì§€ë¥¼ í†µí•´ í„´ ì¢…ë£Œ
 						else
 						{
 							COEChar->TurnBridge->NotifySkillFinished();
@@ -147,7 +147,7 @@ void UCOEAnimInstance::AnimNotify_End()
 				return;
 			}
 		}
-		// Exploration ¸ğµå (TurnBridge ¾øÀ½)
+		// Exploration ëª¨ë“œ (TurnBridge ì—†ìŒ)
 		COEChar->bIsAttacking = false;
 		UE_LOG(LogTemp, Log, TEXT("[AnimNotify_End] Exploration mode - bIsAttacking = false"));
 	}

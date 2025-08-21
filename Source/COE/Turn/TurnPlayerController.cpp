@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "TurnPlayerController.h"
@@ -107,10 +107,10 @@ void ATurnPlayerController::OnSkillQ()
 		TurnChar->UseSkill_Q();
 		UE_LOG(LogTemp, Log, TEXT("Input : Q"));
 	}
-	// Enemy Turn ÁßÀÌ¸é ÆÐ¸µ ¸ðµå
+	// Enemy Turn ì¤‘ì´ë©´ íŒ¨ë§ ëª¨ë“œ
 	else if (TurnChar->IsEnemyTurnActive())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] ÆÐ¸µ!"));
+		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] íŒ¨ë§!"));
 		return;
 	}
 }
@@ -125,10 +125,10 @@ void ATurnPlayerController::OnSkillW()
 		TurnChar->UseHPPotion();
 		UE_LOG(LogTemp, Log, TEXT("Input : W"));
 	}
-	// Enemy Turn ÁßÀÌ¸é ÆÐ¸µ ¸ðµå
+	// Enemy Turn ì¤‘ì´ë©´ íŒ¨ë§ ëª¨ë“œ
 	else if (TurnChar->IsEnemyTurnActive())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] È¸ÇÇ!"));
+		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] íšŒí”¼!"));
 		return;
 	}
 }
@@ -138,10 +138,10 @@ void ATurnPlayerController::OnSkillE()
 	if (!TurnChar || TurnChar->bIsAttacking)
 		return;
 
-	// Enemy Turn ÁßÀÌ¸é µ¿ÀÛÇÏÁö ¾ÊÀ½
+	// Enemy Turn ì¤‘ì´ë©´ ë™ìž‘í•˜ì§€ ì•ŠìŒ
 	if (TurnChar->IsEnemyTurnActive())
 	{
-		UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] E - Enemy Turn Áß ºñÈ°¼º"));
+		UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] E - Enemy Turn ì¤‘ ë¹„í™œì„±"));
 		return;
 	}
 
@@ -154,10 +154,10 @@ void ATurnPlayerController::OnSkillA()
 	if (!TurnChar || TurnChar->bIsAttacking)
 		return;
 
-	// Enemy Turn ÁßÀÌ¸é µ¿ÀÛÇÏÁö ¾ÊÀ½
+	// Enemy Turn ì¤‘ì´ë©´ ë™ìž‘í•˜ì§€ ì•ŠìŒ
 	if (TurnChar->IsEnemyTurnActive())
 	{
-		UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] A - Enemy Turn Áß ºñÈ°¼º"));
+		UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] A - Enemy Turn ì¤‘ ë¹„í™œì„±"));
 		return;
 	}
 
@@ -169,10 +169,10 @@ void ATurnPlayerController::OnSkillS()
 	if (!TurnChar || TurnChar->bIsAttacking)
 		return;
 
-	// Enemy Turn ÁßÀÌ¸é µ¿ÀÛÇÏÁö ¾ÊÀ½
+	// Enemy Turn ì¤‘ì´ë©´ ë™ìž‘í•˜ì§€ ì•ŠìŒ
 	if (TurnChar->IsEnemyTurnActive())
 	{
-		UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] S - Enemy Turn Áß ºñÈ°¼º"));
+		UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] S - Enemy Turn ì¤‘ ë¹„í™œì„±"));
 		return;
 	}
 
@@ -184,10 +184,10 @@ void ATurnPlayerController::OnSkillD()
 	if (!TurnChar || TurnChar->bIsAttacking)
 		return;
 
-	// Enemy Turn ÁßÀÌ¸é µ¿ÀÛÇÏÁö ¾ÊÀ½
+	// Enemy Turn ì¤‘ì´ë©´ ë™ìž‘í•˜ì§€ ì•ŠìŒ
 	if (TurnChar->IsEnemyTurnActive())
 	{
-		UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] D - Enemy Turn Áß ºñÈ°¼º"));
+		UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] D - Enemy Turn ì¤‘ ë¹„í™œì„±"));
 		return;
 	}
 	UE_LOG(LogTemp, Log, TEXT("Input : D"));
@@ -198,10 +198,10 @@ void ATurnPlayerController::DoMouseLeftClick()
 	if (!TurnChar)
 		return;
 
-	// Enemy Turn ÁßÀÌ¸é µ¿ÀÛÇÏÁö ¾ÊÀ½
+	// Enemy Turn ì¤‘ì´ë©´ ë™ìž‘í•˜ì§€ ì•ŠìŒ
 	if (TurnChar->IsEnemyTurnActive())
 	{
-		UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] Mouse Left Click - Enemy Turn Áß ºñÈ°¼º"));
+		UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] Mouse Left Click - Enemy Turn ì¤‘ ë¹„í™œì„±"));
 		return;
 	}
 
@@ -218,10 +218,10 @@ void ATurnPlayerController::DoMouseRightClickStart()
 	if (!TurnChar)
 		return;
 
-	// Enemy Turn ÁßÀÌ¸é µ¿ÀÛÇÏÁö ¾ÊÀ½
+	// Enemy Turn ì¤‘ì´ë©´ ë™ìž‘í•˜ì§€ ì•ŠìŒ
 	if (TurnChar->IsEnemyTurnActive())
 	{
-		UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] Mouse Right Click Start - Enemy Turn Áß ºñÈ°¼º"));
+		UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] Mouse Right Click Start - Enemy Turn ì¤‘ ë¹„í™œì„±"));
 		return;
 	}
 
@@ -235,10 +235,10 @@ void ATurnPlayerController::DoMouseRightClickEnd()
 	if (!TurnChar)
 		return;
 
-	// Enemy Turn ÁßÀÌ¸é µ¿ÀÛÇÏÁö ¾ÊÀ½
+	// Enemy Turn ì¤‘ì´ë©´ ë™ìž‘í•˜ì§€ ì•ŠìŒ
 	if (TurnChar->IsEnemyTurnActive())
 	{
-		UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] Mouse Right Click End - Enemy Turn Áß ºñÈ°¼º"));
+		UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] Mouse Right Click End - Enemy Turn ì¤‘ ë¹„í™œì„±"));
 		return;
 	}
 

@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "TurnCombatBridgeComponent.h"
@@ -12,34 +12,34 @@
 
 UTurnCombatBridgeComponent::UTurnCombatBridgeComponent()
 {
-    PrimaryComponentTick.bCanEverTick = false; // ÀÌº¥Æ® µå¸®ºì
+    PrimaryComponentTick.bCanEverTick = false; // ì´ë²¤íŠ¸ ë“œë¦¬ë¸
 }
 
 void UTurnCombatBridgeComponent::BeginPlay()
 {
     Super::BeginPlay();
 
-    OwnerCharacter = Cast<ACOECharacter>(GetOwner());      // ¼ÒÀ¯ÀÚ Ä³¸¯ÅÍ Ä³½Ã
-    GI = Cast<UCOEGameInstance>(UGameplayStatics::GetGameInstance(this)); // GI Ä³½Ã
+    OwnerCharacter = Cast<ACOECharacter>(GetOwner());      // ì†Œìœ ì ìºë¦­í„° ìºì‹œ
+    GI = Cast<UCOEGameInstance>(UGameplayStatics::GetGameInstance(this)); // GI ìºì‹œ
 
-    FindCombatManager();                                    // ¸Å´ÏÀú Å½»ö
-    BindToManagerDelegates();                               // µ¨¸®°ÔÀÌÆ® ¿¬°á(ÀÖÀ¸¸é)
+    FindCombatManager();                                    // ë§¤ë‹ˆì € íƒìƒ‰
+    BindToManagerDelegates();                               // ë¸ë¦¬ê²Œì´íŠ¸ ì—°ê²°(ìˆìœ¼ë©´)
     UE_LOG(LogTemp, Warning, TEXT("[Bridge] Bound delegates: %s"), *OwnerCharacter->GetName());
     if (bAutoRegisterOnBeginPlay)
     {
-        InitializeForCombat();                              // ÀÚµ¿ µî·Ï/¼¼ÆÃ
+        InitializeForCombat();                              // ìë™ ë“±ë¡/ì„¸íŒ…
     }
 }
 
 void UTurnCombatBridgeComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-    UnbindFromManagerDelegates();                           // ¾ÈÀüÇÑ ÇØÁ¦
+    UnbindFromManagerDelegates();                           // ì•ˆì „í•œ í•´ì œ
     Super::EndPlay(EndPlayReason);
 }
 
 void UTurnCombatBridgeComponent::InitializeForCombat()
 {
-    if (!OwnerCharacter) return;                            // Ä³¸¯ÅÍ°¡ ¾Æ´Ò °æ¿ì Á¶±â Á¾·á
+    if (!OwnerCharacter) return;                            // ìºë¦­í„°ê°€ ì•„ë‹ ê²½ìš° ì¡°ê¸° ì¢…ë£Œ
 
     if (!GI)
     {
@@ -47,14 +47,14 @@ void UTurnCombatBridgeComponent::InitializeForCombat()
     }
     if (GI)
     {
-        GI->AutoAssignTeam(OwnerCharacter);                // TurnPlayer¡æPlayer, TurnEnemy¡æEnemy
-        GI->SetAlive(OwnerCharacter, true);                // ÀüÅõ ½ÃÀÛ ½Ã »ıÁ¸ Ã³¸®
+        GI->AutoAssignTeam(OwnerCharacter);                // TurnPlayerâ†’Player, TurnEnemyâ†’Enemy
+        GI->SetAlive(OwnerCharacter, true);                // ì „íˆ¬ ì‹œì‘ ì‹œ ìƒì¡´ ì²˜ë¦¬
     }
 
     if (!Manager) FindCombatManager();
     if (Manager && OwnerCharacter)
     {
-        Manager->RegisterParticipant(OwnerCharacter);      // ÀüÅõ Âü°¡ µî·Ï
+        Manager->RegisterParticipant(OwnerCharacter);      // ì „íˆ¬ ì°¸ê°€ ë“±ë¡
         UE_LOG(LogTemp, Warning, TEXT("[Bridge] RegisterParticipant"));
     }
 }
@@ -68,16 +68,16 @@ void UTurnCombatBridgeComponent::UseSkillByName(FName SkillId, ACOECharacter* Ta
         return;
     }
 
-    // TODO: Ä³¸¯ÅÍÀÇ ½ÇÁ¦ ½ºÅ³ ÇÔ¼ö ¹ÙÀÎµù ÁöÁ¡
-    // ¿¹) if (SkillId=="Q") OwnerCharacter->CastQ(Target);
+    // TODO: ìºë¦­í„°ì˜ ì‹¤ì œ ìŠ¤í‚¬ í•¨ìˆ˜ ë°”ì¸ë”© ì§€ì 
+    // ì˜ˆ) if (SkillId=="Q") OwnerCharacter->CastQ(Target);
 
     if (SkillId == TEXT("RightClickRanged"))
     {
-        UseRangedBasic(Target, 10.f);                      // Áï½ÃÇü ¿¹½Ã·Î Ã³¸®
+        UseRangedBasic(Target, 10.f);                      // ì¦‰ì‹œí˜• ì˜ˆì‹œë¡œ ì²˜ë¦¬
         return;
     }
 
-    // Áö¿¬Çü ½ºÅ³Àº ¾Ö´Ï¸ŞÀÌ¼Ç/Åõ»çÃ¼ Á¾·á ½ÃÁ¡¿¡¼­ NotifySkillFinished() È£Ãâ ÇÊ¿ä
+    // ì§€ì—°í˜• ìŠ¤í‚¬ì€ ì• ë‹ˆë©”ì´ì…˜/íˆ¬ì‚¬ì²´ ì¢…ë£Œ ì‹œì ì—ì„œ NotifySkillFinished() í˜¸ì¶œ í•„ìš”
 }
 
 void UTurnCombatBridgeComponent::UseRangedBasic(ACOECharacter* Target, float Damage)
@@ -90,13 +90,13 @@ void UTurnCombatBridgeComponent::UseRangedBasic(ACOECharacter* Target, float Dam
 
     if (!IsValid(Target))
     {
-        // Å¸±êÀÌ ¾øÀ¸¸é ±×³É ÅÏ¸¸ Á¾·áÇØ ÇÃ·Î¿ì°¡ ¸ØÃßÁö ¾Ê°Ô ÇÔ
+        // íƒ€ê¹ƒì´ ì—†ìœ¼ë©´ ê·¸ëƒ¥ í„´ë§Œ ì¢…ë£Œí•´ í”Œë¡œìš°ê°€ ë©ˆì¶”ì§€ ì•Šê²Œ í•¨
         UE_LOG(LogTemp, Warning, TEXT("[Bridge] Target invalid. Ending turn without damage."));
         Manager->NotifyTurnActionEnd();
         return;
     }
 
-    // Áï½ÃÇü: µ¥¹ÌÁö Àû¿ë ¡æ ÅÏ Á¾·á
+    // ì¦‰ì‹œí˜•: ë°ë¯¸ì§€ ì ìš© â†’ í„´ ì¢…ë£Œ
     AController* Ctrl = OwnerCharacter->GetController();
     UGameplayStatics::ApplyDamage(Target, Damage, Ctrl, OwnerCharacter, nullptr);
 
@@ -110,7 +110,7 @@ void UTurnCombatBridgeComponent::NotifySkillFinished()
         UE_LOG(LogTemp, Warning, TEXT("[Bridge] Manager missing. NotifySkillFinished ignored."));
         return;
     }
-    // ¾Ö´Ô/Åõ»çÃ¼ Á¾·á µî ¾×¼Ç ¿Ï·á ½ÃÁ¡¿¡¼­ È£Ãâ ¡æ ´ÙÀ½ ÅÏÀ¸·Î ÁøÇà
+    // ì• ë‹˜/íˆ¬ì‚¬ì²´ ì¢…ë£Œ ë“± ì•¡ì…˜ ì™„ë£Œ ì‹œì ì—ì„œ í˜¸ì¶œ â†’ ë‹¤ìŒ í„´ìœ¼ë¡œ ì§„í–‰
     Manager->NotifyTurnActionEnd();
 }
 
@@ -121,22 +121,22 @@ void UTurnCombatBridgeComponent::MarkDead(bool bEndTurnIfMine)
         UE_LOG(LogTemp, Warning, TEXT("[Bridge] MarkDead: Missing Owner/GI"));
         return;
     }
-    GI->SetAlive(OwnerCharacter, false);                   // GI¿¡ »ç¸Á ¹İ¿µ(½ÂÆĞ ÆÇÁ¤ ±Ù°Å)
+    GI->SetAlive(OwnerCharacter, false);                   // GIì— ì‚¬ë§ ë°˜ì˜(ìŠ¹íŒ¨ íŒì • ê·¼ê±°)
 
     if (bEndTurnIfMine && Manager && Manager->GetActiveCharacter() == OwnerCharacter)
     {
-        // ³» ÅÏ µµÁß Áï½Ã »ç¸ÁÇß´Ù¸é ÅÏÀ» ¹Ğ¾î ÁøÇà Á¤Ã¼ ¹æÁö
+        // ë‚´ í„´ ë„ì¤‘ ì¦‰ì‹œ ì‚¬ë§í–ˆë‹¤ë©´ í„´ì„ ë°€ì–´ ì§„í–‰ ì •ì²´ ë°©ì§€
         Manager->NotifyTurnActionEnd();
     }
 }
 
 void UTurnCombatBridgeComponent::FindCombatManager()
 {
-    if (Manager) return;                                   // ÀÌ¹Ì Ã£¾ÒÀ¸¸é ½ºÅµ
+    if (Manager) return;                                   // ì´ë¯¸ ì°¾ì•˜ìœ¼ë©´ ìŠ¤í‚µ
 
     TArray<AActor*> Found;
     UGameplayStatics::GetAllActorsOfClass(this, ACombatManager::StaticClass(), Found);
-    Manager = Found.Num() > 0 ? Cast<ACombatManager>(Found[0]) : nullptr; // ÀüÅõ ¸Ê¿¡ ÇÏ³ª¶ó°í °¡Á¤
+    Manager = Found.Num() > 0 ? Cast<ACombatManager>(Found[0]) : nullptr; // ì „íˆ¬ ë§µì— í•˜ë‚˜ë¼ê³  ê°€ì •
 
     if (!Manager)
     {
@@ -148,7 +148,7 @@ void UTurnCombatBridgeComponent::BindToManagerDelegates()
 {
     if (!Manager) return;
 
-    // µ¨¸®°ÔÀÌÆ®´Â µ¿ÀÏ ¹ÙÀÎµù Áßº¹À» ÇÇÇÏ±â À§ÇØ ¹ÙÀÎµù Àü¿¡ ¾ğ¹ÙÀÎµå ±ÇÀå
+    // ë¸ë¦¬ê²Œì´íŠ¸ëŠ” ë™ì¼ ë°”ì¸ë”© ì¤‘ë³µì„ í”¼í•˜ê¸° ìœ„í•´ ë°”ì¸ë”© ì „ì— ì–¸ë°”ì¸ë“œ ê¶Œì¥
     UnbindFromManagerDelegates();
 
     Manager->OnTurnStarted.AddDynamic(this, &UTurnCombatBridgeComponent::HandleTurnStarted);
@@ -177,19 +177,19 @@ void UTurnCombatBridgeComponent::HandleTurnStarted(ACOECharacter* ActiveCharacte
 
     if (Team == ECombatTeam::Player)
     {
-        // Player ÅÏ: Ä«¸Ş¶ó ÀüÈ¯ ¡æ µô·¹ÀÌ ¡æ Possess ¼ø¼­·Î Ã³¸®
+        // Player í„´: ì¹´ë©”ë¼ ì „í™˜ â†’ ë”œë ˆì´ â†’ Possess ìˆœì„œë¡œ ì²˜ë¦¬
         if (APawn* Pawn = Cast<APawn>(ActiveCharacter))
         {
-            // 1´Ü°è: ¸ÕÀú ºÎµå·´°Ô Ä«¸Ş¶ó¸¸ ÀÌµ¿
+            // 1ë‹¨ê³„: ë¨¼ì € ë¶€ë“œëŸ½ê²Œ ì¹´ë©”ë¼ë§Œ ì´ë™
             PC->SetViewTargetWithBlend(ActiveCharacter, 1.2f, EViewTargetBlendFunction::VTBlend_Cubic);
 
-            // 2´Ü°è: Ä«¸Ş¶ó ºí·»µå ¿Ï·á ÈÄ Possess (Áö¿¬ ½ÇÇà)
+            // 2ë‹¨ê³„: ì¹´ë©”ë¼ ë¸”ë Œë“œ ì™„ë£Œ í›„ Possess (ì§€ì—° ì‹¤í–‰)
             FTimerHandle PossessDelayHandle;
             GetWorld()->GetTimerManager().SetTimer(PossessDelayHandle, [this, PC, Pawn]()
                 {
                     PC->Possess(Pawn);
 
-                    // 3´Ü°è: Possess ÈÄ ÀÔ·Â ¼³Á¤
+                    // 3ë‹¨ê³„: Possess í›„ ì…ë ¥ ì„¤ì •
                     PC->SetInputMode(FInputModeGameOnly());
                     PC->bShowMouseCursor = true;
                     PC->SetIgnoreLookInput(false);
@@ -199,26 +199,26 @@ void UTurnCombatBridgeComponent::HandleTurnStarted(ACOECharacter* ActiveCharacte
                         TP->UpdateCursor();
                     }
 
-                }, 1.3f, false); // ºí·»µå ½Ã°£º¸´Ù ¾à°£ ±æ°Ô
+                }, 1.3f, false); // ë¸”ë Œë“œ ì‹œê°„ë³´ë‹¤ ì•½ê°„ ê¸¸ê²Œ
         }
     }
     else
     {
-        // Enemy ÅÏ: »ì¾ÆÀÖ´Â Player Áß ·£´ı ¼±ÅÃÇØ Ä«¸Ş¶ó¸¸ ÀüÈ¯
+        // Enemy í„´: ì‚´ì•„ìˆëŠ” Player ì¤‘ ëœë¤ ì„ íƒí•´ ì¹´ë©”ë¼ë§Œ ì „í™˜
         const TArray<ACOECharacter*> AlivePlayers = GI->GetAliveTeamMembers(ECombatTeam::Player);
         if (AlivePlayers.Num() > 0)
         {
-            // ¿ÏÀü ·£´ı ¼±ÅÃ (ÇöÀç Å¸°Ù »ó°ü¾øÀÌ)
+            // ì™„ì „ ëœë¤ ì„ íƒ (í˜„ì¬ íƒ€ê²Ÿ ìƒê´€ì—†ì´)
             ACOECharacter* RandomTarget = AlivePlayers[FMath::RandRange(0, AlivePlayers.Num() - 1)];
             PC->SetViewTargetWithBlend(RandomTarget, 0.8f, EViewTargetBlendFunction::VTBlend_Cubic);
             UE_LOG(LogTemp, Log, TEXT("[Camera] Enemy turn - random target selected: %s"),
                 *RandomTarget->GetName());
         }
 
-        // »õ·Î Ãß°¡: Enemy ÀÚµ¿ Çàµ¿ ½ÃÀÛ 
+        // ìƒˆë¡œ ì¶”ê°€: Enemy ìë™ í–‰ë™ ì‹œì‘ 
         if (auto* TurnEnemy = Cast<ATurnEnemy>(ActiveCharacter))
         {
-            // ÇöÀç È°¼º Ä³¸¯ÅÍ¿Í ÀÌ ÄÄÆ÷³ÍÆ®ÀÇ ¼ÒÀ¯ÀÚ°¡ °°À» ¶§¸¸ ½ÇÇà
+            // í˜„ì¬ í™œì„± ìºë¦­í„°ì™€ ì´ ì»´í¬ë„ŒíŠ¸ì˜ ì†Œìœ ìê°€ ê°™ì„ ë•Œë§Œ ì‹¤í–‰
             if (ActiveCharacter == OwnerCharacter)
             {
                 UE_LOG(LogTemp, Warning, TEXT("[Bridge] Starting action for Enemy: %s"), *TurnEnemy->GetName());
@@ -230,7 +230,7 @@ void UTurnCombatBridgeComponent::HandleTurnStarted(ACOECharacter* ActiveCharacte
 
     if (ActiveCharacter == OwnerCharacter)
     {
-        // ³» ÅÏ ½ÃÀÛ: UI ¿­±â, ÀÔ·Â Çã¿ë, AI Æ®¸®°Å µîÀº BP¿¡¼­ ¹ÙÀÎµùÇÏ¿© Ã³¸®
+        // ë‚´ í„´ ì‹œì‘: UI ì—´ê¸°, ì…ë ¥ í—ˆìš©, AI íŠ¸ë¦¬ê±° ë“±ì€ BPì—ì„œ ë°”ì¸ë”©í•˜ì—¬ ì²˜ë¦¬
         OnMyTurnStarted.Broadcast(Round);
         UE_LOG(LogTemp, Log, TEXT("[Bridge] My Turn START (Round %d) : %s"), Round, *OwnerCharacter->GetName());
     }
@@ -240,7 +240,7 @@ void UTurnCombatBridgeComponent::HandleTurnEnded(ACOECharacter* ActiveCharacter,
 {
     if (ActiveCharacter == OwnerCharacter)
     {
-        // ³» ÅÏ Á¾·á: UI ´İ±â, ÀÔ·Â Àá±İ µîÀº BP¿¡¼­ Ã³¸®
+        // ë‚´ í„´ ì¢…ë£Œ: UI ë‹«ê¸°, ì…ë ¥ ì ê¸ˆ ë“±ì€ BPì—ì„œ ì²˜ë¦¬
         OnMyTurnEnded.Broadcast(Round);
         UE_LOG(LogTemp, Log, TEXT("[Bridge] My Turn END   (Round %d) : %s"), Round, *OwnerCharacter->GetName());
     }

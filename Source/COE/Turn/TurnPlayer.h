@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -19,12 +19,12 @@ public:
 	TObjectPtr<class UCOEGameInstance> GI;
 
 private:
-	// Á¶ÁØ Àü ºä È¸Àü ÀúÀå ÇÃ·¡±×¿Í °ª
+	// ì¡°ì¤€ ì „ ë·° íšŒì „ ì €ì¥ í”Œë˜ê·¸ì™€ ê°’
 	bool bHasSavedRotation = false;
 	FRotator SavedControlRotation;
 	TObjectPtr<class APlayerController> PlayerController;
 	
-	// ===== AP ÇïÆÛ(Àü¿ë) °£´ÜÇÑ ÂªÀº ÇÔ¼ö¶ó Çì´õ¿¡ ¹Ù·Î ±¸Çö =====
+	// ===== AP í—¬í¼(ì „ìš©) ê°„ë‹¨í•œ ì§§ì€ í•¨ìˆ˜ë¼ í—¤ë”ì— ë°”ë¡œ êµ¬í˜„ =====
 	bool CanSpendAP(int32 Amount) const { return CharacterStats.CurrentAP >= Amount; }
 	bool SpendAP(int32 Amount)
 	{
@@ -39,7 +39,7 @@ private:
 
 public:
 
-	// CombatManager¿¡ ÅÏ Á¾·á ¿äÃ»(ºê¸®Áö¸¦ ÅëÇØ)
+	// CombatManagerì— í„´ ì¢…ë£Œ ìš”ì²­(ë¸Œë¦¬ì§€ë¥¼ í†µí•´)
 	void RequestEndTurn();
 
 public:
@@ -49,43 +49,43 @@ public:
 	virtual void BeginPlay() override;
 
 public:
-	//Ä¿¼­ Ç¥½Ã»óÅÂ ¾÷µ¥ÀÌÆ®
+	//ì»¤ì„œ í‘œì‹œìƒíƒœ ì—…ë°ì´íŠ¸
 	void UpdateCursor();
 
 public:
-	/** ¿ìÅ¬¸¯ Aiming */
+	/** ìš°í´ë¦­ Aiming */
 	//UFUNCTION(BlueprintCallable, Category = "Action")
 	virtual void SetAiming(bool bNewAiming) override;
 
-	// ===== ¾×¼Ç/½ºÅ³ =====
-	/** Q: ±âº»°ø°İ(ÅÏ Á¾·á, AP +1) */
+	// ===== ì•¡ì…˜/ìŠ¤í‚¬ =====
+	/** Q: ê¸°ë³¸ê³µê²©(í„´ ì¢…ë£Œ, AP +1) */
 	void UseSkill_Q();
 
-	/** ÄÚ½ºÆ® ¼ÒºñÇü ½ºÅ³(¼º°ø ½Ã Áï½Ã ÅÏ Á¾·á)
+	/** ì½”ìŠ¤íŠ¸ ì†Œë¹„í˜• ìŠ¤í‚¬(ì„±ê³µ ì‹œ ì¦‰ì‹œ í„´ ì¢…ë£Œ)
 	bool UseSkill_WithCost(int32 Cost);
 
-	/** ÁÂÅ¬¸¯ Fire (¿ìÅ¬¸¯ Á¶ÁØ »óÅÂ¿¡¼­¸¸ AP 1 ¼Ò¸ğ, 0ÀÌ¸é ÀÚµ¿ ÅÏ Á¾·á) */
+	/** ì¢Œí´ë¦­ Fire (ìš°í´ë¦­ ì¡°ì¤€ ìƒíƒœì—ì„œë§Œ AP 1 ì†Œëª¨, 0ì´ë©´ ìë™ í„´ ì¢…ë£Œ) */
 	virtual void Fire() override;
 
-	/** È¸º¹ ¾ÆÀÌÅÛ »ç¿ë */
+	/** íšŒë³µ ì•„ì´í…œ ì‚¬ìš© */
 	UFUNCTION(BlueprintCallable, Category = "Consumable|Combat")
 	void UseHPPotion();
 
 	UFUNCTION(BlueprintCallable, Category = "Consumable|Combat")
 	void UseAPPotion();
 
-	/** Enemy Turn ÁßÀÎÁö È®ÀÎÇÏ´Â ÇÔ¼ö */
+	/** Enemy Turn ì¤‘ì¸ì§€ í™•ì¸í•˜ëŠ” í•¨ìˆ˜ */
 	UFUNCTION(BlueprintPure, Category = "Combat")
 	bool IsEnemyTurnActive() const;
 
-	/** ÇöÀç Çàµ¿ °¡´ÉÇÑ »óÅÂÀÎÁö Ã¼Å© */
+	/** í˜„ì¬ í–‰ë™ ê°€ëŠ¥í•œ ìƒíƒœì¸ì§€ ì²´í¬ */
 	UFUNCTION(BlueprintPure, Category = "Combat")
 	bool CanPerformAction() const;
 
 private:
-	/** GI Ä³½ºÆÃ ÇïÆÛ */
+	/** GI ìºìŠ¤íŒ… í—¬í¼ */
 	UCOEGameInstance* GetCOEGameInstance() const;
-	/** HP/AP¹üÀ§ º¸Á¤ */
+	/** HP/APë²”ìœ„ ë³´ì • */
 	void ClampHPAP();     
 
 protected:

@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "ExplorationPlayer.h"
@@ -35,19 +35,19 @@ void AExplorationPlayer::UseExplorationFullHeal()
             {
                 if (!Char) return;
 
-                // °ø¿ë ½ºÅÈ ÄÄÆ÷³ÍÆ®/ÀÎÅÍÆäÀÌ½º°¡ ÀÖ´Ù¸é ±×ÂÊÀ¸·Î Ã³¸® ±ÇÀå.
+                // ê³µìš© ìŠ¤íƒ¯ ì»´í¬ë„ŒíŠ¸/ì¸í„°í˜ì´ìŠ¤ê°€ ìˆë‹¤ë©´ ê·¸ìª½ìœ¼ë¡œ ì²˜ë¦¬ ê¶Œì¥.
                 if (auto* EP = Cast<AExplorationPlayer>(Char))
                 {
                     EP->CharacterStats.CurrentHP = EP->CharacterStats.MAXHP;
                     EP->ClampSelfHP();
                 }
-                // TurnPlayer µî ´Ù¸¥ Å¸ÀÔÀº IHealableInterface·Î FullHeal Ã³¸®ÇÏ´Â °Ô º£½ºÆ®.
+                // TurnPlayer ë“± ë‹¤ë¥¸ íƒ€ì…ì€ IHealableInterfaceë¡œ FullHeal ì²˜ë¦¬í•˜ëŠ” ê²Œ ë² ìŠ¤íŠ¸.
             };
 
-        // º»ÀÎ
+        // ë³¸ì¸
         HealFullIfHasStat(this);
 
-        // ÆÄÆ¼ Àü¿ø
+        // íŒŒí‹° ì „ì›
         for (const auto& M : PartyMembers)
         {
             HealFullIfHasStat(M.Get());

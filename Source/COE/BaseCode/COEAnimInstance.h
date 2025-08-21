@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -18,46 +18,46 @@ public:
 	TObjectPtr<class UAnimMontage> DefaultAttackMontage;
 
 public:
-	//¿òÁ÷ÀÓ Ã¼Å© (Idle ÆÇ´Ü)
+	//ì›€ì§ì„ ì²´í¬ (Idle íŒë‹¨)
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ani", meta = (AllowPrivateAccess = "true"))
 	bool ShouldMove;
-	//Ãß¶ô Ã¼Å© (Á¡ÇÁ ¶Ç´Â Ãß¶ô ÆÇ´Ü)
+	//ì¶”ë½ ì²´í¬ (ì í”„ ë˜ëŠ” ì¶”ë½ íŒë‹¨)
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ani", meta = (AllowPrivateAccess = "true"))
 	bool IsFalling;
-	//¼Óµµ º¤ÅÍ
+	//ì†ë„ ë²¡í„°
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ani", meta = (AllowPrivateAccess = "true"))
 	FVector Velocity;
-	//¼öÆòÀÔ·Â
+	//ìˆ˜í‰ì…ë ¥
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ani", meta = (AllowPrivateAccess = "true"))
 	float Horizontal;
-	//¼öÁ÷ÀÔ·Â
+	//ìˆ˜ì§ì…ë ¥
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ani", meta = (AllowPrivateAccess = "true"))
 	float Vertical;
-	//XY º¤ÅÍÅ©±â
+	//XY ë²¡í„°í¬ê¸°
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ani", meta = (AllowPrivateAccess = "true"))
 	float GroundSpeed;
-	//°¡¼Óµµ
+	//ê°€ì†ë„
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ani", meta = (AllowPrivateAccess = "true"))
 	FVector Acceleration;
-	//Á¶ÁØ ¹æÇâ°ú ÀÌµ¿¹æÇâ ÁÂ¿ì °¢µµ Â÷ÀÌ
+	//ì¡°ì¤€ ë°©í–¥ê³¼ ì´ë™ë°©í–¥ ì¢Œìš° ê°ë„ ì°¨ì´
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ani", meta = (AllowPrivateAccess = "true"))
 	float YawOffset;
-	//Ä³¸¯ÅÍ Á¶ÁØ ÁßÀÎ È¸Àü°ª
+	//ìºë¦­í„° ì¡°ì¤€ ì¤‘ì¸ íšŒì „ê°’
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ani", meta = (AllowPrivateAccess = "true"))
 	FRotator AimRotation;
 public:
-	//Ä³¸¯ÅÍ 
+	//ìºë¦­í„° 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character")
 	TObjectPtr<class ACOECharacter> Character;
-	//Ä³¸¯ÅÍ ¿òÁ÷ÀÓ ÄÄÆ÷³ÍÆ®
+	//ìºë¦­í„° ì›€ì§ì„ ì»´í¬ë„ŒíŠ¸
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character")
 	TObjectPtr<class UCharacterMovementComponent> CharacterMovement;
 public:
 	UCOEAnimInstance();
 	virtual void NativeInitializeAnimation() override;
-	//CharacterMovement¿¡ ¿¬°áµÈ ÆùÀÇ ¿òÁ÷ÀÓ ¹Ş¾Æ¿È
+	//CharacterMovementì— ì—°ê²°ëœ í°ì˜ ì›€ì§ì„ ë°›ì•„ì˜´
 	virtual void NativeBeginPlay() override;
-	//½Ç½Ã°£À¸·Î CharacterMovement°ü·Ã°ª ¾÷µ¥ÀÌÆ®
+	//ì‹¤ì‹œê°„ìœ¼ë¡œ CharacterMovementê´€ë ¨ê°’ ì—…ë°ì´íŠ¸
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 
 public:

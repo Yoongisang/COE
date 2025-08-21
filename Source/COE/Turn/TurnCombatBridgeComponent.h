@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -6,11 +6,11 @@
 #include "Components/ActorComponent.h"
 #include "TurnCombatBridgeComponent.generated.h"
 
-class UCOEGameInstance;     // ÀüÅõ ¸ŞÅ¸ ÀúÀå¼Ò(ÆÀ/»ı»ç/ÀÌ´Ï¼ÅÆ¼ºê/»óÅÂ)
-class ACombatManager;       // ÅÏ ÁøÇà ¿ÀÄÉ½ºÆ®·¹ÀÌÅÍ
-class ACOECharacter;        // ÀüÅõ Âü°¡ÀÚ º£ÀÌ½º(ATurnPlayer/ATurnEnemy)
+class UCOEGameInstance;     // ì „íˆ¬ ë©”íƒ€ ì €ì¥ì†Œ(íŒ€/ìƒì‚¬/ì´ë‹ˆì…”í‹°ë¸Œ/ìƒíƒœ)
+class ACombatManager;       // í„´ ì§„í–‰ ì˜¤ì¼€ìŠ¤íŠ¸ë ˆì´í„°
+class ACOECharacter;        // ì „íˆ¬ ì°¸ê°€ì ë² ì´ìŠ¤(ATurnPlayer/ATurnEnemy)
 
-// ³» ÅÏ ¾Ë¸²(BP È®Àå¿ë)
+// ë‚´ í„´ ì•Œë¦¼(BP í™•ì¥ìš©)
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMyTurnSimple, int32, Round);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -21,12 +21,12 @@ class COE_API UTurnCombatBridgeComponent : public UActorComponent
 public:
     UTurnCombatBridgeComponent();
 
-    // ÀüÅõ ÆíÀÇ ¿É¼Ç -----------------------------
-    // BeginPlay ½Ã ÀÚµ¿ µî·Ï/¼¼ÆÃÀ» ¼öÇàÇÒÁö ¿©ºÎ(¸Ê ¹èÄ¡¸¸À¸·Î ¹Ù·Î Âü¿© ½ÃÅ³ ¶§ À¯¿ë)
+    // ì „íˆ¬ í¸ì˜ ì˜µì…˜ -----------------------------
+    // BeginPlay ì‹œ ìë™ ë“±ë¡/ì„¸íŒ…ì„ ìˆ˜í–‰í• ì§€ ì—¬ë¶€(ë§µ ë°°ì¹˜ë§Œìœ¼ë¡œ ë°”ë¡œ ì°¸ì—¬ ì‹œí‚¬ ë•Œ ìœ ìš©)
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat|Bridge")
     bool bAutoRegisterOnBeginPlay = true;
 
-    // ³» ÅÏ/Á¾·á¸¦ ÄÄÆ÷³ÍÆ® ÀÌº¥Æ®·Î ºê·ÎµåÄ³½ºÆ®(BP¿¡¼­ À§Á¬/AI Æ®¸®°Å ¿¬°á)
+    // ë‚´ í„´/ì¢…ë£Œë¥¼ ì»´í¬ë„ŒíŠ¸ ì´ë²¤íŠ¸ë¡œ ë¸Œë¡œë“œìºìŠ¤íŠ¸(BPì—ì„œ ìœ„ì ¯/AI íŠ¸ë¦¬ê±° ì—°ê²°)
     UPROPERTY(BlueprintAssignable, Category = "Combat|Bridge|Events")
     FOnMyTurnSimple OnMyTurnStarted;
 
@@ -35,42 +35,42 @@ public:
 
 public:
 
-    /** CombatManager ¹İÈ¯ */
+    /** CombatManager ë°˜í™˜ */
     ACombatManager* GetManager() const { return Manager; }
 protected:
-    virtual void BeginPlay() override; // GI/Manager Ä³½Ì + ¼±ÅÃÀû ÀÚµ¿ µî·Ï
-    virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override; // ¾ÈÀüÇÑ ÇØÁ¦
+    virtual void BeginPlay() override; // GI/Manager ìºì‹± + ì„ íƒì  ìë™ ë“±ë¡
+    virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override; // ì•ˆì „í•œ í•´ì œ
 
 public:
-    // ÀüÅõ ÃÊ±â ¼³Á¤À» ¼öµ¿À¸·Î ¼öÇàÇÏ°í ½ÍÀ» ¶§ È£Ãâ(·¹º§ ½ºÅ©¸³Æ®/½ºÆù Á÷ÈÄ µî)
+    // ì „íˆ¬ ì´ˆê¸° ì„¤ì •ì„ ìˆ˜ë™ìœ¼ë¡œ ìˆ˜í–‰í•˜ê³  ì‹¶ì„ ë•Œ í˜¸ì¶œ(ë ˆë²¨ ìŠ¤í¬ë¦½íŠ¸/ìŠ¤í° ì§í›„ ë“±)
     UFUNCTION(BlueprintCallable, Category = "Combat|Bridge")
     void InitializeForCombat();
 
-    // ½ºÅ³ Æ®¸®°Å(ÀÌ¸§/Å¸°Ù ±â¹İ). ½ÇÁ¦ ½ºÅ³ ÄÚµå´Â Ä³¸¯ÅÍ/ºí·çÇÁ¸°Æ®¿¡ ±¸Çö.
+    // ìŠ¤í‚¬ íŠ¸ë¦¬ê±°(ì´ë¦„/íƒ€ê²Ÿ ê¸°ë°˜). ì‹¤ì œ ìŠ¤í‚¬ ì½”ë“œëŠ” ìºë¦­í„°/ë¸”ë£¨í”„ë¦°íŠ¸ì— êµ¬í˜„.
     UFUNCTION(BlueprintCallable, Category = "Combat|Bridge")
     void UseSkillByName(FName SkillId, ACOECharacter* Target);
 
-    // Áï½ÃÇü ±âº» °ø°İ ¿¹½Ã(ApplyDamage ¡æ ÅÏ Á¾·á)
+    // ì¦‰ì‹œí˜• ê¸°ë³¸ ê³µê²© ì˜ˆì‹œ(ApplyDamage â†’ í„´ ì¢…ë£Œ)
     UFUNCTION(BlueprintCallable, Category = "Combat|Bridge")
     void UseRangedBasic(ACOECharacter* Target, float Damage = 10.f);
 
-    // Áö¿¬Çü ½ºÅ³(¾Ö´Ô/Åõ»çÃ¼ µî) Á¾·á ½ÃÁ¡¿¡¼­ È£ÃâÇØ ÅÏÀ» ³Ñ±è
+    // ì§€ì—°í˜• ìŠ¤í‚¬(ì• ë‹˜/íˆ¬ì‚¬ì²´ ë“±) ì¢…ë£Œ ì‹œì ì—ì„œ í˜¸ì¶œí•´ í„´ì„ ë„˜ê¹€
     UFUNCTION(BlueprintCallable, Category = "Combat|Bridge")
     void NotifySkillFinished();
 
-    // ÀüÅõ Áß »ç¸Á Ã³¸®(HP ½Ã½ºÅÛ ¿ÜºÎ¿¡¼­ È£Ãâ °¡´É. GI Alive=false·Î ¹İ¿µ ÈÄ ÇÊ¿ä ½Ã ÅÏ Á¾·á)
+    // ì „íˆ¬ ì¤‘ ì‚¬ë§ ì²˜ë¦¬(HP ì‹œìŠ¤í…œ ì™¸ë¶€ì—ì„œ í˜¸ì¶œ ê°€ëŠ¥. GI Alive=falseë¡œ ë°˜ì˜ í›„ í•„ìš” ì‹œ í„´ ì¢…ë£Œ)
     UFUNCTION(BlueprintCallable, Category = "Combat|Bridge")
     void MarkDead(bool bEndTurnIfMine = true);
 
 private:
-    // CombatManager Ã£±â(·¹º§¿¡ ÇÏ³ª Á¸ÀçÇÑ´Ù°í °¡Á¤. ´Ù¼ö¶ó¸é Á¤Ã¥ È®Àå ÇÊ¿ä)
+    // CombatManager ì°¾ê¸°(ë ˆë²¨ì— í•˜ë‚˜ ì¡´ì¬í•œë‹¤ê³  ê°€ì •. ë‹¤ìˆ˜ë¼ë©´ ì •ì±… í™•ì¥ í•„ìš”)
     void FindCombatManager();
 
-    // ¸Å´ÏÀú µ¨¸®°ÔÀÌÆ® ¹ÙÀÎµù/ÇØÁ¦
+    // ë§¤ë‹ˆì € ë¸ë¦¬ê²Œì´íŠ¸ ë°”ì¸ë”©/í•´ì œ
     void BindToManagerDelegates();
     void UnbindFromManagerDelegates();
 
-    // µ¨¸®°ÔÀÌÆ® ÇÚµé·¯(³» Ä³¸¯ÅÍÀÇ ÅÏ¸¸ Ã³¸®)
+    // ë¸ë¦¬ê²Œì´íŠ¸ í•¸ë“¤ëŸ¬(ë‚´ ìºë¦­í„°ì˜ í„´ë§Œ ì²˜ë¦¬)
     UFUNCTION()
     void HandleTurnStarted(ACOECharacter* ActiveCharacter, int32 Round);
 
@@ -79,11 +79,11 @@ private:
 
 private:
     UPROPERTY()
-    UCOEGameInstance* GI = nullptr;              // GameInstance Ä³½Ã
+    UCOEGameInstance* GI = nullptr;              // GameInstance ìºì‹œ
 
     UPROPERTY()
-    ACombatManager* Manager = nullptr;           // CombatManager Ä³½Ã
+    ACombatManager* Manager = nullptr;           // CombatManager ìºì‹œ
 
     UPROPERTY()
-    ACOECharacter* OwnerCharacter = nullptr;     // ÀÌ ÄÄÆ÷³ÍÆ®¸¦ °¡Áø Ä³¸¯ÅÍ Ä³½Ã
+    ACOECharacter* OwnerCharacter = nullptr;     // ì´ ì»´í¬ë„ŒíŠ¸ë¥¼ ê°€ì§„ ìºë¦­í„° ìºì‹œ
 };

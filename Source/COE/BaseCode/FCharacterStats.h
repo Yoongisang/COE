@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -15,7 +15,7 @@ struct FCharacterStats
 
 public:
 	
-	/** »ı¼ºÀÚ¿¡¼­ ±âº» ½ºÅÈ ¼³Á¤ */
+	/** ìƒì„±ìì—ì„œ ê¸°ë³¸ ìŠ¤íƒ¯ ì„¤ì • */
 	FCharacterStats() :
 		MAXHP(100.f), 
 		CurrentHP(MAXHP),

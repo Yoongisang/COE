@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "TurnEnemy.h"
@@ -18,17 +18,17 @@ void ATurnEnemy::BeginPlay()
 
 float ATurnEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-    //ºÎ¸ğ¿¡¼­ ¹ŞÀº µ¥¹ÌÁö¸¦ AcualDamage·Î ¹İÈ¯
+    //ë¶€ëª¨ì—ì„œ ë°›ì€ ë°ë¯¸ì§€ë¥¼ AcualDamageë¡œ ë°˜í™˜
     float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
-    //¿¹: HP °¨¼Ò ·ÎÁ÷ (Á÷Á¢ °ü¸® ÁßÀÌ¶ó¸é)
+    //ì˜ˆ: HP ê°ì†Œ ë¡œì§ (ì§ì ‘ ê´€ë¦¬ ì¤‘ì´ë¼ë©´)
     CharacterStats.CurrentHP -= ActualDamage;
     if (CharacterStats.CurrentHP <= 0.f)
     {
-        // Á×À½ Ã³¸® Á÷Àü¿¡ delegate ºê·ÎµåÄ³½ºÆ®
+        // ì£½ìŒ ì²˜ë¦¬ ì§ì „ì— delegate ë¸Œë¡œë“œìºìŠ¤íŠ¸
         OnDead.Broadcast();
 
-        // ¾×ÅÍ Á¦°Å µî Ãß°¡ Ã³¸®
+        // ì•¡í„° ì œê±° ë“± ì¶”ê°€ ì²˜ë¦¬
         Destroy();
     }
 
@@ -37,7 +37,7 @@ float ATurnEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
 
 void ATurnEnemy::ExecuteEnemyTurn()
 {
-    // ÀÚ½ÅÀÇ ÅÏÀÌ ¾Æ´Ï¸é µ¿ÀÛÇÏÁö ¾ÊÀ½
+    // ìì‹ ì˜ í„´ì´ ì•„ë‹ˆë©´ ë™ì‘í•˜ì§€ ì•ŠìŒ
     if (!IsMyTurnActive())
     {
         UE_LOG(LogTemp, Warning, TEXT("[TurnEnemy] %s ExecuteEnemyTurn called but not my turn!"), *GetName());
@@ -46,7 +46,7 @@ void ATurnEnemy::ExecuteEnemyTurn()
 
     UE_LOG(LogTemp, Warning, TEXT("[TurnEnemy] %s Enemy Turn Started - Thinking..."), *GetName());
 
-    // 5ÃÊ ÈÄ °ø°İ ½ÇÇà
+    // 5ì´ˆ í›„ ê³µê²© ì‹¤í–‰
     FTimerHandle AttackDelayHandle;
     GetWorld()->GetTimerManager().SetTimer(
         AttackDelayHandle,
@@ -62,7 +62,7 @@ bool ATurnEnemy::IsMyTurnActive() const
     if (!TurnBridge || !TurnBridge->GetManager())
         return false;
 
-    // CombatManager¸¦ ÅëÇØ ÇöÀç È°¼º Ä³¸¯ÅÍ°¡ ÀÚ½ÅÀÎÁö È®ÀÎ
+    // CombatManagerë¥¼ í†µí•´ í˜„ì¬ í™œì„± ìºë¦­í„°ê°€ ìì‹ ì¸ì§€ í™•ì¸
     ACOECharacter* ActiveChar = TurnBridge->GetManager()->GetActiveCharacter();
     bool bIsMyTurn = (ActiveChar == this);
 
@@ -76,32 +76,32 @@ bool ATurnEnemy::IsMyTurnActive() const
 
 void ATurnEnemy::DefaultAttack()
 {
-    // ÀÚ½ÅÀÇ ÅÏÀÌ ¾Æ´Ï¸é µ¿ÀÛÇÏÁö ¾ÊÀ½
+    // ìì‹ ì˜ í„´ì´ ì•„ë‹ˆë©´ ë™ì‘í•˜ì§€ ì•ŠìŒ
     if (!IsMyTurnActive())
     {
         UE_LOG(LogTemp, Warning, TEXT("[TurnEnemy] %s DefaultAttack called but not my turn!"), *GetName());
         return;
     }
 
-    // Enemy Àü¿ë ±âº»°ø°İ ±¸Çö (Super È£ÃâÇÏÁö ¾ÊÀ½)
+    // Enemy ì „ìš© ê¸°ë³¸ê³µê²© êµ¬í˜„ (Super í˜¸ì¶œí•˜ì§€ ì•ŠìŒ)
     UE_LOG(LogTemp, Warning, TEXT("[TurnEnemy] %s Enemy DefaultAttack executed!"), *GetName());
 
-    // TODO: Enemy ±âº»°ø°İ ·ÎÁ÷ ±¸Çö
-    // - ¾Ö´Ï¸ŞÀÌ¼Ç Àç»ı
-    // - Å¸°Ù ¼±Á¤ (ÇÃ·¹ÀÌ¾î)
-    // - µ¥¹ÌÁö Àû¿ë
-    // - ÀÌÆåÆ®/»ç¿îµå
+    // TODO: Enemy ê¸°ë³¸ê³µê²© ë¡œì§ êµ¬í˜„
+    // - ì• ë‹ˆë©”ì´ì…˜ ì¬ìƒ
+    // - íƒ€ê²Ÿ ì„ ì • (í”Œë ˆì´ì–´)
+    // - ë°ë¯¸ì§€ ì ìš©
+    // - ì´í™íŠ¸/ì‚¬ìš´ë“œ
 
-    // ÀÓ½Ã·Î ¾Ö´Ï¸ŞÀÌ¼Ç Àç»ı¸¸ ±¸Çö
+    // ì„ì‹œë¡œ ì• ë‹ˆë©”ì´ì…˜ ì¬ìƒë§Œ êµ¬í˜„
     if (IsValid(AnimInstance))
     {
-        bIsAttacking = true; // °ø°İ »óÅÂ·Î ¼³Á¤
+        bIsAttacking = true; // ê³µê²© ìƒíƒœë¡œ ì„¤ì •
         AnimInstance->DefaultAttackAnim();
         UE_LOG(LogTemp, Log, TEXT("[TurnEnemy] Enemy DefaultAttack Animation started"));
     }
     else
     {
-        // AnimInstance°¡ ¾ø´Â °æ¿ì Áï½Ã ÅÏ Á¾·á
+        // AnimInstanceê°€ ì—†ëŠ” ê²½ìš° ì¦‰ì‹œ í„´ ì¢…ë£Œ
         UE_LOG(LogTemp, Warning, TEXT("[TurnEnemy] No AnimInstance, ending turn immediately"));
         FinishEnemyTurn();
     }
@@ -109,7 +109,7 @@ void ATurnEnemy::DefaultAttack()
 
 void ATurnEnemy::PerformEnemyAttack()
 {
-    // ÀÚ½ÅÀÇ ÅÏÀÌ ¾Æ´Ï¸é µ¿ÀÛÇÏÁö ¾ÊÀ½
+    // ìì‹ ì˜ í„´ì´ ì•„ë‹ˆë©´ ë™ì‘í•˜ì§€ ì•ŠìŒ
     if (!IsMyTurnActive())
     {
         UE_LOG(LogTemp, Warning, TEXT("[TurnEnemy] %s PerformEnemyAttack called but not my turn!"), *GetName());
@@ -118,22 +118,22 @@ void ATurnEnemy::PerformEnemyAttack()
 
     UE_LOG(LogTemp, Warning, TEXT("[TurnEnemy] %s Attack!"), *GetName());
 
-    // ·£´ıÇÏ°Ô ±âº»°ø°İ ¶Ç´Â ½ºÅ³°ø°İ ¼±ÅÃ (50% È®·ü)
+    // ëœë¤í•˜ê²Œ ê¸°ë³¸ê³µê²© ë˜ëŠ” ìŠ¤í‚¬ê³µê²© ì„ íƒ (50% í™•ë¥ )
     int32 AttackType = FMath::RandRange(1, 2);
 
     if (AttackType == 1)
     {
-        // ±âº»°ø°İ ÇÔ¼ö È£Ãâ (¿À¹ö¶óÀÌµåµÈ DefaultAttack »ç¿ë)
-        UE_LOG(LogTemp, Warning, TEXT("[TurnEnemy] %s ±âº»°ø°İ(DefaultAttack) ÇÔ¼ö È£Ãâ!"), *GetName());
+        // ê¸°ë³¸ê³µê²© í•¨ìˆ˜ í˜¸ì¶œ (ì˜¤ë²„ë¼ì´ë“œëœ DefaultAttack ì‚¬ìš©)
+        UE_LOG(LogTemp, Warning, TEXT("[TurnEnemy] %s ê¸°ë³¸ê³µê²©(DefaultAttack) í•¨ìˆ˜ í˜¸ì¶œ!"), *GetName());
         DefaultAttack();
     }
     else
     {
-        // ½ºÅ³°ø°İ ÇÔ¼ö È£Ãâ (ÃßÈÄ ±¸Çö)
-        UE_LOG(LogTemp, Warning, TEXT("[TurnEnemy] %s ½ºÅ³°ø°İ(PerformSkill) ÇÔ¼ö È£Ãâ!"), *GetName());
-        PerformSkill(); // ÃßÈÄ ±¸ÇöÇÒ ÇÔ¼ö
+        // ìŠ¤í‚¬ê³µê²© í•¨ìˆ˜ í˜¸ì¶œ (ì¶”í›„ êµ¬í˜„)
+        UE_LOG(LogTemp, Warning, TEXT("[TurnEnemy] %s ìŠ¤í‚¬ê³µê²©(PerformSkill) í•¨ìˆ˜ í˜¸ì¶œ!"), *GetName());
+        PerformSkill(); // ì¶”í›„ êµ¬í˜„í•  í•¨ìˆ˜
 
-        // 2ÃÊ ÈÄ ÅÏ Á¾·á -> ÃßÈÄ ½ºÅ³µµ ¿¡´Ï¸ŞÀÌ¼ÇÀÌ »ı±â¸é ÀÌºÎºĞ Á¦°Å
+        // 2ì´ˆ í›„ í„´ ì¢…ë£Œ -> ì¶”í›„ ìŠ¤í‚¬ë„ ì—ë‹ˆë©”ì´ì…˜ì´ ìƒê¸°ë©´ ì´ë¶€ë¶„ ì œê±°
         FTimerHandle EndTurnDelayHandle;
         GetWorld()->GetTimerManager().SetTimer
         (
@@ -149,23 +149,23 @@ void ATurnEnemy::PerformEnemyAttack()
 
 void ATurnEnemy::PerformSkill()
 {
-    // ÀÚ½ÅÀÇ ÅÏÀÌ ¾Æ´Ï¸é µ¿ÀÛÇÏÁö ¾ÊÀ½
+    // ìì‹ ì˜ í„´ì´ ì•„ë‹ˆë©´ ë™ì‘í•˜ì§€ ì•ŠìŒ
     if (!IsMyTurnActive())
     {
         UE_LOG(LogTemp, Warning, TEXT("[TurnEnemy] %s DefaultAttack called but not my turn!"), *GetName());
         return;
     }
 
-    // Enemy Àü¿ë ½ºÅ³°ø°İ ±¸Çö
+    // Enemy ì „ìš© ìŠ¤í‚¬ê³µê²© êµ¬í˜„
     UE_LOG(LogTemp, Warning, TEXT("[TurnEnemy] %s Enemy Skill executed!"), *GetName());
 
-    // TODO: Enemy ½ºÅ³°ø°İ ·ÎÁ÷ ±¸Çö
-    // - ¾Ö´Ï¸ŞÀÌ¼Ç Àç»ı
-    // - Å¸°Ù ¼±Á¤ (ÇÃ·¹ÀÌ¾î)
-    // - µ¥¹ÌÁö Àû¿ë
-    // - ÀÌÆåÆ®/»ç¿îµå
+    // TODO: Enemy ìŠ¤í‚¬ê³µê²© ë¡œì§ êµ¬í˜„
+    // - ì• ë‹ˆë©”ì´ì…˜ ì¬ìƒ
+    // - íƒ€ê²Ÿ ì„ ì • (í”Œë ˆì´ì–´)
+    // - ë°ë¯¸ì§€ ì ìš©
+    // - ì´í™íŠ¸/ì‚¬ìš´ë“œ
 
-    // ÃßÈÄ ½ºÅ³ ¾Ö´Ï¸ŞÀÌ¼Ç Àç»ı ±¸Çö
+    // ì¶”í›„ ìŠ¤í‚¬ ì• ë‹ˆë©”ì´ì…˜ ì¬ìƒ êµ¬í˜„
     //if (IsValid(AnimInstance))
     //{
     //    AnimInstance->DefaultAttackAnim();
@@ -175,7 +175,7 @@ void ATurnEnemy::PerformSkill()
 
 void ATurnEnemy::FinishEnemyTurn()
 {
-    // ÀÚ½ÅÀÇ ÅÏÀÌ ¾Æ´Ï¸é µ¿ÀÛÇÏÁö ¾ÊÀ½
+    // ìì‹ ì˜ í„´ì´ ì•„ë‹ˆë©´ ë™ì‘í•˜ì§€ ì•ŠìŒ
     if (!IsMyTurnActive())
     {
         UE_LOG(LogTemp, Warning, TEXT("[TurnEnemy] %s DefaultAttack called but not my turn!"), *GetName());
@@ -184,7 +184,7 @@ void ATurnEnemy::FinishEnemyTurn()
     }
     UE_LOG(LogTemp, Log, TEXT("[TurnEnemy] %s Turn Finished"), *GetName());
 
-    // ºê¸®Áö¸¦ ÅëÇØ ÅÏ Á¾·á ¾Ë¸²
+    // ë¸Œë¦¬ì§€ë¥¼ í†µí•´ í„´ ì¢…ë£Œ ì•Œë¦¼
     if (TurnBridge)
     {
         TurnBridge->NotifySkillFinished();

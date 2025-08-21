@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "DetectPlayerComponent.h"
@@ -18,7 +18,7 @@ UDetectPlayerComponent::UDetectPlayerComponent()
 void UDetectPlayerComponent::BeginPlay()
 {
     Super::BeginPlay();
-    // Ãæµ¹ ¹İ°æ¼³Á¤
+    // ì¶©ëŒ ë°˜ê²½ì„¤ì •
     SetSphereRadius(100.f);
     SetCollisionProfileName(TEXT("OverlapAllDynamic"));
 
@@ -35,24 +35,24 @@ void UDetectPlayerComponent::HandleBeginOverlap(UPrimitiveComponent* OverlappedC
         UE_LOG(LogTemp, Log, TEXT("Detect"));
 
         auto* Enemy = Cast<AExplorationEnemy>(GetOwner());
-        //ÀüÅõ¸Ê ¸®½ºÆ® È®ÀÎ
+        //ì „íˆ¬ë§µ ë¦¬ìŠ¤íŠ¸ í™•ì¸
         if (Enemy->PossibleBattleLevels.Num() > 0)
         {
-            //SelectedBattleMap¿¡ ÀüÅõ¸Ê ¸®½ºÆ® ÇÒ´ç
+            //SelectedBattleMapì— ì „íˆ¬ë§µ ë¦¬ìŠ¤íŠ¸ í• ë‹¹
             FName SelectedBattleMap = Enemy->PossibleBattleLevels[FMath::RandRange(0, Enemy->PossibleBattleLevels.Num() - 1)];
-            //GameInstance¿¡ ÀüÅõ Á¤º¸ ÀúÀå
+            //GameInstanceì— ì „íˆ¬ ì •ë³´ ì €ì¥
             if (UCOEGameInstance* GI = Cast<UCOEGameInstance>(UGameplayStatics::GetGameInstance(this)))
             {
                 FString CurrLevel = UGameplayStatics::GetCurrentLevelName(this, true);
 
-                GI->bPlayerInitiative = false; // °¨Áö´çÇØ ³Ñ¾î°¡´Â °ÍÀÌ¹Ç·Î ÀûÀÌ ¿ì¼±
+                GI->bPlayerInitiative = false; // ê°ì§€ë‹¹í•´ ë„˜ì–´ê°€ëŠ” ê²ƒì´ë¯€ë¡œ ì ì´ ìš°ì„ 
                 GI->bPlayerWasDetected = true;
                 GI->ReturnLocation = OtherActor->GetActorLocation();
-                GI->ReturnMapName = FName(*CurrLevel); // ½ÇÁ¦ Å½»ö¸Ê ÀÌ¸§À¸·Î ¹Ù²ã¾ß ÇÔ
+                GI->ReturnMapName = FName(*CurrLevel); // ì‹¤ì œ íƒìƒ‰ë§µ ì´ë¦„ìœ¼ë¡œ ë°”ê¿”ì•¼ í•¨
                 GI->EnemyToRemoveName.AddUnique(Enemy->GetFName());
             }
 
-            //ÀüÅõ¸ÊÀ¸·Î ÀÌµ¿
+            //ì „íˆ¬ë§µìœ¼ë¡œ ì´ë™
             UGameplayStatics::OpenLevel(this, SelectedBattleMap);
         }
         else

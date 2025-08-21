@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -15,7 +15,7 @@ class COE_API AExplorationPlayer : public ACOECharacter
 	GENERATED_BODY()
 
 public:
-	/** ÆÄÆ¼ Array */
+	/** íŒŒí‹° Array */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Party")
 	TArray<TObjectPtr<ACharacter>> PartyMembers;
 
@@ -26,15 +26,15 @@ public:
 
 public:
 
-	/** ÆÄÆ¼ HP ÀüÃ¼ È¸º¹ */
+	/** íŒŒí‹° HP ì „ì²´ íšŒë³µ */
 	UFUNCTION(BlueprintCallable, Category = "Consumable|Exploration")
 	void UseExplorationFullHeal();
 
 private:
 
-	/** GI È£Ãâ ÇïÆÛ */
+	/** GI í˜¸ì¶œ í—¬í¼ */
 	UCOEGameInstance* GetCOEGameInstance() const;
 
-	/** HP È¸º¹ ¹üÀ§ º¸Á¤ */
+	/** HP íšŒë³µ ë²”ìœ„ ë³´ì • */
 	void ClampSelfHP() { CharacterStats.CurrentHP = FMath::Clamp(CharacterStats.CurrentHP, 0.f, CharacterStats.MAXHP); }
 };

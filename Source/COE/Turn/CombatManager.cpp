@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "CombatManager.h"
@@ -8,98 +8,98 @@
 
 ACombatManager::ACombatManager()
 {
-    PrimaryActorTick.bCanEverTick = false; // ÀÌº¥Æ® µå¸®ºì ±¸Á¶ÀÌ¹Ç·Î Æ½ ºÒÇÊ¿ä
+    PrimaryActorTick.bCanEverTick = false; // ì´ë²¤íŠ¸ ë“œë¦¬ë¸ êµ¬ì¡°ì´ë¯€ë¡œ í‹± ë¶ˆí•„ìš”
 }
 
 void ACombatManager::BeginPlay()
 {
     Super::BeginPlay();
 
-    // Àü¿ª ÀüÅõ ¸ŞÅ¸µ¥ÀÌÅÍ¸¦ º¸°üÇÏ´Â GameInstance¸¦ Ä³½ÌÇØ ¸Å ÇÁ·¹ÀÓ Á¶È¸¸¦ ÇÇÇÔ
-    GI = Cast<UCOEGameInstance>(UGameplayStatics::GetGameInstance(this)); // GI´Â nullÀÏ ¼ö ÀÖÀ½
+    // ì „ì—­ ì „íˆ¬ ë©”íƒ€ë°ì´í„°ë¥¼ ë³´ê´€í•˜ëŠ” GameInstanceë¥¼ ìºì‹±í•´ ë§¤ í”„ë ˆì„ ì¡°íšŒë¥¼ í”¼í•¨
+    GI = Cast<UCOEGameInstance>(UGameplayStatics::GetGameInstance(this)); // GIëŠ” nullì¼ ìˆ˜ ìˆìŒ
 }
 
 void ACombatManager::EnterState(uint8 NewState)
 {
-    // CombatStateÀÇ ´ÜÀÏ ¼Ò½º´Â GameInstance. »óÅÂ ÀüÀÌ´Â ¹İµå½Ã GI¸¦ ÅëÇØ ±â·Ï
+    // CombatStateì˜ ë‹¨ì¼ ì†ŒìŠ¤ëŠ” GameInstance. ìƒíƒœ ì „ì´ëŠ” ë°˜ë“œì‹œ GIë¥¼ í†µí•´ ê¸°ë¡
     if (GI)
     {
-        GI->SetCombatState(static_cast<ECombatState>(NewState)); // (uint8¡æEnum) ¾ÈÀü Ä³½ºÆÃ
+        GI->SetCombatState(static_cast<ECombatState>(NewState)); // (uint8â†’Enum) ì•ˆì „ ìºìŠ¤íŒ…
     }
 }
 
 void ACombatManager::StartCombat()
 {
-    Round = 0;                              // ¶ó¿îµå Ä«¿îÅÍ ÃÊ±âÈ­(0ºÎÅÍ ½ÃÀÛ)
-    if (GI) GI->ResetCombatData();          // ÀÌÀü ÀüÅõ ÀÜ¿© ¸ŞÅ¸µ¥ÀÌÅÍ ÃÊ±âÈ­(ÆÀÀº Á¤Ã¥¿¡ µû¶ó À¯Áö)
+    Round = 0;                              // ë¼ìš´ë“œ ì¹´ìš´í„° ì´ˆê¸°í™”(0ë¶€í„° ì‹œì‘)
+    if (GI) GI->ResetCombatData();          // ì´ì „ ì „íˆ¬ ì”ì—¬ ë©”íƒ€ë°ì´í„° ì´ˆê¸°í™”(íŒ€ì€ ì •ì±…ì— ë”°ë¼ ìœ ì§€)
 
-    BuildTurnOrder();                        // Âü°¡ÀÚµéÀ» ÀÌ´Ï¼ÅÆ¼ºê ±âÁØÀ¸·Î Á¤·Ä
-    EnterState(static_cast<uint8>(ECombatState::Setup)); // ÀüÅõ ÁØºñ »óÅÂ ÁøÀÔ
-    OnCombatStarted.Broadcast();             // UI/»ç¿îµå µî ¿ÜºÎ ½Ã½ºÅÛ¿¡ ÀüÅõ ½ÃÀÛ ½ÅÈ£
-    BeginNextTurn();                         // Ã¹ ÅÏ ÁøÀÔ(ÀÎµ¦½º´Â BuildTurnOrder¿¡¼­ -1·Î ÃÊ±âÈ­µÊ)
+    BuildTurnOrder();                        // ì°¸ê°€ìë“¤ì„ ì´ë‹ˆì…”í‹°ë¸Œ ê¸°ì¤€ìœ¼ë¡œ ì •ë ¬
+    EnterState(static_cast<uint8>(ECombatState::Setup)); // ì „íˆ¬ ì¤€ë¹„ ìƒíƒœ ì§„ì…
+    OnCombatStarted.Broadcast();             // UI/ì‚¬ìš´ë“œ ë“± ì™¸ë¶€ ì‹œìŠ¤í…œì— ì „íˆ¬ ì‹œì‘ ì‹ í˜¸
+    BeginNextTurn();                         // ì²« í„´ ì§„ì…(ì¸ë±ìŠ¤ëŠ” BuildTurnOrderì—ì„œ -1ë¡œ ì´ˆê¸°í™”ë¨)
     UE_LOG(LogTemp, Warning, TEXT("[CombatManager] StartCombat()"));
 }
 
 void ACombatManager::EndCombat(bool bPlayerWon)
 {
-    // ½ÂÆĞ¿¡ µû¶ó »óÅÂ ÀüÈ¯ ÈÄ ¿ÜºÎ¿¡ ÅëÁö
+    // ìŠ¹íŒ¨ì— ë”°ë¼ ìƒíƒœ ì „í™˜ í›„ ì™¸ë¶€ì— í†µì§€
     EnterState(static_cast<uint8>(bPlayerWon ? ECombatState::Victory : ECombatState::Defeat));
-    OnCombatEnded.Broadcast(bPlayerWon, Round); // Á¾·á ½Ã ¶ó¿îµå ¼ö Àü´Ş
+    OnCombatEnded.Broadcast(bPlayerWon, Round); // ì¢…ë£Œ ì‹œ ë¼ìš´ë“œ ìˆ˜ ì „ë‹¬
 }
 
 bool ACombatManager::RegisterParticipant(ACOECharacter* Character)
 {
-    // ÀüÅõ Âü°¡ÀÚ µî·Ï(¾àÆ÷ÀÎÅÍ ¹è¿­). ¹«È¿/Áßº¹ ¹æÁö Ã³¸® Æ÷ÇÔ
-    if (!IsValid(Character)) return false;            // ³Î/ÆÄ±« ´ë±â »óÅÂ ¹æÁö
-    if (Participants.Contains(Character)) return false; // ÀÌ¹Ì µî·ÏµÈ °æ¿ì ¹«½Ã
-    Participants.Add(Character);                       // ¾àÆ÷ÀÎÅÍ·Î ÀúÀå ¡æ GC/·¹º§ ÀüÈ¯ ¾ÈÀü
+    // ì „íˆ¬ ì°¸ê°€ì ë“±ë¡(ì•½í¬ì¸í„° ë°°ì—´). ë¬´íš¨/ì¤‘ë³µ ë°©ì§€ ì²˜ë¦¬ í¬í•¨
+    if (!IsValid(Character)) return false;            // ë„/íŒŒê´´ ëŒ€ê¸° ìƒíƒœ ë°©ì§€
+    if (Participants.Contains(Character)) return false; // ì´ë¯¸ ë“±ë¡ëœ ê²½ìš° ë¬´ì‹œ
+    Participants.Add(Character);                       // ì•½í¬ì¸í„°ë¡œ ì €ì¥ â†’ GC/ë ˆë²¨ ì „í™˜ ì•ˆì „
     return true;
 }
 
 bool ACombatManager::UnregisterParticipant(ACOECharacter* Character)
 {
-    // ÀüÅõ Âü°¡ÀÚ ÇØÁ¦: Participants¿Í TurnOrder¿¡¼­ ¸ğµÎ Á¦°Å
+    // ì „íˆ¬ ì°¸ê°€ì í•´ì œ: Participantsì™€ TurnOrderì—ì„œ ëª¨ë‘ ì œê±°
     if (!IsValid(Character)) return false;
-    const int32 Removed = Participants.RemoveAll([&](const TWeakObjectPtr<ACOECharacter>& P) { return P.Get() == Character; }); // ¾àÆ÷ÀÎÅÍ ºñ±³·Î Á¦°Å
-    TurnOrder.RemoveAll([&](const FTurnEntry& E) { return E.Character.Get() == Character; }); // ÅÏ Å¥¿¡¼­µµ Á¦°Å(ÅÏ µµÁß ÆÄ±« µî º¸È£)
-    return Removed > 0;                                 // ÇÏ³ª ÀÌ»ó Á¦°ÅµÇ¾úÀ» ¶§¸¸ true
+    const int32 Removed = Participants.RemoveAll([&](const TWeakObjectPtr<ACOECharacter>& P) { return P.Get() == Character; }); // ì•½í¬ì¸í„° ë¹„êµë¡œ ì œê±°
+    TurnOrder.RemoveAll([&](const FTurnEntry& E) { return E.Character.Get() == Character; }); // í„´ íì—ì„œë„ ì œê±°(í„´ ë„ì¤‘ íŒŒê´´ ë“± ë³´í˜¸)
+    return Removed > 0;                                 // í•˜ë‚˜ ì´ìƒ ì œê±°ë˜ì—ˆì„ ë•Œë§Œ true
 }
 
 void ACombatManager::BuildTurnOrder()
 {
-    // ÇöÀç Âü°¡ÀÚ/»ıÁ¸ »óÅÂ¸¦ ±âÁØÀ¸·Î »õ ÅÏ Å¥ ±¸¼º
+    // í˜„ì¬ ì°¸ê°€ì/ìƒì¡´ ìƒíƒœë¥¼ ê¸°ì¤€ìœ¼ë¡œ ìƒˆ í„´ í êµ¬ì„±
     TurnOrder.Reset();
-    for (const auto& P : Participants)                  // ¾àÆ÷ÀÎÅÍ ¹è¿­ ¼øÈ¸
+    for (const auto& P : Participants)                  // ì•½í¬ì¸í„° ë°°ì—´ ìˆœíšŒ
     {
-        ACOECharacter* C = P.Get();                     // ¾àÆ÷ÀÎÅÍ ¡æ ½ÇÁ¦ Æ÷ÀÎÅÍ
-        if (!IsValid(C)) continue;                      // ¹«È¿ Âü°¡ÀÚ ½ºÅµ
-        if (GI && !GI->IsAlive(C)) continue;            // »ç¸ÁÀÚ´Â ÅÏ ´ë»ó Á¦¿Ü
+        ACOECharacter* C = P.Get();                     // ì•½í¬ì¸í„° â†’ ì‹¤ì œ í¬ì¸í„°
+        if (!IsValid(C)) continue;                      // ë¬´íš¨ ì°¸ê°€ì ìŠ¤í‚µ
+        if (GI && !GI->IsAlive(C)) continue;            // ì‚¬ë§ìëŠ” í„´ ëŒ€ìƒ ì œì™¸
         
-        // ±âÁ¸ GIÀÇ bPlayerInitiative¸¦ È°¿ëÇÑ ÆÀ ¿ì¼±±Ç °è»ê
+        // ê¸°ì¡´ GIì˜ bPlayerInitiativeë¥¼ í™œìš©í•œ íŒ€ ìš°ì„ ê¶Œ ê³„ì‚°
         const ECombatTeam Team = GI ? GI->GetTeam(C) : ECombatTeam::Enemy;
-        int32 TeamPriority = 50; // ±âº»°ª
+        int32 TeamPriority = 50; // ê¸°ë³¸ê°’
 
         if (GI)
         {
             if (GI->bPlayerInitiative)
             {
-                // ÇÃ·¹ÀÌ¾î ¼±°ø: PlayerÆÀ ¿ì¼±±Ç ³ô°Ô
+                // í”Œë ˆì´ì–´ ì„ ê³µ: PlayeríŒ€ ìš°ì„ ê¶Œ ë†’ê²Œ
                 TeamPriority = (Team == ECombatTeam::Player) ? 100 : 50;
             }
             else
             {
-                // Àû Å½Áö ½Ã: EnemyÆÀ ¿ì¼±±Ç ³ô°Ô
+                // ì  íƒì§€ ì‹œ: EnemyíŒ€ ìš°ì„ ê¶Œ ë†’ê²Œ
                 TeamPriority = (Team == ECombatTeam::Enemy) ? 100 : 50;
             }
         }
 
-        const int32 Ini = GI ? GI->GetInitiative(C) : 10; // ÀÌ´Ï¼ÅÆ¼ºê Á¶È¸(±âº» 10)
+        const int32 Ini = GI ? GI->GetInitiative(C) : 10; // ì´ë‹ˆì…”í‹°ë¸Œ ì¡°íšŒ(ê¸°ë³¸ 10)
 
         FTurnEntry E;
         E.Character = C;
-        E.TeamPriority = TeamPriority;                  // ÆÀ ¿ì¼±±Ç ¼³Á¤
+        E.TeamPriority = TeamPriority;                  // íŒ€ ìš°ì„ ê¶Œ ì„¤ì •
         E.Initiative = Ini;
-        E.TieBreak = FMath::Rand();                     // µ¿Á¡ ½Ã TieBreakÀº ³­¼ö ·£´ıÈ­
+        E.TieBreak = FMath::Rand();                     // ë™ì  ì‹œ TieBreakì€ ë‚œìˆ˜ ëœë¤í™”
 
         TurnOrder.Add(E);
 
@@ -110,10 +110,10 @@ void ACombatManager::BuildTurnOrder()
             Ini);
 
     }
-    TurnOrder.Sort();                                    // ³ôÀº Initiative ¿ì¼±, µ¿·üÀº TieBreak ¿À¸§Â÷¼ø
-    CurrentIndex = -1;                                   // BeginNextTurn¿¡¼­ ++µÇ¾î 0ºÎÅÍ ½ÃÀÛÇÏµµ·Ï ÁØºñ
+    TurnOrder.Sort();                                    // ë†’ì€ Initiative ìš°ì„ , ë™ë¥ ì€ TieBreak ì˜¤ë¦„ì°¨ìˆœ
+    CurrentIndex = -1;                                   // BeginNextTurnì—ì„œ ++ë˜ì–´ 0ë¶€í„° ì‹œì‘í•˜ë„ë¡ ì¤€ë¹„
 
-    // Á¤·Ä °á°ú ·Î±ë
+    // ì •ë ¬ ê²°ê³¼ ë¡œê¹…
     if (GI)
     {
         UE_LOG(LogTemp, Warning, TEXT("[BuildTurnOrder] bPlayerInitiative: %s"),
@@ -138,75 +138,75 @@ void ACombatManager::BuildTurnOrder()
 
 void ACombatManager::BeginNextTurn()
 {
-    // ÅÏ Å¥°¡ ºñ¾îÀÖÀ¸¸é Àç»ı¼º(Ã³À½/¶ó¿îµå ·Ñ¿À¹ö/´ë°Å »ç¸Á µî)
+    // í„´ íê°€ ë¹„ì–´ìˆìœ¼ë©´ ì¬ìƒì„±(ì²˜ìŒ/ë¼ìš´ë“œ ë¡¤ì˜¤ë²„/ëŒ€ê±° ì‚¬ë§ ë“±)
     if (TurnOrder.Num() == 0)
     {
         BuildTurnOrder();
-        if (TurnOrder.Num() == 0) { EndCombat(true); return; } // º¸È£: Âü°¡ÀÚ Àü¸ê µî ºñÁ¤»ó »óÈ² Ã³¸®
+        if (TurnOrder.Num() == 0) { EndCombat(true); return; } // ë³´í˜¸: ì°¸ê°€ì ì „ë©¸ ë“± ë¹„ì •ìƒ ìƒí™© ì²˜ë¦¬
     }
 
-    CurrentIndex++;                                      // ´ÙÀ½ ÅÏÀ¸·Î ÀÌµ¿(-1¡æ0, 0¡æ1 ...)
-    if (CurrentIndex >= TurnOrder.Num())                 // ¸¶Áö¸· ´ÙÀ½ÀÌ¸é ¶ó¿îµå ·Ñ¿À¹ö
+    CurrentIndex++;                                      // ë‹¤ìŒ í„´ìœ¼ë¡œ ì´ë™(-1â†’0, 0â†’1 ...)
+    if (CurrentIndex >= TurnOrder.Num())                 // ë§ˆì§€ë§‰ ë‹¤ìŒì´ë©´ ë¼ìš´ë“œ ë¡¤ì˜¤ë²„
     {
-        Round++;                                         // ¶ó¿îµå Áõ°¡
-        BuildTurnOrder();                                // »ç¸Á/ºÎÈ°/¹öÇÁ ¿µÇâ ¹İ¿µÇØ ÀçÁ¤·Ä
-        CurrentIndex = 0;                                // »õ ¶ó¿îµå Ã¹ Âü°¡ÀÚºÎÅÍ ½ÃÀÛ
+        Round++;                                         // ë¼ìš´ë“œ ì¦ê°€
+        BuildTurnOrder();                                // ì‚¬ë§/ë¶€í™œ/ë²„í”„ ì˜í–¥ ë°˜ì˜í•´ ì¬ì •ë ¬
+        CurrentIndex = 0;                                // ìƒˆ ë¼ìš´ë“œ ì²« ì°¸ê°€ìë¶€í„° ì‹œì‘
     }
 
-    ACOECharacter* Active = GetActiveCharacter();        // ÇöÀç ÅÏ ÁÖÃ¼
-    if (!IsValid(Active)) { BeginNextTurn(); return; }   // ÆÄ±«/¹«È¿¸é ½ºÅµÇÏ°í ´ÙÀ½ ÅÏÀ¸·Î(¾ÈÀü ÀåÄ¡)
+    ACOECharacter* Active = GetActiveCharacter();        // í˜„ì¬ í„´ ì£¼ì²´
+    if (!IsValid(Active)) { BeginNextTurn(); return; }   // íŒŒê´´/ë¬´íš¨ë©´ ìŠ¤í‚µí•˜ê³  ë‹¤ìŒ í„´ìœ¼ë¡œ(ì•ˆì „ ì¥ì¹˜)
 
     UE_LOG(LogTemp, Warning, TEXT("[CM] OnTurnStarted -> %s (Round %d)"), *Active->GetName(), Round);
-    EnterState(static_cast<uint8>(ECombatState::PreTurn)); // ÀÔ·Â ´ë±â/¿¬Ãâ ÁØºñ ´Ü°è
-    OnTurnStarted.Broadcast(Active, Round);               // UI/»ç¿îµå/·Î±× µî ¿ÜºÎ ½Ã½ºÅÛ ÅëÁö
+    EnterState(static_cast<uint8>(ECombatState::PreTurn)); // ì…ë ¥ ëŒ€ê¸°/ì—°ì¶œ ì¤€ë¹„ ë‹¨ê³„
+    OnTurnStarted.Broadcast(Active, Round);               // UI/ì‚¬ìš´ë“œ/ë¡œê·¸ ë“± ì™¸ë¶€ ì‹œìŠ¤í…œ í†µì§€
 }
 
 void ACombatManager::NotifyTurnActionEnd()
 {
-    // Ä³¸¯ÅÍ ÂÊ ¾×¼Ç(¾Ö´Ô/Åõ»çÃ¼ µî)ÀÌ ¿Ï·áµÈ ½ÃÁ¡¿¡¼­ È£ÃâµÇ´Â ¿£µåÆ÷ÀÎÆ®
+    // ìºë¦­í„° ìª½ ì•¡ì…˜(ì• ë‹˜/íˆ¬ì‚¬ì²´ ë“±)ì´ ì™„ë£Œëœ ì‹œì ì—ì„œ í˜¸ì¶œë˜ëŠ” ì—”ë“œí¬ì¸íŠ¸
     if (ACOECharacter* Active = GetActiveCharacter())
     {
-        OnTurnEnded.Broadcast(Active, Round);            // UI/»ç¿îµå/·Î±× µî Á¾·á Ã³¸® ½ÅÈ£
+        OnTurnEnded.Broadcast(Active, Round);            // UI/ì‚¬ìš´ë“œ/ë¡œê·¸ ë“± ì¢…ë£Œ ì²˜ë¦¬ ì‹ í˜¸
     }
 
-    CheckVictory();                                      // ¾×¼Ç °á°ú·Î ½ÂÆĞ°¡ °¥·È´ÂÁö È®ÀÎ
+    CheckVictory();                                      // ì•¡ì…˜ ê²°ê³¼ë¡œ ìŠ¹íŒ¨ê°€ ê°ˆë ¸ëŠ”ì§€ í™•ì¸
     if (GI && (GI->GetCombatState() == ECombatState::Victory || GI->GetCombatState() == ECombatState::Defeat))
     {
-        return;                                          // ÀüÅõ°¡ Á¾·á »óÅÂ¸é ´õ ÁøÇàÇÏÁö ¾ÊÀ½
+        return;                                          // ì „íˆ¬ê°€ ì¢…ë£Œ ìƒíƒœë©´ ë” ì§„í–‰í•˜ì§€ ì•ŠìŒ
     }
 
-    EnterState(static_cast<uint8>(ECombatState::PostTurn)); // ÈÄÃ³¸® ´Ü°è Ç¥½Ã
-    BeginNextTurn();                                      // ´ÙÀ½ ÅÏÀ¸·Î ÁøÇà
+    EnterState(static_cast<uint8>(ECombatState::PostTurn)); // í›„ì²˜ë¦¬ ë‹¨ê³„ í‘œì‹œ
+    BeginNextTurn();                                      // ë‹¤ìŒ í„´ìœ¼ë¡œ ì§„í–‰
 }
 
 void ACombatManager::ApplyDamageAndEndTurn(ACOECharacter* InstigatorCharacter, ACOECharacter* TargetCharacter, float Damage)
 {
-    // Áï½ÃÇü ½ºÅ³¿ë ÆíÀÇ ÇÔ¼ö: µ¥¹ÌÁö¸¦ Àû¿ëÇÏ°í ¼º°ø/½ÇÆĞ¿Í °ü°è¾øÀÌ ÅÏ Á¾·á
-    if (!IsValid(TargetCharacter)) { NotifyTurnActionEnd(); return; } // Å¸±ê ¹«È¿¸é ¹Ù·Î ÅÏ Á¾·á
+    // ì¦‰ì‹œí˜• ìŠ¤í‚¬ìš© í¸ì˜ í•¨ìˆ˜: ë°ë¯¸ì§€ë¥¼ ì ìš©í•˜ê³  ì„±ê³µ/ì‹¤íŒ¨ì™€ ê´€ê³„ì—†ì´ í„´ ì¢…ë£Œ
+    if (!IsValid(TargetCharacter)) { NotifyTurnActionEnd(); return; } // íƒ€ê¹ƒ ë¬´íš¨ë©´ ë°”ë¡œ í„´ ì¢…ë£Œ
 
-    // UGameplayStatics::ApplyDamage´Â ´ë»óÀÇ TakeDamage¸¦ È£ÃâÇÏ¿© ½ÇÁ¦ Ã¼·Â/»ç¸Á Ã³¸®¸¦ À§ÀÓ
-    AController* Ctrl = InstigatorCharacter ? InstigatorCharacter->GetController() : nullptr; // °¡ÇØÀÚ ÄÁÆ®·Ñ·¯(¾øÀ» ¼ö ÀÖÀ½)
-    UGameplayStatics::ApplyDamage(TargetCharacter, Damage, Ctrl, InstigatorCharacter, nullptr); // DamageTypeÀº ÃßÈÄ È®Àå °¡´É
+    // UGameplayStatics::ApplyDamageëŠ” ëŒ€ìƒì˜ TakeDamageë¥¼ í˜¸ì¶œí•˜ì—¬ ì‹¤ì œ ì²´ë ¥/ì‚¬ë§ ì²˜ë¦¬ë¥¼ ìœ„ì„
+    AController* Ctrl = InstigatorCharacter ? InstigatorCharacter->GetController() : nullptr; // ê°€í•´ì ì»¨íŠ¸ë¡¤ëŸ¬(ì—†ì„ ìˆ˜ ìˆìŒ)
+    UGameplayStatics::ApplyDamage(TargetCharacter, Damage, Ctrl, InstigatorCharacter, nullptr); // DamageTypeì€ ì¶”í›„ í™•ì¥ ê°€ëŠ¥
 
-    // »ç¸Á ¹İ¿µÀº ´ë»óÀÇ TakeDamage ³»ºÎ¿¡¼­ GI->SetAlive(this,false)·Î Àû¿ëÇÏ´Â °ÍÀ» ±ÇÀå
-    NotifyTurnActionEnd();                                   // Áï½Ã ÅÏ Á¾·á·Î ÇÃ·Î¿ì À¯Áö
+    // ì‚¬ë§ ë°˜ì˜ì€ ëŒ€ìƒì˜ TakeDamage ë‚´ë¶€ì—ì„œ GI->SetAlive(this,false)ë¡œ ì ìš©í•˜ëŠ” ê²ƒì„ ê¶Œì¥
+    NotifyTurnActionEnd();                                   // ì¦‰ì‹œ í„´ ì¢…ë£Œë¡œ í”Œë¡œìš° ìœ ì§€
 }
 
 ACOECharacter* ACombatManager::GetActiveCharacter() const
 {
-    // ÇöÀç ÀÎµ¦½º°¡ À¯È¿ÇÑÁö °ËÁõ ÈÄ ÇØ´ç ¿£Æ®¸®ÀÇ Ä³¸¯ÅÍ ¹İÈ¯
-    if (!TurnOrder.IsValidIndex(CurrentIndex)) return nullptr; // ÃÊ±â/¿¡·¯ ¹æÁö
-    return TurnOrder[CurrentIndex].Character.Get();            // ¾àÆ÷ÀÎÅÍ ¡æ ½ÇÁ¦ Æ÷ÀÎÅÍ
+    // í˜„ì¬ ì¸ë±ìŠ¤ê°€ ìœ íš¨í•œì§€ ê²€ì¦ í›„ í•´ë‹¹ ì—”íŠ¸ë¦¬ì˜ ìºë¦­í„° ë°˜í™˜
+    if (!TurnOrder.IsValidIndex(CurrentIndex)) return nullptr; // ì´ˆê¸°/ì—ëŸ¬ ë°©ì§€
+    return TurnOrder[CurrentIndex].Character.Get();            // ì•½í¬ì¸í„° â†’ ì‹¤ì œ í¬ì¸í„°
 }
 
 void ACombatManager::CheckVictory()
 {
-    // GameInstance¿¡ ±â·ÏµÈ ÆÀ/»ıÁ¸ Á¤º¸¸¦ ¹ÙÅÁÀ¸·Î °£´ÜÇÑ ½ÂÆĞ ÆÇÁ¤
-    if (!GI) return;                                        // GI ¾øÀ¸¸é ÆÇÁ¤ ºÒ°¡
-    const bool bPlayersAlive = GI->HasTeamAlive(ECombatTeam::Player); // ÇÃ·¹ÀÌ¾î ÆÀ »ıÁ¸ ¿©ºÎ
-    const bool bEnemiesAlive = GI->HasTeamAlive(ECombatTeam::Enemy);   // Àû ÆÀ »ıÁ¸ ¿©ºÎ
+    // GameInstanceì— ê¸°ë¡ëœ íŒ€/ìƒì¡´ ì •ë³´ë¥¼ ë°”íƒ•ìœ¼ë¡œ ê°„ë‹¨í•œ ìŠ¹íŒ¨ íŒì •
+    if (!GI) return;                                        // GI ì—†ìœ¼ë©´ íŒì • ë¶ˆê°€
+    const bool bPlayersAlive = GI->HasTeamAlive(ECombatTeam::Player); // í”Œë ˆì´ì–´ íŒ€ ìƒì¡´ ì—¬ë¶€
+    const bool bEnemiesAlive = GI->HasTeamAlive(ECombatTeam::Enemy);   // ì  íŒ€ ìƒì¡´ ì—¬ë¶€
 
-    if (!bPlayersAlive && !bEnemiesAlive) { EndCombat(false); return; } // ¾çÃø Àü¸ê: ÀÓ½Ã·Î ÆĞ¹è Ã³¸®(±ÔÄ¢¿¡ ¸Â°Ô º¯°æ °¡´É)
-    if (!bEnemiesAlive) { EndCombat(true); return; }                    // Àû Àü¸ê: ½Â¸®
-    if (!bPlayersAlive) { EndCombat(false); return; }                   // ÇÃ·¹ÀÌ¾î Àü¸ê: ÆĞ¹è
+    if (!bPlayersAlive && !bEnemiesAlive) { EndCombat(false); return; } // ì–‘ì¸¡ ì „ë©¸: ì„ì‹œë¡œ íŒ¨ë°° ì²˜ë¦¬(ê·œì¹™ì— ë§ê²Œ ë³€ê²½ ê°€ëŠ¥)
+    if (!bEnemiesAlive) { EndCombat(true); return; }                    // ì  ì „ë©¸: ìŠ¹ë¦¬
+    if (!bPlayersAlive) { EndCombat(false); return; }                   // í”Œë ˆì´ì–´ ì „ë©¸: íŒ¨ë°°
 }

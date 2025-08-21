@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -17,12 +17,12 @@ class COE_API ATurnGameMode : public ACOEGameMode
 
 public:
 	virtual void BeginPlay() override;
-	// ÀûÀÌ Á×À» ¶§¸¶´Ù Enemy Å¬·¡½º¿¡¼­ È£Ãâ
+	// ì ì´ ì£½ì„ ë•Œë§ˆë‹¤ Enemy í´ë˜ìŠ¤ì—ì„œ í˜¸ì¶œ
 	void OnEnemyDied();  
 
 private:
-	//³²¾ÆÀÖ´Â Àû ¼ö
+	//ë‚¨ì•„ìˆëŠ” ì  ìˆ˜
 	int32 RemainingEnemies = 0;
-	//³²¾ÆÀÖ´Â Àû ¼ö È®ÀÎ ¹× ¸ğµÎ Ã³Ä¡½Ã LevelÀÌµ¿
+	//ë‚¨ì•„ìˆëŠ” ì  ìˆ˜ í™•ì¸ ë° ëª¨ë‘ ì²˜ì¹˜ì‹œ Levelì´ë™
 	void CheckEndOfCombat();
 };

@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -6,9 +6,9 @@
 #include "Components/SphereComponent.h"
 #include "DetectPlayerComponent.generated.h"
 
-//  Acotr°¡ Å½Áö½ºÇÇ¾î¿¡ µé¾î¿ÔÀ»¶§ Delegate È£Ãâ
+//  Acotrê°€ íƒì§€ìŠ¤í”¼ì–´ì— ë“¤ì–´ì™”ì„ë•Œ Delegate í˜¸ì¶œ
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDetectedSignature, AActor*, OtherActor);
-// Acotr°¡ Å½Áö½ºÇÇ¾î¿¡¼­ ¹ş¾î³µÀ»¶§ Delegate È£Ãâ
+// Acotrê°€ íƒì§€ìŠ¤í”¼ì–´ì—ì„œ ë²—ì–´ë‚¬ì„ë•Œ Delegate í˜¸ì¶œ
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLostSignature, AActor*, OtherActor);
 /**
  * 
@@ -21,11 +21,11 @@ public:
 
     UDetectPlayerComponent();
 
-    /** ÇÃ·¹ÀÌ¾î°¡ Å½Áö µÆÀ»¶§ */
+    /** í”Œë ˆì´ì–´ê°€ íƒì§€ ëì„ë•Œ */
     UPROPERTY(BlueprintAssignable, Category = "Detection")
     FOnDetectedSignature OnPlayerDetected;
 
-    /** ÇÃ·¹ÀÌ¾î°¡ Å½Áö¿¡¼­ ¹ş¾î³µÀ»¶§ */
+    /** í”Œë ˆì´ì–´ê°€ íƒì§€ì—ì„œ ë²—ì–´ë‚¬ì„ë•Œ */
     UPROPERTY(BlueprintAssignable, Category = "Detection")
     FOnLostSignature OnPlayerLost;
 

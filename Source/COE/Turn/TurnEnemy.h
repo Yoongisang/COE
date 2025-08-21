@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -6,7 +6,7 @@
 #include "BaseCode/COECharacter.h"
 #include "TurnEnemy.generated.h"
 
-// Delegate Å¸ÀÔ ¼±¾ğ
+// Delegate íƒ€ì… ì„ ì–¸
 DECLARE_MULTICAST_DELEGATE(FOnTurnEnemyDead)
 /**
  * 
@@ -24,33 +24,33 @@ public:
 
 public:
 
-    /** Á×¾úÀ» ¶§ ºê·ÎµåÄ³½ºÆ®µÇ´Â ÀÌº¥Æ® */
+    /** ì£½ì—ˆì„ ë•Œ ë¸Œë¡œë“œìºìŠ¤íŠ¸ë˜ëŠ” ì´ë²¤íŠ¸ */
     FOnTurnEnemyDead OnDead;
 
 public:
-    /** µ¥¹ÌÁö¸¦ ¹Ş´Â ÇÔ¼ö (¿¹½Ã) */
+    /** ë°ë¯¸ì§€ë¥¼ ë°›ëŠ” í•¨ìˆ˜ (ì˜ˆì‹œ) */
     virtual float TakeDamage(float DamageAmount,struct FDamageEvent const& DamageEvent,AController* EventInstigator, AActor* DamageCauser) override;
 
 public:
-    /** Enemy ÅÏ¿¡¼­ ÀÚµ¿À¸·Î Çàµ¿À» ¼öÇàÇÏ´Â ÇÔ¼ö */
+    /** Enemy í„´ì—ì„œ ìë™ìœ¼ë¡œ í–‰ë™ì„ ìˆ˜í–‰í•˜ëŠ” í•¨ìˆ˜ */
     UFUNCTION(BlueprintCallable, Category = "Combat|AI")
     void ExecuteEnemyTurn();
 
-    /** ÇöÀç ÀÚ½ÅÀÇ ÅÏÀÎÁö È®ÀÎÇÏ´Â ÇÔ¼ö */
+    /** í˜„ì¬ ìì‹ ì˜ í„´ì¸ì§€ í™•ì¸í•˜ëŠ” í•¨ìˆ˜ */
     UFUNCTION(BlueprintPure, Category = "Combat")
     bool IsMyTurnActive() const;
 
-    /** ±âº»°ø°İ ¿À¹ö¶óÀÌµå (Enemy Àü¿ë) */
+    /** ê¸°ë³¸ê³µê²© ì˜¤ë²„ë¼ì´ë“œ (Enemy ì „ìš©) */
     virtual void DefaultAttack() override;
 
-    /** Enemy ÅÏ Á¾·á Ã³¸® */
+    /** Enemy í„´ ì¢…ë£Œ ì²˜ë¦¬ */
     void FinishEnemyTurn();
 
 private:
-    /** Enemy °ø°İ ·ÎÁ÷ */
+    /** Enemy ê³µê²© ë¡œì§ */
     void PerformEnemyAttack();
 
-    /** ½ºÅ³ °ø°İ ÇÔ¼ö (ÃßÈÄ ±¸Çö) */
+    /** ìŠ¤í‚¬ ê³µê²© í•¨ìˆ˜ (ì¶”í›„ êµ¬í˜„) */
     void PerformSkill();
 
 

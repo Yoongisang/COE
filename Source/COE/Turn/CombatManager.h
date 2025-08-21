@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -10,43 +10,43 @@
  *
  */
 
-class UCOEGameInstance;     // ÀüÅõ ¸ŞÅ¸µ¥ÀÌÅÍ ¼Ò½º
-class ACOECharacter;        // ÀüÅõ Âü°¡ÀÚ °øÅë º£ÀÌ½º (ATurnPlayer/ATurnEnemy)
+class UCOEGameInstance;     // ì „íˆ¬ ë©”íƒ€ë°ì´í„° ì†ŒìŠ¤
+class ACOECharacter;        // ì „íˆ¬ ì°¸ê°€ì ê³µí†µ ë² ì´ìŠ¤ (ATurnPlayer/ATurnEnemy)
 
-// ÅÏ Á¤·Ä¿ë ¿£Æ®¸®: ³ôÀº Initiative ¿ì¼±, µ¿·üÀº TieBreak ³­¼ö·Î °áÁ¤
+// í„´ ì •ë ¬ìš© ì—”íŠ¸ë¦¬: ë†’ì€ Initiative ìš°ì„ , ë™ë¥ ì€ TieBreak ë‚œìˆ˜ë¡œ ê²°ì •
 USTRUCT()
 struct FTurnEntry
 {
     GENERATED_BODY()
 
     UPROPERTY()
-    TWeakObjectPtr<ACOECharacter> Character; // ¾×Æ¼ºê·Î Çàµ¿ÇÒ ÀüÅõ Ä³¸¯ÅÍ
+    TWeakObjectPtr<ACOECharacter> Character; // ì•¡í‹°ë¸Œë¡œ í–‰ë™í•  ì „íˆ¬ ìºë¦­í„°
 
     UPROPERTY()
-    int32 TeamPriority = 0;                  // ÆÀ ¿ì¼±±Ç (³ôÀ»¼ö·Ï ¸ÕÀú)
+    int32 TeamPriority = 0;                  // íŒ€ ìš°ì„ ê¶Œ (ë†’ì„ìˆ˜ë¡ ë¨¼ì €)
 
     UPROPERTY()
-    int32 Initiative = 0;                    // ¿ì¼±µµ(³ôÀ»¼ö·Ï ¸ÕÀú)
+    int32 Initiative = 0;                    // ìš°ì„ ë„(ë†’ì„ìˆ˜ë¡ ë¨¼ì €)
 
     UPROPERTY()
-    int32 TieBreak = 0;                      // µ¿·ü ±ú±â¿ë ³­¼ö(ÀÛÀ»¼ö·Ï ¿ì¼±)
+    int32 TieBreak = 0;                      // ë™ë¥  ê¹¨ê¸°ìš© ë‚œìˆ˜(ì‘ì„ìˆ˜ë¡ ìš°ì„ )
 
     bool operator<(const FTurnEntry& Other) const
     {
-        // 1¼øÀ§: ÆÀ ¿ì¼±±Ç ºñ±³
+        // 1ìˆœìœ„: íŒ€ ìš°ì„ ê¶Œ ë¹„êµ
         if (TeamPriority != Other.TeamPriority) return TeamPriority > Other.TeamPriority;
 
-        // 2¼øÀ§: Initiative (Agility) ºñ±³  
-        if (Initiative != Other.Initiative) return Initiative > Other.Initiative; // ³»¸²Â÷¼ø
+        // 2ìˆœìœ„: Initiative (Agility) ë¹„êµ  
+        if (Initiative != Other.Initiative) return Initiative > Other.Initiative; // ë‚´ë¦¼ì°¨ìˆœ
 
-        // 3¼øÀ§: TieBreak ºñ±³
-        return TieBreak < Other.TieBreak;                                         // ¿À¸§Â÷¼ø
+        // 3ìˆœìœ„: TieBreak ë¹„êµ
+        return TieBreak < Other.TieBreak;                                         // ì˜¤ë¦„ì°¨ìˆœ
     
     }
 };
 
 
-// UI/»ç¿îµå¿ë ÀÌº¥Æ®(½Çµ¥ÀÌÅÍ´Â GI¿¡¼­ Á¶È¸)
+// UI/ì‚¬ìš´ë“œìš© ì´ë²¤íŠ¸(ì‹¤ë°ì´í„°ëŠ” GIì—ì„œ ì¡°íšŒ)
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnCombatStarted);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnCombatEnded, bool, bPlayerWon, int32, Rounds);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnTurnChanged, ACOECharacter*, ActiveCharacter, int32, Round);
@@ -60,67 +60,67 @@ public:
     ACombatManager();
 
     UPROPERTY(BlueprintAssignable, Category = "Combat|Events")
-    FOnCombatStarted OnCombatStarted;   // ÀüÅõ ½ÃÀÛ
+    FOnCombatStarted OnCombatStarted;   // ì „íˆ¬ ì‹œì‘
 
     UPROPERTY(BlueprintAssignable, Category = "Combat|Events")
-    FOnCombatEnded OnCombatEnded;       // ÀüÅõ Á¾·á(½ÂÆĞ/¶ó¿îµå)
+    FOnCombatEnded OnCombatEnded;       // ì „íˆ¬ ì¢…ë£Œ(ìŠ¹íŒ¨/ë¼ìš´ë“œ)
 
     UPROPERTY(BlueprintAssignable, Category = "Combat|Events")
-    FOnTurnChanged OnTurnStarted;       // ÅÏ ½ÃÀÛ
+    FOnTurnChanged OnTurnStarted;       // í„´ ì‹œì‘
 
     UPROPERTY(BlueprintAssignable, Category = "Combat|Events")
-    FOnTurnChanged OnTurnEnded;         // ÅÏ Á¾·á
+    FOnTurnChanged OnTurnEnded;         // í„´ ì¢…ë£Œ
 
-public: // ¼ö¸íÁÖ±â
+public: // ìˆ˜ëª…ì£¼ê¸°
     UFUNCTION(BlueprintCallable, Category = "Combat")
-    void StartCombat();                 // Ã¹ ÅÏ ½ÃÀÛ±îÁö Ã³¸®
+    void StartCombat();                 // ì²« í„´ ì‹œì‘ê¹Œì§€ ì²˜ë¦¬
 
     UFUNCTION(BlueprintCallable, Category = "Combat")
-    void EndCombat(bool bPlayerWon);    // °­Á¦ Á¾·á/½ÂÆĞ ÅëÁö
+    void EndCombat(bool bPlayerWon);    // ê°•ì œ ì¢…ë£Œ/ìŠ¹íŒ¨ í†µì§€
 
-public: // Âü°¡ÀÚ °ü¸® (ACOECharacter ÇÑÁ¤)
+public: // ì°¸ê°€ì ê´€ë¦¬ (ACOECharacter í•œì •)
     UFUNCTION(BlueprintCallable, Category = "Combat")
     bool RegisterParticipant(ACOECharacter* Character);
 
     UFUNCTION(BlueprintCallable, Category = "Combat")
     bool UnregisterParticipant(ACOECharacter* Character);
 
-public: // ÅÏ ·ÎÁ÷
+public: // í„´ ë¡œì§
     UFUNCTION(BlueprintCallable, Category = "Combat")
-    void BuildTurnOrder();              // GI ÀÌ´Ï¼ÅÆ¼ºê·Î Á¤·Ä
+    void BuildTurnOrder();              // GI ì´ë‹ˆì…”í‹°ë¸Œë¡œ ì •ë ¬
 
     UFUNCTION(BlueprintCallable, Category = "Combat")
-    void BeginNextTurn();               // ´ÙÀ½ ÅÏÀ¸·Î ÁøÇà
+    void BeginNextTurn();               // ë‹¤ìŒ í„´ìœ¼ë¡œ ì§„í–‰
 
     UFUNCTION(BlueprintCallable, Category = "Combat")
-    void NotifyTurnActionEnd();         // ½ºÅ³/¾Ö´Ô/Åõ»çÃ¼ Á¾·á ½Ã È£Ãâ
+    void NotifyTurnActionEnd();         // ìŠ¤í‚¬/ì• ë‹˜/íˆ¬ì‚¬ì²´ ì¢…ë£Œ ì‹œ í˜¸ì¶œ
 
     UFUNCTION(BlueprintCallable, Category = "Combat")
-    void ApplyDamageAndEndTurn(ACOECharacter* InstigatorCharacter, ACOECharacter* TargetCharacter, float Damage); // Áï½ÃÇü ÆíÀÇ
+    void ApplyDamageAndEndTurn(ACOECharacter* InstigatorCharacter, ACOECharacter* TargetCharacter, float Damage); // ì¦‰ì‹œí˜• í¸ì˜
 
     UFUNCTION(BlueprintPure, Category = "Combat")
-    ACOECharacter* GetActiveCharacter() const;   // ÇöÀç ÅÏ ÁÖÃ¼
+    ACOECharacter* GetActiveCharacter() const;   // í˜„ì¬ í„´ ì£¼ì²´
 
 protected:
-    virtual void BeginPlay() override;  // GI Ä³½Ì
+    virtual void BeginPlay() override;  // GI ìºì‹±
 
 private:
-    void EnterState(uint8 NewState);    // GI·Î »óÅÂ ÀüÆÄ
-    void CheckVictory();                // GI µ¥ÀÌÅÍ·Î ½ÂÆĞ ÆÇÁ¤
+    void EnterState(uint8 NewState);    // GIë¡œ ìƒíƒœ ì „íŒŒ
+    void CheckVictory();                // GI ë°ì´í„°ë¡œ ìŠ¹íŒ¨ íŒì •
 
 private:
     UPROPERTY()
-    UCOEGameInstance* GI = nullptr;     // ÀüÅõ ¸ŞÅ¸µ¥ÀÌÅÍ ¼Ò½º
+    UCOEGameInstance* GI = nullptr;     // ì „íˆ¬ ë©”íƒ€ë°ì´í„° ì†ŒìŠ¤
 
     UPROPERTY()
-    TArray<TWeakObjectPtr<ACOECharacter>> Participants; // µî·ÏµÈ Âü°¡ÀÚ
+    TArray<TWeakObjectPtr<ACOECharacter>> Participants; // ë“±ë¡ëœ ì°¸ê°€ì
 
     UPROPERTY()
-    TArray<FTurnEntry> TurnOrder;       // Á¤·ÄµÈ ÅÏ Å¥
+    TArray<FTurnEntry> TurnOrder;       // ì •ë ¬ëœ í„´ í
 
     UPROPERTY()
-    int32 CurrentIndex = INDEX_NONE;    // ÇöÀç ÅÏ ÀÎµ¦½º
+    int32 CurrentIndex = INDEX_NONE;    // í˜„ì¬ í„´ ì¸ë±ìŠ¤
 
     UPROPERTY()
-    int32 Round = 0;                    // ´©Àû ¶ó¿îµå(0ºÎÅÍ)
+    int32 Round = 0;                    // ëˆ„ì  ë¼ìš´ë“œ(0ë¶€í„°)
 };

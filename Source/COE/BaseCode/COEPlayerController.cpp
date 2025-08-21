@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+ï»¿// Copyright Epic Games, Inc. All Rights Reserved.
 
 
 #include "COEPlayerController.h"
@@ -136,19 +136,19 @@ void ACOEPlayerController::DoJumpEnd()
 
 void ACOEPlayerController::DoDefaultAttack()
 {
-	// COEChar nullptr °Ë»ç¿Í COEChar->GetCharacter()->IsFalling()À¸·Î °øÁß¿¡ÀÖ´ÂÁö ÀÌ¹Ì °ø°Ý ÁßÀÎÁö Ã¼Å©
+	// COEChar nullptr ê²€ì‚¬ì™€ COEChar->GetCharacter()->IsFalling()ìœ¼ë¡œ ê³µì¤‘ì—ìžˆëŠ”ì§€ ì´ë¯¸ ê³µê²© ì¤‘ì¸ì§€ ì²´í¬
 	if (!IsValid(COEChar) || COEChar->GetCharacterMovement()->IsFalling())
 	{
 		UE_LOG(LogTemp, Log, TEXT("COEChar == nullptr && bIsFalling == true"));
 		return;
 	}
-	// °ø°ÝÁß ¶Ç´Â Á¶ÁØÁß ÀÌ¶ó¸é ÀÔ·Â X
+	// ê³µê²©ì¤‘ ë˜ëŠ” ì¡°ì¤€ì¤‘ ì´ë¼ë©´ ìž…ë ¥ X
 	if (COEChar->bIsAttacking || COEChar->bIsAiming)
 	{
 		UE_LOG(LogTemp, Log, TEXT("bIsAttacking == true"));
 		return;
 	}
-	// ¹®Á¦¾øÀ» ½Ã COECharacterÀÇ DefaultAttack() ½ÇÇà
+	// ë¬¸ì œì—†ì„ ì‹œ COECharacterì˜ DefaultAttack() ì‹¤í–‰
 	COEChar->DefaultAttack();
 	COEChar->bIsAttacking = true;
 }

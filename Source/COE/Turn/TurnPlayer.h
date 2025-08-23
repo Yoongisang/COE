@@ -61,6 +61,9 @@ public:
 	/** Q: 기본공격(턴 종료, AP +1) */
 	void UseSkill_Q();
 
+	/** Q: 기본공격(턴 종료, AP +1) */
+	void Parry();
+
 	/** 코스트 소비형 스킬(성공 시 즉시 턴 종료)
 	bool UseSkill_WithCost(int32 Cost);
 
@@ -70,6 +73,9 @@ public:
 	/** 회복 아이템 사용 */
 	UFUNCTION(BlueprintCallable, Category = "Consumable|Combat")
 	void UseHPPotion();
+
+	/** Q: 기본공격(턴 종료, AP +1) */
+	void Dodge();
 
 	UFUNCTION(BlueprintCallable, Category = "Consumable|Combat")
 	void UseAPPotion();

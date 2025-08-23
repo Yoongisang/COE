@@ -98,38 +98,41 @@ void ATurnPlayerController::DoLook(float Yaw, float Pitch)
 
 void ATurnPlayerController::OnSkillQ()
 {
-	if (!TurnChar || TurnChar->bIsAttacking)
+	if (!TurnChar)
 		return;
 	
+	if (TurnChar->IsEnemyTurnActive())
+	{
+		TurnChar->Parry();
+
+		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayerController] 패링!"));
+		return;
+	}
 
 	if (TurnChar->CanPerformAction())
 	{
 		TurnChar->UseSkill_Q();
 		UE_LOG(LogTemp, Log, TEXT("Input : Q"));
 	}
-	// Enemy Turn 중이면 패링 모드
-	else if (TurnChar->IsEnemyTurnActive())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] 패링!"));
-		return;
-	}
 }
 
 void ATurnPlayerController::OnSkillW()
 {
-	if (!TurnChar || TurnChar->bIsAttacking)
+	if (!TurnChar)
 		return;
+
+	if (TurnChar->IsEnemyTurnActive())
+	{
+		TurnChar->Dodge();
+		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayerController] 회피!"));
+		return;
+	}
 
 	if (TurnChar->CanPerformAction())
 	{
 		TurnChar->UseHPPotion();
 		UE_LOG(LogTemp, Log, TEXT("Input : W"));
-	}
-	// Enemy Turn 중이면 패링 모드
-	else if (TurnChar->IsEnemyTurnActive())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] 회피!"));
-		return;
+
 	}
 }
 

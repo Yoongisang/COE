@@ -14,8 +14,17 @@ class COE_API UCOEAnimInstance : public UAnimInstance
 {
 	GENERATED_BODY()
 public:
+	// 기본공격
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AnimMontage")
 	TObjectPtr<class UAnimMontage> DefaultAttackMontage;
+
+	// 패링
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AnimMontage")
+	TObjectPtr<class UAnimMontage> ParryMontage;
+
+	// 회피
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AnimMontage")
+	TObjectPtr<class UAnimMontage> DodgeMontage;
 
 public:
 	//움직임 체크 (Idle 판단)
@@ -67,8 +76,18 @@ public:
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 
 public:
+	// 기본공격 
 	UFUNCTION(BlueprintCallable, Category = "Animation")
 	void DefaultAttackAnim();
+
+	// 패리
+	UFUNCTION(BlueprintCallable, Category = "Animation")
+	void ParryAnim();
+
+	// 회피
+	UFUNCTION(BlueprintCallable, Category = "Animation")
+	void DodgeAnim();
+
 	UFUNCTION(BlueprintCallable, Category = "Animation")
 	void AnimNotify_End();
 	UFUNCTION(BlueprintCallable, Category = "Animation")

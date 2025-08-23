@@ -10,6 +10,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Exploration/ExplorationPlayer.h"
 #include "CombatManager.h"
+#include "BaseCode/COEAnimInstance.h"
 
 ATurnPlayer::ATurnPlayer()
 {
@@ -110,6 +111,16 @@ void ATurnPlayer::UseSkill_Q()
 
 }
 
+void ATurnPlayer::Parry()
+{
+	if (IsEnemyTurnActive())
+	{
+		AnimInstance->ParryAnim();
+
+		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] 패링!"));
+	}
+}
+
 void ATurnPlayer::Fire()
 {
 	// 우클릭 조준일 때만 AP 소모
@@ -153,6 +164,16 @@ void ATurnPlayer::UseHPPotion()
 	ClampHPAP();          // 범위 보정
 	RequestEndTurn();     // 즉시 턴 종료
 	UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] UseHPPotion."));
+
+}
+
+void ATurnPlayer::Dodge()
+{
+	if (IsEnemyTurnActive())
+	{
+		AnimInstance->DodgeAnim();
+		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayerController] 회피!"));
+	}
 }
 
 void ATurnPlayer::UseAPPotion()

@@ -204,15 +204,38 @@ void UTurnCombatBridgeComponent::HandleTurnStarted(ACOECharacter* ActiveCharacte
     }
     else
     {
-        // Enemy 턴: 살아있는 Player 중 랜덤 선택해 카메라만 전환
+        // Enemy 턴: 살아있는 Player 중 랜덤 선택해 카메라 전환 + PlayerController도 Possess
         const TArray<ACOECharacter*> AlivePlayers = GI->GetAliveTeamMembers(ECombatTeam::Player);
         if (AlivePlayers.Num() > 0)
         {
             // 완전 랜덤 선택 (현재 타겟 상관없이)
             ACOECharacter* RandomTarget = AlivePlayers[FMath::RandRange(0, AlivePlayers.Num() - 1)];
+
             PC->SetViewTargetWithBlend(RandomTarget, 0.8f, EViewTargetBlendFunction::VTBlend_Cubic);
             UE_LOG(LogTemp, Log, TEXT("[Camera] Enemy turn - random target selected: %s"),
                 *RandomTarget->GetName());
+
+            // 2) 블렌드가 끝나갈 타이밍에 해당 아군 Pawn을 Possess
+            if (APawn* TargetPawn = Cast<APawn>(RandomTarget))
+            {
+                FTimerHandle PossessDelayHandle;
+                GetWorld()->GetTimerManager().SetTimer(PossessDelayHandle, [this, PC, TargetPawn]()
+                    {
+                        PC->Possess(TargetPawn);
+
+                        // 3) 적 턴이므로 입력은 잠그고, 커서는 보이게 유지
+                        PC->SetInputMode(FInputModeGameOnly());
+                        PC->bShowMouseCursor = false;
+                        PC->bEnableClickEvents = false;
+                        PC->bEnableMouseOverEvents = false;
+                        PC->SetIgnoreLookInput(true);
+
+                        if (auto* TP = Cast<ATurnPlayer>(TargetPawn))
+                        {
+                            TP->UpdateCursor(); // 네가 이미 만든 커서/입력 상태 동기화
+                        }
+                    }, 0.85f, false); // 블렌드(0.8s)보다 약간 뒤에 Possess
+            }
         }
 
         // 새로 추가: Enemy 자동 행동 시작 

@@ -110,6 +110,34 @@ void UCOEAnimInstance::DefaultAttackAnim()
 	}
 }
 
+void UCOEAnimInstance::ParryAnim()
+{
+	// ParryMontage가 할당되어있고 Montage가 실행중이 아닐경우 Montage실행
+	if (IsValid(ParryMontage))
+	{
+		if (!Montage_IsPlaying(ParryMontage))
+		{
+			Montage_Play(ParryMontage);
+
+		}
+
+	}
+}
+
+void UCOEAnimInstance::DodgeAnim()
+{
+	// DodgeMontage가 할당되어있고 Montage가 실행중이 아닐경우 Montage실행
+	if (IsValid(DodgeMontage))
+	{
+		if (!Montage_IsPlaying(DodgeMontage))
+		{
+			Montage_Play(DodgeMontage);
+
+		}
+
+	}
+}
+
 void UCOEAnimInstance::AnimNotify_End()
 {
 	if (!Character) 

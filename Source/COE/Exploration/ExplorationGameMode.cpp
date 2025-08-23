@@ -10,7 +10,6 @@
 
 AExplorationGameMode::AExplorationGameMode()
 {
-    // 기본 생성자에서 첫 번째 캐릭터를 DefaultPawnClass로 설정 가능
 }
 
 void AExplorationGameMode::SwitchPlayerCharacter(const FVector& SpawnLocation, const FRotator& SpawnRotation)

@@ -110,29 +110,6 @@ void ATurnPlayer::UseSkill_Q()
 
 }
 
-//bool ATurnPlayer::UseSkill_WithCost(int32 Cost)
-//{
-//	if (Cost > 0)
-//	{
-//		if (CharacterStats.CurrentAP < Cost)
-//		{
-//			UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] Not enough AP for skill. Need: %d, Cur: %d"),
-//				Cost, CharacterStats.CurrentAP);
-//			return false;
-//		}
-//
-//		CharacterStats.CurrentAP = FMath::Clamp(CharacterStats.CurrentAP - Cost, 0, CharacterStats.MAXAP);
-//	}
-//
-//	// 스킬 효과 실행...
-//	// TODO: 실제 스킬 로직 구현
-//
-//	// 규칙: 코스트형 스킬은 성공 시 즉시 턴 종료
-//	RequestEndTurn();
-//
-//	return true;
-//}
-
 void ATurnPlayer::Fire()
 {
 	// 우클릭 조준일 때만 AP 소모

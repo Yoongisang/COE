@@ -7,6 +7,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/InputSettings.h"
+#include "ExplorationGameMode.h"
 
 void AExplorationPlayer::BeginPlay()
 {
@@ -14,11 +15,25 @@ void AExplorationPlayer::BeginPlay()
 
   
     GI = GetCOEGameInstance();
+
+    // PlayerController 설정 확인
+    if (APlayerController* PC = Cast<APlayerController>(GetController()))
+    {
+        // 입력 모드 설정
+        PC->SetInputMode(FInputModeGameOnly());
+        UE_LOG(LogTemp, Log, TEXT("[ExplorationPlayer] Controller properly set"));
+    }
 }
 
 UCOEGameInstance* AExplorationPlayer::GetCOEGameInstance() const
 {
     return GetGameInstance<UCOEGameInstance>();
+}
+
+void AExplorationPlayer::SaveCurrentTransform(FVector& OutLocation, FRotator& OutRotation) const
+{
+    OutLocation = GetActorLocation();
+    OutRotation = GetActorRotation();
 }
 
 void AExplorationPlayer::UseExplorationFullHeal()
@@ -54,5 +69,18 @@ void AExplorationPlayer::UseExplorationFullHeal()
         }
 
         UE_LOG(LogTemp, Log, TEXT("[ExplorationPlayer] Exploration full-heal used."));
+    }
+}
+
+void AExplorationPlayer::SwitchToNextCharacter()
+{
+    // GameMode에 캐릭터 변경 요청
+    if (AExplorationGameMode* GM = Cast<AExplorationGameMode>(GetWorld()->GetAuthGameMode()))
+    {
+        FVector CurrentLocation;
+        FRotator CurrentRotation;
+        SaveCurrentTransform(CurrentLocation, CurrentRotation);
+
+        GM->SwitchPlayerCharacter(CurrentLocation, CurrentRotation);
     }
 }

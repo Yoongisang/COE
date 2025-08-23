@@ -89,6 +89,11 @@ void UCOEAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 
 		YawOffset = DeltaRotation.Yaw;
 	}
+	if (IsValid(Character))
+	{
+		IsAiming = Character->bIsAiming;
+	}
+
 }
 
 void UCOEAnimInstance::DefaultAttackAnim()

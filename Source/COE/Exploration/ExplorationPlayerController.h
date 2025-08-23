@@ -20,6 +20,19 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class AExplorationPlayer> ExplorationChar;
 
+
+protected:
+
+	/** 캐릭터 변경 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	TObjectPtr<UInputAction> ChangeCharacter;
+
+	/** Input mapping context setup */
+	virtual void SetupInputComponent() override;
+
+	/** 입력 매핑 컨텍스트 재설정 */
+	void SetupInputMappingContext();
+
 public:
 
 	/** BeginPlay */
@@ -29,4 +42,10 @@ public:
 
 	/** 마우스 좌클릭 Input  */
 	virtual void DoMouseLeftClick() override;
+
+	/** 캐릭터 변경(T) Input  */
+	virtual void DoChangeCharacter() ;
+
+	/** OnPossess Override */
+	virtual void OnPossess(APawn* InPawn) override;
 };

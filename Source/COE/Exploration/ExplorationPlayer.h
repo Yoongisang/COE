@@ -30,6 +30,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Consumable|Exploration")
 	void UseExplorationFullHeal();
 
+	/** 캐릭터 변경 요청 */
+	UFUNCTION(BlueprintCallable, Category = "Character Switching")
+	void SwitchToNextCharacter();
+
 private:
 
 	/** GI 호출 헬퍼 */
@@ -37,4 +41,8 @@ private:
 
 	/** HP 회복 범위 보정 */
 	void ClampSelfHP() { CharacterStats.CurrentHP = FMath::Clamp(CharacterStats.CurrentHP, 0.f, CharacterStats.MAXHP); }
+
+	/** 현재 위치/회전 정보 저장 */
+	void SaveCurrentTransform(FVector& OutLocation, FRotator& OutRotation) const;
+
 };

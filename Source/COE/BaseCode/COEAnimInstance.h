@@ -24,6 +24,11 @@ public:
 	//추락 체크 (점프 또는 추락 판단)
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ani", meta = (AllowPrivateAccess = "true"))
 	bool IsFalling;
+
+	//조준 체크
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ani", meta = (AllowPrivateAccess = "true"))
+	bool IsAiming;
+
 	//속도 벡터
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ani", meta = (AllowPrivateAccess = "true"))
 	FVector Velocity;
@@ -39,6 +44,7 @@ public:
 	//가속도
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ani", meta = (AllowPrivateAccess = "true"))
 	FVector Acceleration;
+
 	//조준 방향과 이동방향 좌우 각도 차이
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ani", meta = (AllowPrivateAccess = "true"))
 	float YawOffset;

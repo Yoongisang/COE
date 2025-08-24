@@ -31,8 +31,7 @@ protected:
 
 protected:
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimInstance", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UCOEAnimInstance> AnimInstance;
+
 
 	/** 조준 상태 전환 시 보간을 위한 변수 */
 	FTimerHandle AimingInterpTimerHandle;
@@ -45,6 +44,9 @@ public:
 
 	/** Constructor */
 	ACOECharacter();	
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimInstance", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UCOEAnimInstance> AnimInstance;
 
 	/** CombatBridge 블루프린트 바인딩 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat|Bridge", meta = (AllowPrivateAccess = "true"))

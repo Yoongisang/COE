@@ -2,6 +2,7 @@
 
 
 #include "TurnEnemy.h"
+#include "TurnPlayer.h"
 #include "BaseCode/COEAnimInstance.h"
 #include "TurnCombatBridgeComponent.h"
 #include "CombatManager.h"

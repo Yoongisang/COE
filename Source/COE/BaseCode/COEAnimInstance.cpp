@@ -190,6 +190,98 @@ void UCOEAnimInstance::AnimNotify_End()
 
 void UCOEAnimInstance::AnimNotify_DoDefaultAttack()
 {
+	if (!Character)
+		return;
+
 	Character->DoDefaultAttack();
 	UE_LOG(LogTemp, Log, TEXT("DoDefaultAttack"));
+}
+
+void UCOEAnimInstance::AnimNotify_Parry_Start()
+{
+	if (!Character)
+		return;
+
+	UE_LOG(LogTemp, Warning, TEXT("[AnimNotify] ParryStart called for %s"), *Character->GetName());
+
+	// TurnPlayer로 캐스팅해서 패링 무적 시작
+	if (auto* TurnPlayer = Cast<ATurnPlayer>(Character))
+	{
+		TurnPlayer->StartParryInvincibility();
+	}
+
+}
+
+void UCOEAnimInstance::AnimNotify_Parry_End()
+{
+	if (!Character)
+		return;
+
+	UE_LOG(LogTemp, Warning, TEXT("[AnimNotify] ParryEnd called for %s"), *Character->GetName());
+
+	// TurnPlayer로 캐스팅해서 패링 무적 종료
+	if (auto* TurnPlayer = Cast<ATurnPlayer>(Character))
+	{
+		TurnPlayer->EndParryInvincibility();
+	}
+
+}
+
+void UCOEAnimInstance::AnimNotify_ParryAnim_End()
+{
+	if (!Character)
+		return;
+
+	UE_LOG(LogTemp, Warning, TEXT("[AnimNotify] ParryAnimEnd called for %s"), *Character->GetName());
+
+	// TurnPlayer로 캐스팅해서 방어 행동 완전 종료
+	if (auto* TurnPlayer = Cast<ATurnPlayer>(Character))
+	{
+		TurnPlayer->EndDefenseAction();
+	}
+
+}
+
+void UCOEAnimInstance::AnimNotify_Dodge_Start()
+{
+	if (!Character)
+		return;
+
+	UE_LOG(LogTemp, Warning, TEXT("[AnimNotify] DodgeStart called for %s"), *Character->GetName());
+
+	// TurnPlayer로 캐스팅해서 회피 무적 시작
+	if (auto* TurnPlayer = Cast<ATurnPlayer>(Character))
+	{
+		TurnPlayer->StartDodgeInvincibility();
+	}
+
+}
+
+void UCOEAnimInstance::AnimNotify_Dodge_End()
+{
+	if (!Character)
+		return;
+
+	UE_LOG(LogTemp, Warning, TEXT("[AnimNotify] DodgeEnd called for %s"), *Character->GetName());
+
+	// TurnPlayer로 캐스팅해서 회피 무적 종료 (여기서 AP +1 보상 처리됨)
+	if (auto* TurnPlayer = Cast<ATurnPlayer>(Character))
+	{
+		TurnPlayer->EndDodgeInvincibility();
+	}
+
+}
+
+void UCOEAnimInstance::AnimNotify_DodgeAnim_End()
+{
+	if (!Character)
+		return;
+
+	UE_LOG(LogTemp, Warning, TEXT("[AnimNotify] DodgeAnimEnd called for %s"), *Character->GetName());
+
+	// TurnPlayer로 캐스팅해서 방어 행동 완전 종료
+	if (auto* TurnPlayer = Cast<ATurnPlayer>(Character))
+	{
+		TurnPlayer->EndDefenseAction();
+	}
 }

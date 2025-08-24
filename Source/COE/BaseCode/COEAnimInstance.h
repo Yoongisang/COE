@@ -92,4 +92,28 @@ public:
 	void AnimNotify_End();
 	UFUNCTION(BlueprintCallable, Category = "Animation")
 	void AnimNotify_DoDefaultAttack();
+
+	/** 패링 무적 시작 (Parry_Start에서 호출) */
+	UFUNCTION(BlueprintCallable, Category = "Animation|Defense")
+	void AnimNotify_Parry_Start();
+
+	/** 패링 무적 종료 (Parry_End에서 호출) */
+	UFUNCTION(BlueprintCallable, Category = "Animation|Defense")
+	void AnimNotify_Parry_End();
+
+	/** 패링 애니메이션 완전 종료 (ParryAnim_End에서 호출) */
+	UFUNCTION(BlueprintCallable, Category = "Animation|Defense")
+	void AnimNotify_ParryAnim_End();
+
+	/** 회피 무적 시작 (Dodge_Start에서 호출) */
+	UFUNCTION(BlueprintCallable, Category = "Animation|Defense")
+	void AnimNotify_Dodge_Start();
+
+	/** 회피 무적 종료 (Dodge_End에서 호출) */
+	UFUNCTION(BlueprintCallable, Category = "Animation|Defense")
+	void AnimNotify_Dodge_End();
+
+	/** 회피 애니메이션 완전 종료 (DodgeAnim_End에서 호출) */
+	UFUNCTION(BlueprintCallable, Category = "Animation|Defense")
+	void AnimNotify_DodgeAnim_End();
 };

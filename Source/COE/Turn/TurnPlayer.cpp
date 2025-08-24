@@ -2,6 +2,7 @@
 
 
 #include "TurnPlayer.h"
+#include "TurnEnemy.h"
 #include "GameFramework/PlayerController.h"    
 #include "GameFramework/InputSettings.h"  
 #include "GameFramework/CharacterMovementComponent.h"
@@ -113,12 +114,29 @@ void ATurnPlayer::UseSkill_Q()
 
 void ATurnPlayer::Parry()
 {
-	if (IsEnemyTurnActive())
+
+	// 방어 가능한 상태인지 확인
+	if (!CanPerformDefense())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] Parry failed - cannot perform defense"));
+		return;
+	}
+
+	// 방어 상태 설정
+	bIsDefense = true;
+
+	if (IsValid(AnimInstance))
 	{
 		AnimInstance->ParryAnim();
 
 		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] 패링!"));
 	}
+	else
+	{
+		EndDefenseAction();
+	}
+		
+
 }
 
 void ATurnPlayer::Fire()
@@ -169,11 +187,28 @@ void ATurnPlayer::UseHPPotion()
 
 void ATurnPlayer::Dodge()
 {
-	if (IsEnemyTurnActive())
+	// 방어 가능한 상태인지 확인
+	if (!CanPerformDefense())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] Dodge failed - cannot perform defense"));
+		return;
+	}
+
+	
+	// 방어 상태 설정
+	bIsDefense = true;
+
+	if (IsValid(AnimInstance))
 	{
 		AnimInstance->DodgeAnim();
 		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayerController] 회피!"));
 	}
+	else
+	{
+		EndDefenseAction();
+	}
+		
+	
 }
 
 void ATurnPlayer::UseAPPotion()
@@ -228,6 +263,123 @@ bool ATurnPlayer::CanPerformAction() const
 
 }
 
+bool ATurnPlayer::CanPerformDefense() const
+{
+	return IsEnemyTurnActive() && !bIsDefense;
+}
+
+void ATurnPlayer::StartParryInvincibility()
+{
+	UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] %s - Parry invincibility started!"), *GetName());
+	bIsParryInvincible = true;
+}
+
+void ATurnPlayer::EndParryInvincibility()
+{
+	UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] %s - Parry invincibility ended!"), *GetName());
+	bIsParryInvincible = false;
+}
+
+void ATurnPlayer::StartDodgeInvincibility()
+{
+	UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] %s - Dodge invincibility started!"), *GetName());
+	bIsDodgeInvincible = true;
+}
+
+void ATurnPlayer::EndDodgeInvincibility()
+{
+	UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] %s - Dodge invincibility ended!"), *GetName());
+	bIsDodgeInvincible = false;
+}
+
+void ATurnPlayer::EndDefenseAction()
+{
+	UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] %s - Defense action completed!"), *GetName());
+
+	// 모든 방어 상태 해제
+	bIsDefense = false;
+	bIsParryInvincible = false;
+	bIsDodgeInvincible = false;
+
+	// 패링 반격 대상 초기화
+	ParryCounterTarget.Reset();
+}
+
+void ATurnPlayer::OnParrySuccess(ATurnEnemy* Attacker)
+{
+	if (!IsValid(Attacker))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] OnParrySuccess called but Attacker is invalid"));
+		return;
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] %s - Parry SUCCESS against %s!"),
+		*GetName(), *Attacker->GetName());
+
+	// 패링 성공 보상: AP +2
+	GainAP(2);
+	UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] Parry successful! AP +2 (Current: %d)"),
+		CharacterStats.CurrentAP);
+
+	// 반격 대상 설정
+	ParryCounterTarget = Attacker;
+
+	// 즉시 반격 실행
+	ExecuteParryCounter(Attacker);
+}
+
+void ATurnPlayer::OnDodgeSuccess(ATurnEnemy* Attacker)
+{
+	if (!IsValid(Attacker))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] OnDodgeSuccess called but Attacker is invalid"));
+		return;
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] %s - Dodge SUCCESS against %s!"),
+		*GetName(), *Attacker->GetName());
+
+	// 회피 성공 보상: AP +1
+	GainAP(1);
+	UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] Dodge successful! AP +1 (Current: %d)"),
+		CharacterStats.CurrentAP);
+
+}
+
+float ATurnPlayer::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	// 무적 상태 체크
+	if (IsInvincible())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] %s is invincible! Damage blocked: %f"),
+			*GetName(), DamageAmount);
+
+		// 패링 무적 중이고 공격자가 TurnEnemy라면 패링 성공 처리
+		if (bIsParryInvincible)
+		{
+			if (ATurnEnemy* AttackingEnemy = Cast<ATurnEnemy>(DamageCauser))
+			{
+				OnParrySuccess(AttackingEnemy);
+			}
+		}
+		// 회피 무적 중이고 공격자가 TurnEnemy라면 회피 성공 처리
+		else if (bIsDodgeInvincible)
+		{
+			if (ATurnEnemy* AttackingEnemy = Cast<ATurnEnemy>(DamageCauser))
+			{
+				OnDodgeSuccess(AttackingEnemy);
+			}
+		}
+
+
+		return 0.0f; // 데미지 무효화
+	}
+
+	// 일반적인 데미지 처리 (부모 클래스 호출)
+	return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+}
+
 UCOEGameInstance* ATurnPlayer::GetCOEGameInstance() const
 {
 	return GetGameInstance<UCOEGameInstance>();
@@ -237,6 +389,43 @@ void ATurnPlayer::ClampHPAP()
 {
 	CharacterStats.CurrentHP = FMath::Clamp(CharacterStats.CurrentHP, 0.f, CharacterStats.MAXHP);
 	CharacterStats.CurrentAP = FMath::Clamp(CharacterStats.CurrentAP, 0, CharacterStats.MAXAP);
+}
+
+void ATurnPlayer::ExecuteParryCounter(ATurnEnemy* Target)
+{
+	if (!IsValid(Target))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] ExecuteParryCounter called but Target is invalid"));
+		return;
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] %s executing parry counter against %s"),
+		*GetName(), *Target->GetName());
+
+	// 1. 적의 공격 애니메이션 중단 및 스턴 적용
+	if (Target->AnimInstance && Target->bIsAttacking)
+	{
+		// 현재 공격 애니메이션 중단
+		Target->AnimInstance->Montage_Stop(0.0f);
+		Target->bIsAttacking = false;
+		// 추후 즉시 애니메이션 중단한다음 Stun AnimMontage 실행 구현
+
+		UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] %s attack animation stopped"), *Target->GetName());
+	}
+
+	// 2. 적에게 스턴 애니메이션 적용 (스턴 몽타주가 있다면)
+	// TODO: 적에게 스턴 애니메이션을 적용하는 코드 추가
+	// if (Target->HasStunMontage()) Target->PlayStunMontage();
+
+	// 3. 적에게 데미지 적용 (패링 반격 데미지)
+	float ParryCounterDamage = 15.0f; // 기본 공격보다 높은 데미지
+	UGameplayStatics::ApplyDamage(Target, ParryCounterDamage, GetController(), this, nullptr);
+
+	UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] Parry counter damage applied: %f to %s"),
+		ParryCounterDamage, *Target->GetName());
+
+	// 4. 파티클 효과 (패링 성공 이펙트)
+	SpawnDefaultAttackEmitter(); // 기존 공격 파티클 재사용 (추후 전용 이펙트로 교체 가능)
 }
 
 void ATurnPlayer::PossessedBy(AController* NewController)

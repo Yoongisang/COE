@@ -40,20 +40,32 @@ void UDetectPlayerComponent::HandleBeginOverlap(UPrimitiveComponent* OverlappedC
         {
             //SelectedBattleMap에 전투맵 리스트 할당
             FName SelectedBattleMap = Enemy->PossibleBattleLevels[FMath::RandRange(0, Enemy->PossibleBattleLevels.Num() - 1)];
-            //GameInstance에 전투 정보 저장
-            if (UCOEGameInstance* GI = Cast<UCOEGameInstance>(UGameplayStatics::GetGameInstance(this)))
+
+            // COECharacter로 캐스트해서 슬로우모션 트랜지션 사용
+            if (ACOECharacter* PlayerChar = Cast<ACOECharacter>(OtherActor))
             {
-                FString CurrLevel = UGameplayStatics::GetCurrentLevelName(this, true);
-
-                GI->bPlayerInitiative = false; // 감지당해 넘어가는 것이므로 적이 우선
-                GI->bPlayerWasDetected = true;
-                GI->ReturnLocation = OtherActor->GetActorLocation();
-                GI->ReturnMapName = FName(*CurrLevel); // 실제 탐색맵 이름으로 바꿔야 함
-                GI->EnemyToRemoveName.AddUnique(Enemy->GetFName());
+                // 적에게 감지당했으므로 적이 먼저 행동
+                PlayerChar->StartCombatTransition(Enemy, SelectedBattleMap, false);
             }
+            else
+            {
+                //GameInstance에 전투 정보 저장
+                if (UCOEGameInstance* GI = Cast<UCOEGameInstance>(UGameplayStatics::GetGameInstance(this)))
+                {
+                    FString CurrLevel = UGameplayStatics::GetCurrentLevelName(this, true);
 
-            //전투맵으로 이동
-            UGameplayStatics::OpenLevel(this, SelectedBattleMap);
+                    GI->bPlayerInitiative = false; // 감지당해 넘어가는 것이므로 적이 우선
+                    GI->bPlayerWasDetected = true;
+                    GI->ReturnLocation = OtherActor->GetActorLocation();
+                    GI->ReturnMapName = FName(*CurrLevel); // 실제 탐색맵 이름으로 바꿔야 함
+                    GI->EnemyToRemoveName.AddUnique(Enemy->GetFName());
+                }
+
+                //전투맵으로 이동
+                UGameplayStatics::OpenLevel(this, SelectedBattleMap);
+            }
+            
+     
         }
         else
         {

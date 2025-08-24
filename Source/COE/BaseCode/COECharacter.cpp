@@ -13,6 +13,7 @@
 #include "Exploration/ExplorationEnemy.h"
 #include "EngineUtils.h"
 #include "Turn/TurnCombatBridgeComponent.h"
+#include "AimUIWidget.h"
 //#include "EnhancedInputComponent.h"
 //#include "EnhancedInputSubsystems.h"
 //#include "InputActionValue.h"
@@ -107,6 +108,7 @@ void ACOECharacter::BeginPlay()
 		GI->ReturnLocation = FVector::ZeroVector;
 		GI->ReturnMapName = NAME_None; // 실제 탐색맵 이름으로 바꿔야 함
 
+
 	}
 
 	//TurnBComvatBridegeComponent 할당
@@ -114,6 +116,10 @@ void ACOECharacter::BeginPlay()
 	{
 		TurnBridge = FindComponentByClass<UTurnCombatBridgeComponent>();
 	}
+
+	// 조준 UI 위젯 초기화
+	InitializeAimUIWidget();
+
 }
 
 void ACOECharacter::DefaultAttack()
@@ -190,21 +196,10 @@ void ACOECharacter::DoDefaultAttack()
 			{
 				//SelectedBattleMap에 전투맵 리스트 할당
 				FName SelectedBattleMap = Enemy->PossibleBattleLevels[FMath::RandRange(0, Enemy->PossibleBattleLevels.Num() - 1)];
-				//GameInstance에 전투 정보 저장
-				if (UCOEGameInstance* GI = Cast<UCOEGameInstance>(UGameplayStatics::GetGameInstance(this)))
-				{
-					FString CurrLevel = UGameplayStatics::GetCurrentLevelName(this, true);
-					FName ThisEnemyName = HitResult.GetActor()->GetFName();
-					
-					GI->bPlayerInitiative = true; // 플레이어가 먼저 공격
-					GI->bPlayerWasDetected = false;
-					GI->ReturnLocation = GetActorLocation();
-					GI->ReturnMapName = FName(*CurrLevel); // 실제 탐색맵 이름으로 바꿔야 함
-					GI->EnemyToRemoveName.AddUnique(ThisEnemyName);
-				}
 
-				//전투맵으로 이동
-				UGameplayStatics::OpenLevel(this, SelectedBattleMap);
+				// 전투 진입 시 슬로우모션 효과와 함께 레벨 전환
+				StartCombatTransition(Enemy, SelectedBattleMap, true); // 플레이어 선공
+
 			}
 			else
 			{
@@ -213,6 +208,58 @@ void ACOECharacter::DoDefaultAttack()
 		}
 	}
 	UE_LOG(LogTemp, Warning, TEXT("DefaultAttack() called in TurnBattleLevel!"));
+}
+
+void ACOECharacter::StartCombatTransition(AExplorationEnemy* Enemy, FName BattleMapName, bool bPlayerInitiative)
+{
+	if (!Enemy) 
+		return;
+
+	UE_LOG(LogTemp, Warning, TEXT("[CombatTransition] 전투 진입 시작 - 슬로우모션 활성화"));
+
+	// 조준 UI 강제로 숨김 (전투 진입 시)
+	HideAimUI();
+
+	// 1) GameInstance에 전투 정보 저장
+	if (UCOEGameInstance* GI = Cast<UCOEGameInstance>(UGameplayStatics::GetGameInstance(this)))
+	{
+		FString CurrLevel = UGameplayStatics::GetCurrentLevelName(this, true);
+		FName ThisEnemyName = Enemy->GetFName();
+
+		GI->bPlayerInitiative = bPlayerInitiative;
+		GI->bPlayerWasDetected = !bPlayerInitiative;
+		GI->ReturnLocation = GetActorLocation();
+		GI->ReturnMapName = FName(*CurrLevel);
+		GI->EnemyToRemoveName.AddUnique(ThisEnemyName);
+	}
+
+	// 2) 월드 슬로우모션 시작 (0.1배속으로 설정)
+	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 0.3f);
+
+	// 3) 전투 진입 사운드 재생 (선택사항)
+	//if (CombatEnterSound)
+	//{
+	//	UGameplayStatics::PlaySound2D(this, CombatEnterSound, 1.0f, 1.0f);
+	//}
+
+	// 4) 일정 시간 후 레벨 전환 (실제 시간으로 1.초)
+	FTimerHandle TransitionHandle;
+	GetWorld()->GetTimerManager().SetTimer(
+		TransitionHandle,
+		[this, BattleMapName]()
+		{
+			// 슬로우모션 해제 후 레벨 전환
+			UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 1.0f);
+
+			UE_LOG(LogTemp, Warning, TEXT("[CombatTransition] 레벨 전환 실행: %s"), *BattleMapName.ToString());
+			UGameplayStatics::OpenLevel(this, BattleMapName);
+		},
+		1.f,    // 실제 시간으로 1.초
+		false
+	);
+
+	// 5) 시각적 효과 추가 (선택사항 - 블루프린트에서 구현 권장)
+	//OnCombatTransitionStarted.Broadcast();
 }
 
 void ACOECharacter::Fire()
@@ -293,6 +340,17 @@ void ACOECharacter::SetAiming(bool bNewAiming)
 		0.01f, // 10ms 간격
 		true   // 반복 실행
 	);
+
+	// 조준 UI 표시/숨김 처리
+	if (bIsAiming)
+	{
+		ShowAimUI();
+	}
+	else
+	{
+		HideAimUI();
+	}
+
 }
 
 float ACOECharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -375,4 +433,67 @@ void ACOECharacter::SpawnDefaultAttackEmitter()
 	}
 }
 
+void ACOECharacter::InitializeAimUIWidget()
+{
+	// AimUIWidgetClass가 설정되어 있고 아직 위젯이 생성되지 않았다면 생성
+	if (AimUIWidgetClass && !AimUIWidget)
+	{
+		if (APlayerController* PC = Cast<APlayerController>(GetController()))
+		{
+			// 위젯 생성
+			AimUIWidget = CreateWidget<UAimUIWidget>(PC, AimUIWidgetClass);
+			if (AimUIWidget)
+			{
+				// 뷰포트에 추가 (높은 ZOrder로 다른 UI보다 위에 표시)
+				AimUIWidget->AddToViewport(999);
 
+				// 초기에는 숨김 상태
+				AimUIWidget->HideAimUI();
+
+				UE_LOG(LogTemp, Log, TEXT("[COECharacter] Aim UI Widget initialized for %s"), *GetName());
+			}
+			else
+			{
+				UE_LOG(LogTemp, Error, TEXT("[COECharacter] Failed to create Aim UI Widget for %s"), *GetName());
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("[COECharacter] No PlayerController found - Aim UI Widget will be created later"));
+		}
+	}
+	else if (!AimUIWidgetClass)
+	{
+		UE_LOG(LogTemp, Log, TEXT("[COECharacter] AimUIWidgetClass not set for %s - Aim UI disabled"), *GetName());
+	}
+}
+
+void ACOECharacter::ShowAimUI()
+{
+	// 위젯이 없으면 다시 초기화 시도
+	if (!AimUIWidget)
+	{
+		InitializeAimUIWidget();
+	}
+
+	// 위젯이 있으면 표시
+	if (AimUIWidget)
+	{
+		AimUIWidget->ShowAimUI();
+		UE_LOG(LogTemp, Log, TEXT("[COECharacter] Aim UI shown for %s"), *GetName());
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[COECharacter] Cannot show Aim UI - widget not available for %s"), *GetName());
+	}
+}
+
+void ACOECharacter::HideAimUI()
+{
+	// 위젯이 있으면 숨김
+	if (AimUIWidget)
+	{
+		AimUIWidget->HideAimUI();
+		UE_LOG(LogTemp, Log, TEXT("[COECharacter] Aim UI hidden for %s"), *GetName());
+	}
+}

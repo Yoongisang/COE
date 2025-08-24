@@ -10,6 +10,7 @@
 
 class USpringArmComponent;
 class UCameraComponent;
+class UAimUIWidget;
 
 //DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
@@ -91,6 +92,14 @@ public:
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
+	/** 조준 UI 위젯 클래스 (블루프린트에서 설정) */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI|Aim")
+	TSubclassOf<UAimUIWidget> AimUIWidgetClass;
+
+	/** 조준 UI 위젯 인스턴스 */
+	UPROPERTY(BlueprintReadOnly, Category = "UI|Aim")
+	TObjectPtr<UAimUIWidget> AimUIWidget;
+
 public:
 
 	virtual void BeginPlay() override;
@@ -102,6 +111,10 @@ public:
 	/** 기본공격 충돌처리 */
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void DoDefaultAttack();
+
+	/** 전투 진입 트랜지션 (슬로우모션 + 지연 레벨 전환) */
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	void StartCombatTransition(AExplorationEnemy* Enemy, FName BattleMapName, bool bPlayerInitiative = true);
 
 	/** 좌클릭 Fire */
 	UFUNCTION(BlueprintCallable, Category = "Action")
@@ -123,6 +136,18 @@ public:
 	/** 기본공격 파티클 스폰 함수 */
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void SpawnDefaultAttackEmitter();
+
+	protected:
+		/** 조준 UI 위젯 초기화 */
+		void InitializeAimUIWidget();
+
+		/** 조준 UI 표시 */
+		UFUNCTION(BlueprintCallable, Category = "UI|Aim")
+		void ShowAimUI();
+
+		/** 조준 UI 숨김 */
+		UFUNCTION(BlueprintCallable, Category = "UI|Aim")
+		void HideAimUI();
 
 };
 

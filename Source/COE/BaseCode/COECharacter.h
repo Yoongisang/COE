@@ -140,16 +140,17 @@ public:
 	void SpawnDefaultAttackEmitter();
 
 	protected:
-		/** 조준 UI 위젯 초기화 */
-		void InitializeAimUIWidget();
 
-		/** 조준 UI 표시 */
-		UFUNCTION(BlueprintCallable, Category = "UI|Aim")
-		void ShowAimUI();
+	/** 조준 UI 위젯 초기화 */
+	void InitializeAimUIWidget();
 
-		/** 조준 UI 숨김 */
-		UFUNCTION(BlueprintCallable, Category = "UI|Aim")
-		void HideAimUI();
+	/** 조준 UI 표시 */
+	UFUNCTION(BlueprintCallable, Category = "UI|Aim")
+	void ShowAimUI();
+
+	/** 조준 UI 숨김 */
+	UFUNCTION(BlueprintCallable, Category = "UI|Aim")
+	void HideAimUI();
 
 };
 

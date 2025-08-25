@@ -124,9 +124,6 @@ void ACOECharacter::BeginPlay()
 
 void ACOECharacter::DefaultAttack()
 {
-	//공격 상태
-	if (bIsAttacking)
-		return;
 
 	bIsAttacking = true;
 

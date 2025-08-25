@@ -158,8 +158,9 @@ void UCOEAnimInstance::AnimNotify_End()
 						// TurnPlayer인 경우 RequestEndTurn() 호출
 						if (auto* TurnPlayer = Cast<ATurnPlayer>(COEChar))
 						{
-							TurnPlayer->RequestEndTurn();
-							UE_LOG(LogTemp, Log, TEXT("[AnimNotify_End] TurnPlayer RequestEndTurn called"));
+							// TurnPlayer가 맞다면, 새로운 공격 시퀀스 함수를 호출합니다.
+							TurnPlayer->OnAttackMontageEnded();
+							return;
 						}
 						// TurnEnemy인 경우 FinishEnemyTurn() 호출
 						else if (auto* TurnEnemy = Cast<ATurnEnemy>(COEChar))

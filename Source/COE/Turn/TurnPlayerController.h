@@ -67,6 +67,23 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	TObjectPtr<UInputAction> MouseRightClick;
 
+	/** 타겟 선택 - 이전 타겟 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input|Targeting")
+	TObjectPtr<UInputAction> PreviousTargetAction;
+
+	/** 타겟 선택 - 다음 타겟 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input|Targeting")
+	TObjectPtr<UInputAction> NextTargetAction;
+
+	/** 타겟 확정 (스페이스바) */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input|Targeting")
+	TObjectPtr<UInputAction> ConfirmTargetAction;
+
+	/** 타겟 선택 취소 (Tab키) */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input|Targeting")
+	TObjectPtr<UInputAction> CancelTargetAction;
+
+
 	/** Input mapping context setup */
 	virtual void SetupInputComponent() override;
 
@@ -114,4 +131,16 @@ public:
 	/** 마우스 우클릭 End  */
 	UFUNCTION(BlueprintCallable, Category = "Input")
 	virtual void DoMouseRightClickEnd();
+
+	/** 이전 타겟 선택 */
+	virtual void OnPreviousTarget();
+
+	/** 다음 타겟 선택 */
+	virtual void OnNextTarget();
+
+	/** 타겟 확정 */
+	virtual void OnConfirmTarget();
+
+	/** 타겟 선택 취소 */
+	virtual void OnCancelTarget();
 };

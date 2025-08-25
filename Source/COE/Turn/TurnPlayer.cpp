@@ -18,6 +18,9 @@ ATurnPlayer::ATurnPlayer()
 	GetCharacterMovement()->bOrientRotationToMovement = false; // 이동 방향으로 자동 회전 꺼기
 	bUseControllerRotationYaw = true;
 
+	// 타겟 선택 컴포넌트 생성
+	TargetSelector = CreateDefaultSubobject<UTargetSelectionComponent>(TEXT("TargetSelector"));
+
 }
 
 void ATurnPlayer::BeginPlay()
@@ -35,81 +38,299 @@ void ATurnPlayer::BeginPlay()
 	
 
 	UpdateCursor();
+	
+
+	// 타겟 선택 시스템 초기화
+	InitializeTargetSelector();
 }
 
 void ATurnPlayer::UpdateCursor()
 {
 	//자신의 컨트롤러가 PlayerContoller로 캐스트
-	if (PlayerController)
-	{
-		//조준 중이거나 공격 중일때는 커서가 안보이게
-		if (bIsAiming || bIsAttacking)
-		{
-			// 조준 중이거나 공격 중일 때
-			PlayerController->bShowMouseCursor = false;
-			PlayerController->bEnableClickEvents = false;
-			PlayerController->bEnableMouseOverEvents = false;
-			PlayerController->SetInputMode(FInputModeGameOnly());
-			//마우스 룩 차단 해제
-			PlayerController->SetIgnoreLookInput(false);
-			//Rotation 변화 체크
-			bHasSavedRotation = true;
-		}
-		//조준 중이 아니거나 공격 중이 아닐때는 커서가 보이게
-		else
-		{
-			//마우스 커서 표시
-			PlayerController->bShowMouseCursor = true;
-			//클릭/오버 이벤트 활성화
-			PlayerController->bEnableClickEvents = true;
-			PlayerController->bEnableMouseOverEvents = true;
-			//마우스 룩 차단
-			PlayerController->SetIgnoreLookInput(true);
+	if (!PlayerController)
+		return;
+	
+	// 타겟 선택 중인지 확인
+	bool bIsTargetSelecting = IsSelectingTarget();
 
-			//Game + UI 모드로 전환 UI 입려도 받도록 설정
-			FInputModeGameAndUI InputMode;
-			//뷰포트에서 마우스가 나가지 않도록
-			InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-			//마우스 좌클릭을해도 커서 유지
-			InputMode.SetHideCursorDuringCapture(false);
-			PlayerController->SetInputMode(InputMode);
-		
-			//Rotation변화가 있었다면 초기 Rotation으로 변경
-			if (bHasSavedRotation)
-			{
-				PlayerController->SetControlRotation(SavedControlRotation);
-				bHasSavedRotation = false;
-			}
+	// 1) 타겟 선택 중: 커서 감춤 + 룩/무브 입력 잠금 + GameOnly
+	if (bIsTargetSelecting)
+	{
+		PlayerController->bShowMouseCursor = false;
+		PlayerController->bEnableClickEvents = false;
+		PlayerController->bEnableMouseOverEvents = false;
+
+		PlayerController->SetIgnoreLookInput(true);
+		PlayerController->SetIgnoreMoveInput(true);
+
+		PlayerController->SetInputMode(FInputModeGameOnly());
+
+
+		bHasSavedRotation = true;
+	
+		UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] UpdateCursor: TargetSelecting (cursor hidden, look locked)"));
+		return;
+	}
+
+	//조준 중이거나 공격 중일때는 커서가 안보이게
+	if (bIsAiming || bIsAttacking)
+	{
+		// 타겟 선택 중이거나 조준 중이거나 공격 중일 때
+		PlayerController->bShowMouseCursor = false;
+		PlayerController->bEnableClickEvents = false;
+		PlayerController->bEnableMouseOverEvents = false;
+		PlayerController->SetInputMode(FInputModeGameOnly());
+	
+		PlayerController->SetIgnoreLookInput(false);
+		// 조준 중에는 마우스 룩 허용
+		PlayerController->SetIgnoreLookInput(false);
+	
+		//Rotation 변화 체크
+		bHasSavedRotation = true;
+	}
+	//조준 중이 아니거나 공격 중이 아닐때는 커서가 보이게
+	else
+	{
+		//마우스 커서 표시
+		PlayerController->bShowMouseCursor = true;
+		//클릭/오버 이벤트 활성화
+		PlayerController->bEnableClickEvents = true;
+		PlayerController->bEnableMouseOverEvents = true;
+		//마우스 룩 차단
+		PlayerController->SetIgnoreLookInput(true);
+
+		//Game + UI 모드로 전환 UI 입려도 받도록 설정
+		FInputModeGameAndUI InputMode;
+		//뷰포트에서 마우스가 나가지 않도록
+		InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+		//마우스 좌클릭을해도 커서 유지
+		InputMode.SetHideCursorDuringCapture(false);
+		PlayerController->SetInputMode(InputMode);
+	
+		//Rotation변화가 있었다면 초기 Rotation으로 변경
+		if (bHasSavedRotation)
+		{
+			PlayerController->SetControlRotation(SavedControlRotation);
+			bHasSavedRotation = false;
 		}
+	}
+	
+}
+
+void ATurnPlayer::OnAttackMontageEnded()
+{
+	if (CurrentAttackState == EAttackSequenceState::Attacking)
+	{
+		UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] Attack montage finished. Returning to origin."));
+		// '원래 위치로 복귀' 상태로 전환
+		CurrentAttackState = EAttackSequenceState::Returning;
 	}
 }
 
 void ATurnPlayer::SetAiming(bool bNewAiming)
 {
-	if (!CanPerformAction())
+	if (!CanPerformAction() || IsSelectingTarget())
 		return;
 
 	//부모로직 실행(ACOECharacter)
 	Super::SetAiming(bNewAiming);
+
 	//자식 bIsAiming 갱신
 	bIsAiming = bNewAiming;
+
 	//커서 상태 갱신
 	UpdateCursor();
 }
 
+//기본 공격
 void ATurnPlayer::UseSkill_Q()
 {
-	// 기본 공격 처리
-	if (!bIsAttacking)
+	if (!CanPerformAction() || IsSelectingTarget())
 	{
-		DefaultAttack();
-		// AP +1 (클램프)
-		CharacterStats.CurrentAP = FMath::Clamp(CharacterStats.CurrentAP + 1, 0, CharacterStats.MAXAP);
-
-		UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] Used Q skill → CurrentAP: %d"), CharacterStats.CurrentAP);
-
+		return;
 	}
 
+	UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] Q pressed - Starting target selection for basic attack"));
+
+	PendingSkillType = ESkillTargetType::Attack;
+	PendingSkillName = TEXT("BasicAttack");
+
+	if (TargetSelector)
+	{
+		TargetSelector->StartTargetSelection(ESkillTargetType::Attack);
+	}
+
+	//// 기본 공격 처리
+	//if (!bIsAttacking)
+	//{
+	//	DefaultAttack();
+	//	// AP +1 (클램프)
+	//	CharacterStats.CurrentAP = FMath::Clamp(CharacterStats.CurrentAP + 1, 0, CharacterStats.MAXAP);
+	//
+	//	UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] Used Q skill → CurrentAP: %d"), CharacterStats.CurrentAP);
+	//
+	//}
+
+}
+
+//Heal 스킬
+void ATurnPlayer::UseSkill_W()
+{
+	if (!CanPerformAction() || IsSelectingTarget())
+	{
+		return;
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] S pressed - Starting target selection for Skill W"));
+
+	PendingSkillName = TEXT("SkillW");
+
+	if (TargetSelector)
+	{
+		TargetSelector->StartTargetSelection(ESkillTargetType::Heal);
+	}
+}
+
+//강한 공격
+void ATurnPlayer::UseSkill_E()
+{
+	if (!CanPerformAction() || IsSelectingTarget())
+	{
+		return;
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] D pressed - Starting target selection for Skill D"));
+
+	PendingSkillName = TEXT("SkillE");
+
+	if (TargetSelector)
+	{
+		TargetSelector->StartTargetSelection(ESkillTargetType::Attack);
+	}
+}
+
+// HP 포션 사용
+void ATurnPlayer::UseSkill_A()
+{
+	if (!CanPerformAction() || IsSelectingTarget())
+	{
+		return;
+	}
+
+	// HP 포션 보유 확인
+	if (!GI || !GI->HasHPPotion())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] No HP potion available"));
+		return;
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] W pressed - Starting target selection for HP potion"));
+
+	PendingSkillName = TEXT("HPPotion");
+
+	if (TargetSelector)
+	{
+		TargetSelector->StartTargetSelection(ESkillTargetType::Heal);
+	}
+}
+
+// AP 포션 사용
+void ATurnPlayer::UseSkill_S()
+{
+	if (!CanPerformAction() || IsSelectingTarget())
+	{
+		return;
+	}
+
+	// AP 포션 보유 확인
+	if (!GI || !GI->HasAPPotion())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] No AP potion available"));
+		return;
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] E pressed - Starting target selection for AP potion"));
+
+	PendingSkillName = TEXT("APPotion");
+
+	if (TargetSelector)
+	{
+		TargetSelector->StartTargetSelection(ESkillTargetType::Buff);
+	}
+}
+
+void ATurnPlayer::UseSkill_D()
+{
+	// 행동 가능 상태 체크
+	if (!CanPerformAction() || IsSelectingTarget())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] UseSkill_D - Cannot perform action"));
+		return;
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] UseSkill_D - 턴 넘김"));
+
+	// 즉시 턴 종료 (타겟 선택 없이 바로 실행)
+	RequestEndTurn();
+}
+
+void ATurnPlayer::ExecuteSkillOnTarget(ACOECharacter* TargetCharacter, ESkillTargetType SkillType)
+{
+	if (!IsValid(TargetCharacter))
+	{
+		UE_LOG(LogTemp, Error, TEXT("[TurnPlayer] ExecuteSkillOnTarget called with invalid target"));
+		return;
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] Executing %s on target: %s"),
+		*PendingSkillName, *TargetCharacter->GetName());
+
+	// 스킬 이름에 따라 적절한 실행 함수 호출
+	if (PendingSkillName == TEXT("BasicAttack"))
+	{
+		ExecuteBasicAttack(TargetCharacter);
+	}
+	else if (PendingSkillName == TEXT("SkillW"))
+	{
+		ExecuteSkillW(TargetCharacter);
+	}
+	else if (PendingSkillName == TEXT("SkillE"))
+	{
+		ExecuteSkillE(TargetCharacter);
+	}
+	else if (PendingSkillName == TEXT("HPPotion"))
+	{
+		ExecuteSkillA(TargetCharacter);
+	}
+	else if (PendingSkillName == TEXT("APPotion"))
+	{
+		ExecuteSkillS(TargetCharacter);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] Unknown skill: %s"), *PendingSkillName);
+	}
+
+	// 대기 상태 초기화
+	PendingSkillType = ESkillTargetType::Universal;
+	PendingSkillName = TEXT("");
+}
+
+void ATurnPlayer::OnTargetSelectionCancelled()
+{
+	UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] Target selection cancelled"));
+
+	// 대기 상태 초기화
+	PendingSkillType = ESkillTargetType::Universal;
+	PendingSkillName = TEXT("");
+
+	// 커서 상태 업데이트 (다시 스킬 선택 가능 상태로)
+	UpdateCursor();
+}
+
+bool ATurnPlayer::IsSelectingTarget() const
+{
+	return TargetSelector && TargetSelector->GetSelectionState() != ETargetSelectionState::None;
 }
 
 void ATurnPlayer::Parry()
@@ -428,6 +649,97 @@ void ATurnPlayer::ExecuteParryCounter(ATurnEnemy* Target)
 	SpawnDefaultAttackEmitter(); // 기존 공격 파티클 재사용 (추후 전용 이펙트로 교체 가능)
 }
 
+void ATurnPlayer::UpdateAttackMovement()
+{
+	if (CurrentAttackState == EAttackSequenceState::None)
+	{
+		GetWorld()->GetTimerManager().ClearTimer(MovementTimerHandle);
+		return;
+	}
+
+	// 현재 위치와 프레임 시간(DeltaTime) 가져오기
+	FVector CurrentLocation = GetActorLocation();
+	const float DeltaTime = GetWorld()->GetTimerManager().GetTimerRate(MovementTimerHandle);
+
+	// 상태에 따라 다른 로직 수행
+	switch (CurrentAttackState)
+	{
+	case EAttackSequenceState::MovingToTarget:
+	{
+		if (!CurrentAttackTarget.IsValid())
+		{
+			// 대상이 사라지면 시퀀스 중단
+			CurrentAttackState = EAttackSequenceState::Returning;
+			break;
+		}
+
+		// 목표 지점 계산 (적 앞 AttackDistance 만큼 떨어진 곳)
+		const FVector TargetLocation = CurrentAttackTarget->GetActorLocation();
+		const FVector DirectionToTarget = (GetActorLocation() - TargetLocation).GetSafeNormal();
+		const FVector Destination = TargetLocation + (DirectionToTarget * AttackDistance);
+
+		// 목표 지점까지의 거리 확인
+		const float DistanceToDestination = FVector::Dist(GetActorLocation(), Destination);
+
+		// 목표 지점에 거의 도착했다면 이동을 멈추고 공격 상태로 전환
+		if (DistanceToDestination < 10.0f)
+		{
+			// 이동 중지 (AddMovementInput을 더 이상 호출하지 않음)
+			GetCharacterMovement()->StopMovementImmediately(); // 혹시 모를 관성을 제거
+
+			UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] Arrived at target. Attacking."));
+			CurrentAttackState = EAttackSequenceState::Attacking;
+			DefaultAttack(); // 공격 애니메이션 재생
+		}
+		else
+		{
+			
+			// 목표 방향으로 이동하라는 '입력'을 매 프레임 추가.
+			// 이 함수가 캐릭터의 속도(Velocity)를 만들어 애니메이션을 재생.
+			const FVector MoveDirection = (Destination - GetActorLocation()).GetSafeNormal();
+			AddMovementInput(MoveDirection, 1.0f);
+		}
+		break;
+	}
+
+	case EAttackSequenceState::Returning:
+	{
+		// 원래 위치까지의 거리 확인
+		const float DistanceToOrigin = FVector::Dist(GetActorLocation(), OriginalLocation);
+
+		// 원래 위치에 거의 도착했다면 시퀀스 종료
+		if (DistanceToOrigin < 10.0f)
+		{
+			GetWorld()->GetTimerManager().ClearTimer(MovementTimerHandle);
+			SetActorLocationAndRotation(OriginalLocation, OriginalRotation); // 최종 위치/회전 고정
+			if (PlayerController)
+			{
+				PlayerController->SetControlRotation(OriginalRotation);
+			}
+
+			CurrentAttackState = EAttackSequenceState::None;
+			CurrentAttackTarget.Reset();
+			bIsAttacking = false;
+
+			UpdateCursor();
+			RequestEndTurn(); // 턴 종료
+		}
+		else
+		{
+			
+			// 원래 위치 방향으로 이동 입력을 추가.
+			const FVector MoveDirection = (OriginalLocation - GetActorLocation()).GetSafeNormal();
+			AddMovementInput(MoveDirection, 1.0f);
+		}
+		break;
+	}
+
+	default:
+		break;
+	}
+
+}
+
 void ATurnPlayer::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
@@ -444,6 +756,162 @@ void ATurnPlayer::UnPossessed()
 {
 	Super::UnPossessed();
 	PlayerController = nullptr;
+}
+
+void ATurnPlayer::InitializeTargetSelector()
+{
+	if (TargetSelector)
+	{
+		// 타겟 선택 완료 이벤트 바인딩
+		TargetSelector->OnTargetSelected.AddDynamic(this, &ATurnPlayer::ExecuteSkillOnTarget);
+
+		// 타겟 선택 취소 이벤트 바인딩
+		TargetSelector->OnTargetSelectionCancelled.AddDynamic(this, &ATurnPlayer::OnTargetSelectionCancelled);
+
+		UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] TargetSelector initialized for %s"), *GetName());
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("[TurnPlayer] TargetSelector is null for %s"), *GetName());
+	}
+
+}
+
+void ATurnPlayer::ExecuteBasicAttack(ACOECharacter* Target)
+{
+	if (!IsValid(Target) || CurrentAttackState != EAttackSequenceState::None)
+	{
+		return;
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] Starting attack sequence on %s"), *Target->GetName());
+
+	bIsAttacking = true; // 다른 행동을 막기 위해 공격 상태 플래그 설정
+
+	//// 시퀀스에 필요한 정보 저장
+	CurrentAttackTarget = Target;
+	OriginalLocation = GetActorLocation();
+	// TargetSelector가 타겟 선택을 시작할 때 저장해 둔,
+	// 캐릭터의 '진짜' 원래 회전값을 가져옵니다.
+	if (TargetSelector)
+	{
+		OriginalRotation = TargetSelector->OriginalPlayerRotation;
+	}
+	else
+	{
+		// 만약을 대비한 폴백
+		OriginalRotation = GetActorRotation();
+	}
+	// 1. '적으로 이동' 상태로 전환
+	CurrentAttackState = EAttackSequenceState::MovingToTarget;
+
+	// 2. 이동을 처리할 타이머 시작 (매 프레임처럼 동작)
+	GetWorld()->GetTimerManager().SetTimer(
+		MovementTimerHandle,
+		this,
+		&ATurnPlayer::UpdateAttackMovement,
+		0.016f, // 약 60fps
+		true
+	);
+}
+
+void ATurnPlayer::ExecuteSkillW(ACOECharacter* Target)
+{
+	if (!IsValid(Target))
+	{
+		return;
+	}
+
+	// Heal
+	Target->CharacterStats.CurrentHP = FMath::Clamp(
+		Target->CharacterStats.CurrentHP + 20.f,
+		0.f,
+		Target->CharacterStats.MAXHP
+	);
+
+	RequestEndTurn();
+}
+
+void ATurnPlayer::ExecuteSkillE(ACOECharacter* Target)
+{
+	if (!IsValid(Target))
+	{
+		return;
+	}
+
+	// TODO: 스킬 D 구체적인 로직 구현
+	UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] Skill D executed on %s"), *Target->GetName());
+
+	// 예시: 강력한 공격
+	UGameplayStatics::ApplyDamage(Target, 25.f, GetInstigatorController(), this, nullptr);
+
+	RequestEndTurn();
+}
+
+
+// HP 포션 사용
+void ATurnPlayer::ExecuteSkillA(ACOECharacter* Target)
+{
+	if (!IsValid(Target) || !GI)
+	{
+		return;
+	}
+
+	if (!GI->TryConsumeHPPotion())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] Failed to consume HP potion"));
+		return;
+	}
+
+	// HP 회복 적용
+	float HealAmount = GI->BaseHPPotionAmount;
+
+	if (auto* TargetStats = &Target->CharacterStats)
+	{
+		TargetStats->CurrentHP = FMath::Clamp(
+			TargetStats->CurrentHP + HealAmount,
+			0.f,
+			TargetStats->MAXHP
+		);
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] HP Potion used on %s (Heal: %f)"),
+		*Target->GetName(), HealAmount);
+
+	RequestEndTurn(); // 즉시 턴 종료
+
+}
+
+//AP 포션 사용
+void ATurnPlayer::ExecuteSkillS(ACOECharacter* Target)
+{
+	if (!IsValid(Target) || !GI)
+	{
+		return;
+	}
+
+	if (!GI->TryConsumeAPPotion())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] Failed to consume AP potion"));
+		return;
+	}
+
+	// AP 회복 적용
+	int32 APGain = GI->BaseAPPotionAmount;
+
+	if (auto* TargetStats = &Target->CharacterStats)
+	{
+		TargetStats->CurrentAP = FMath::Clamp(
+			TargetStats->CurrentAP + APGain,
+			0,
+			TargetStats->MAXAP
+		);
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] AP Potion used on %s (Gain: %d)"),
+		*Target->GetName(), APGain);
+
+	RequestEndTurn(); // 즉시 턴 종료
 }
 
 void ATurnPlayer::RequestEndTurn()

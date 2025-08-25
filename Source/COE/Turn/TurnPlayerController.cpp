@@ -46,6 +46,12 @@ void ATurnPlayerController::SetupInputComponent()
 		//MouseRightClick
 		EnhancedInputComponent->BindAction(MouseRightClick, ETriggerEvent::Started, this, &ATurnPlayerController::DoMouseRightClickStart);
 		EnhancedInputComponent->BindAction(MouseRightClick, ETriggerEvent::Completed, this, &ATurnPlayerController::DoMouseRightClickEnd);
+
+		//TargetSelectAction
+		EnhancedInputComponent->BindAction(PreviousTargetAction, ETriggerEvent::Triggered, this, &ATurnPlayerController::OnPreviousTarget);
+		EnhancedInputComponent->BindAction(NextTargetAction, ETriggerEvent::Triggered, this, &ATurnPlayerController::OnNextTarget);
+		EnhancedInputComponent->BindAction(ConfirmTargetAction, ETriggerEvent::Triggered, this, &ATurnPlayerController::OnConfirmTarget);
+		EnhancedInputComponent->BindAction(CancelTargetAction, ETriggerEvent::Triggered, this, &ATurnPlayerController::OnCancelTarget);
 	}
 	else
 	{
@@ -130,7 +136,7 @@ void ATurnPlayerController::OnSkillW()
 
 	if (TurnChar->CanPerformAction())
 	{
-		TurnChar->UseHPPotion();
+		TurnChar->UseSkill_W();
 		UE_LOG(LogTemp, Log, TEXT("Input : W"));
 
 	}
@@ -148,7 +154,7 @@ void ATurnPlayerController::OnSkillE()
 		return;
 	}
 
-	TurnChar->UseAPPotion();
+	TurnChar->UseSkill_E();
 	UE_LOG(LogTemp, Log, TEXT("Input : E"));
 }
 
@@ -164,6 +170,7 @@ void ATurnPlayerController::OnSkillA()
 		return;
 	}
 
+	TurnChar->UseSkill_A();
 	UE_LOG(LogTemp, Log, TEXT("Input : A"));
 }
 
@@ -179,6 +186,7 @@ void ATurnPlayerController::OnSkillS()
 		return;
 	}
 
+	TurnChar->UseSkill_S();
 	UE_LOG(LogTemp, Log, TEXT("Input : S"));
 }
 
@@ -193,6 +201,8 @@ void ATurnPlayerController::OnSkillD()
 		UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] D - Enemy Turn 중 비활성"));
 		return;
 	}
+
+	TurnChar->UseSkill_D();
 	UE_LOG(LogTemp, Log, TEXT("Input : D"));
 }
 
@@ -247,4 +257,60 @@ void ATurnPlayerController::DoMouseRightClickEnd()
 
 	TurnChar->SetAiming(false);
 	UE_LOG(LogTemp, Log, TEXT("MouseRightClickEnd"));
+}
+
+void ATurnPlayerController::OnPreviousTarget()
+{
+	if (!TurnChar || !TurnChar->IsSelectingTarget())
+		return;
+
+	if (TurnChar->TargetSelector)
+	{
+		TurnChar->TargetSelector->SelectPreviousTarget();
+		UE_LOG(LogTemp, Log, TEXT("[TurnPlayerController] Previous target selected"));
+	}
+}
+
+void ATurnPlayerController::OnNextTarget()
+{
+	if (!TurnChar || !TurnChar->IsSelectingTarget())
+		return;
+
+	if (TurnChar->TargetSelector)
+	{
+		TurnChar->TargetSelector->SelectNextTarget();
+		UE_LOG(LogTemp, Log, TEXT("[TurnPlayerController] Next target selected"));
+	}
+}
+
+void ATurnPlayerController::OnConfirmTarget()
+{
+	if (!TurnChar || !TurnChar->IsSelectingTarget())
+		return;
+
+	if (TurnChar->TargetSelector)
+	{
+		// 타겟이 유효한지 확인
+		if (TurnChar->TargetSelector->IsTargetValid())
+		{
+			TurnChar->TargetSelector->ConfirmTarget();
+			UE_LOG(LogTemp, Log, TEXT("[TurnPlayerController] Target confirmed"));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("[TurnPlayerController] Invalid target - cannot confirm"));
+		}
+	}
+}
+
+void ATurnPlayerController::OnCancelTarget()
+{
+	if (!TurnChar || !TurnChar->IsSelectingTarget())
+		return;
+
+	if (TurnChar->TargetSelector)
+	{
+		TurnChar->TargetSelector->CancelTargetSelection();
+		UE_LOG(LogTemp, Log, TEXT("[TurnPlayerController] Target selection cancelled"));
+	}
 }

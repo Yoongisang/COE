@@ -78,11 +78,8 @@ public:
 	/** Q: 기본공격(턴 종료, AP +1) */
 	void UseSkill_Q();
 
-	/** Q: 기본공격(턴 종료, AP +1) */
+	/** Q: 패링(성공 시, AP +2) */
 	void Parry();
-
-	/** 코스트 소비형 스킬(성공 시 즉시 턴 종료)
-	bool UseSkill_WithCost(int32 Cost);
 
 	/** 좌클릭 Fire (우클릭 조준 상태에서만 AP 1 소모, 0이면 자동 턴 종료) */
 	virtual void Fire() override;
@@ -91,7 +88,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Consumable|Combat")
 	void UseHPPotion();
 
-	/** Q: 기본공격(턴 종료, AP +1) */
+	/** W: 회피(성공 시, AP +1) */
 	void Dodge();
 
 	UFUNCTION(BlueprintCallable, Category = "Consumable|Combat")

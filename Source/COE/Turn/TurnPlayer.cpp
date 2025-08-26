@@ -183,6 +183,7 @@ void ATurnPlayer::UseSkill_W()
 
 	UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] S pressed - Starting target selection for Skill W"));
 
+	PendingSkillType = ESkillTargetType::Heal;
 	PendingSkillName = TEXT("SkillW");
 
 	if (TargetSelector)
@@ -201,6 +202,7 @@ void ATurnPlayer::UseSkill_E()
 
 	UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] D pressed - Starting target selection for Skill D"));
 
+	PendingSkillType = ESkillTargetType::Attack;
 	PendingSkillName = TEXT("SkillE");
 
 	if (TargetSelector)
@@ -226,6 +228,7 @@ void ATurnPlayer::UseSkill_A()
 
 	UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] W pressed - Starting target selection for HP potion"));
 
+	PendingSkillType = ESkillTargetType::Heal;
 	PendingSkillName = TEXT("HPPotion");
 
 	if (TargetSelector)
@@ -251,6 +254,7 @@ void ATurnPlayer::UseSkill_S()
 
 	UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] E pressed - Starting target selection for AP potion"));
 
+	PendingSkillType = ESkillTargetType::Buff;
 	PendingSkillName = TEXT("APPotion");
 
 	if (TargetSelector)
@@ -289,6 +293,11 @@ void ATurnPlayer::ExecuteSkillOnTarget(ACOECharacter* TargetCharacter, ESkillTar
 	if (PendingSkillName == TEXT("BasicAttack"))
 	{
 		ExecuteBasicAttack(TargetCharacter);
+
+		// 기본공격은 즉시 상태 초기화 (이동 시퀀스로 처리)
+		PendingSkillType = ESkillTargetType::Universal;
+		PendingSkillName = TEXT("");
+
 	}
 	else if (PendingSkillName == TEXT("SkillW"))
 	{
@@ -301,24 +310,46 @@ void ATurnPlayer::ExecuteSkillOnTarget(ACOECharacter* TargetCharacter, ESkillTar
 	else if (PendingSkillName == TEXT("HPPotion"))
 	{
 		ExecuteSkillA(TargetCharacter);
+
+		// HP 포션은 즉시 효과 적용하므로 바로 초기화
+		PendingSkillType = ESkillTargetType::Universal;
+		PendingSkillName = TEXT("");
+
 	}
 	else if (PendingSkillName == TEXT("APPotion"))
 	{
 		ExecuteSkillS(TargetCharacter);
+		// AP 포션은 즉시 효과 적용하므로 바로 초기화
+		PendingSkillType = ESkillTargetType::Universal;
+		PendingSkillName = TEXT("");
+
 	}
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] Unknown skill: %s"), *PendingSkillName);
+		
+		// 알 수 없는 스킬인 경우 초기화
+		PendingSkillType = ESkillTargetType::Universal;
+		PendingSkillName = TEXT("");
+
 	}
 
-	// 대기 상태 초기화
-	PendingSkillType = ESkillTargetType::Universal;
-	PendingSkillName = TEXT("");
+
 }
 
 void ATurnPlayer::OnTargetSelectionCancelled()
 {
 	UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] Target selection cancelled"));
+
+	// 1. 상태 초기화
+	CurrentAttackTarget.Reset();
+
+	// 2. 캐릭터 회전 복원
+	if (PlayerController)
+	{
+		SetActorRotation(OriginalRotation);
+		PlayerController->SetControlRotation(OriginalRotation);
+	}
 
 	// 대기 상태 초기화
 	PendingSkillType = ESkillTargetType::Universal;
@@ -389,22 +420,22 @@ void ATurnPlayer::Fire()
 	}
 }
 
-void ATurnPlayer::UseHPPotion()
-{
-	if (!GI->TryConsumeHPPotion())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] No HP potion left."));
-		return;
-	}
-
-	// GI 기본값 기반 + 캐릭터 보정
-	float Heal = GI->BaseHPPotionAmount;
-	CharacterStats.CurrentHP += Heal;
-	ClampHPAP();          // 범위 보정
-	RequestEndTurn();     // 즉시 턴 종료
-	UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] UseHPPotion."));
-
-}
+//void ATurnPlayer::UseHPPotion()
+//{
+//	if (!GI->TryConsumeHPPotion())
+//	{
+//		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] No HP potion left."));
+//		return;
+//	}
+//
+//	// GI 기본값 기반 + 캐릭터 보정
+//	float Heal = GI->BaseHPPotionAmount;
+//	CharacterStats.CurrentHP += Heal;
+//	ClampHPAP();          // 범위 보정
+//	RequestEndTurn();     // 즉시 턴 종료
+//	UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] UseHPPotion."));
+//
+//}
 
 void ATurnPlayer::Dodge()
 {
@@ -432,25 +463,25 @@ void ATurnPlayer::Dodge()
 	
 }
 
-void ATurnPlayer::UseAPPotion()
-{
-	if (GI)
-	{
-		if (!GI->TryConsumeAPPotion())
-		{
-			UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] No AP potion left."));
-			return;
-		}
-
-		// GI 기본값 기반 + 캐릭터 보정 (정수화)
-		float raw = static_cast<float>(GI->BaseAPPotionAmount);
-		const int32 Gain = FMath::Max(0, FMath::RoundToInt(raw));
-		CharacterStats.CurrentAP += Gain;
-		ClampHPAP();          // 범위 보정
-		RequestEndTurn();     // 즉시 턴 종료
-		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] UseAPPotion."));
-	}
-}
+//void ATurnPlayer::UseAPPotion()
+//{
+//	if (GI)
+//	{
+//		if (!GI->TryConsumeAPPotion())
+//		{
+//			UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] No AP potion left."));
+//			return;
+//		}
+//
+//		// GI 기본값 기반 + 캐릭터 보정 (정수화)
+//		float raw = static_cast<float>(GI->BaseAPPotionAmount);
+//		const int32 Gain = FMath::Max(0, FMath::RoundToInt(raw));
+//		CharacterStats.CurrentAP += Gain;
+//		ClampHPAP();          // 범위 보정
+//		RequestEndTurn();     // 즉시 턴 종료
+//		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] UseAPPotion."));
+//	}
+//}
 
 bool ATurnPlayer::IsEnemyTurnActive() const
 {
@@ -479,9 +510,30 @@ bool ATurnPlayer::CanPerformAction() const
 	if (!TurnBridge || !TurnBridge->GetManager()) 
 		return false;
 
-	ACOECharacter* ActiveChar = TurnBridge->GetManager()->GetActiveCharacter();
-	return (ActiveChar == this);
+	// GameInstance가 초기화되지 않았으면 불가
+	if (!GI)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] CanPerformAction: GameInstance not ready"));
+		return false;
+	}
 
+	// 현재 활성 캐릭터 확인
+	ACOECharacter* ActiveChar = TurnBridge->GetManager()->GetActiveCharacter();
+	if (!ActiveChar)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] CanPerformAction: No active character"));
+		return false;
+	}
+
+	// 자신의 턴인지 확인
+	if (ActiveChar != this)
+	{
+		UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] CanPerformAction: Not my turn (Active: %s)"),
+			*ActiveChar->GetName());
+		return false;
+	}
+
+	return true;
 }
 
 bool ATurnPlayer::CanPerformDefense() const
@@ -788,6 +840,11 @@ void ATurnPlayer::ExecuteBasicAttack(ACOECharacter* Target)
 
 	bIsAttacking = true; // 다른 행동을 막기 위해 공격 상태 플래그 설정
 
+	// AP +1 (클램프)
+	GainAP(1);
+	UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] Used Q skill → CurrentAP: %d"), CharacterStats.CurrentAP);
+
+
 	//// 시퀀스에 필요한 정보 저장
 	CurrentAttackTarget = Target;
 	OriginalLocation = GetActorLocation();
@@ -822,14 +879,46 @@ void ATurnPlayer::ExecuteSkillW(ACOECharacter* Target)
 		return;
 	}
 
-	// Heal
-	Target->CharacterStats.CurrentHP = FMath::Clamp(
-		Target->CharacterStats.CurrentHP + 20.f,
-		0.f,
-		Target->CharacterStats.MAXHP
-	);
+	// AP 소모 확인
+	if (!SpendAP(2))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] Not enough AP for Skill W. CurrentAP: %d"), CharacterStats.CurrentAP);
+		OnTargetSelectionCancelled();
+		return; // AP 부족 시 스킬 사용 취소
+	}
+	UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] Used W skill → CurrentAP: %d"), CharacterStats.CurrentAP);
 
-	RequestEndTurn();
+
+	// 공격상태로 만들어 다른 행동이 안되도록
+	bIsAttacking = true;
+
+	//// 시퀀스에 필요한 정보 저장
+	CurrentAttackTarget = Target; // 스킬 대상 저장
+	
+	// TargetSelector가 타겟 선택을 시작할 때 저장해 둔 원래 회전값을 가져옴.,
+	if (TargetSelector)
+	{
+		OriginalRotation = TargetSelector->OriginalPlayerRotation;
+	}
+	else
+	{
+		// 만약을 대비한 폴백
+		OriginalRotation = GetActorRotation();
+	}
+
+	// AnimMonatage 실행
+	if (IsValid(AnimInstance))
+	{
+		AnimInstance->HealAnim();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] AnimInstance is null. Ending turn for Skill W."));
+		bIsAttacking = false;
+		CurrentAttackTarget.Reset();
+		RequestEndTurn(); // 애니메이션이 없으면 바로 턴 종료
+	}
+
 }
 
 void ATurnPlayer::ExecuteSkillE(ACOECharacter* Target)
@@ -839,13 +928,44 @@ void ATurnPlayer::ExecuteSkillE(ACOECharacter* Target)
 		return;
 	}
 
-	// TODO: 스킬 D 구체적인 로직 구현
-	UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] Skill D executed on %s"), *Target->GetName());
+	// AP 소모 확인
+	if (!SpendAP(3))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] Not enough AP for Skill E. CurrentAP: %d"), CharacterStats.CurrentAP);
+		OnTargetSelectionCancelled();
+		return; // AP 부족 시 스킬 사용 취소
+	}
+	UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] Used E skill → CurrentAP: %d"), CharacterStats.CurrentAP);
 
-	// 예시: 강력한 공격
-	UGameplayStatics::ApplyDamage(Target, 25.f, GetInstigatorController(), this, nullptr);
 
-	RequestEndTurn();
+	// 공격상태로 만들어 다른 행동이 안되도록
+	bIsAttacking = true;
+
+	CurrentAttackTarget = Target; // 스킬 대상 저장
+
+	// TargetSelector가 타겟 선택을 시작할 때 저장해 둔 원래 회전값을 가져옴
+	if (TargetSelector)
+	{
+		OriginalRotation = TargetSelector->OriginalPlayerRotation;
+	}
+	else
+	{
+		// 만약을 대비한 폴백
+		OriginalRotation = GetActorRotation();
+	}
+
+	// AnimMonatage 실행
+	if (IsValid(AnimInstance))
+	{
+		AnimInstance->SkillAnim();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] AnimInstance is null. Ending turn for Skill E."));
+		bIsAttacking = false;
+		CurrentAttackTarget.Reset();
+		RequestEndTurn(); // 애니메이션이 없으면 바로 턴 종료
+	}
 }
 
 
@@ -916,9 +1036,25 @@ void ATurnPlayer::ExecuteSkillS(ACOECharacter* Target)
 
 void ATurnPlayer::RequestEndTurn()
 {
+	// 1. 상태 초기화
+	CurrentAttackState = EAttackSequenceState::None;
+	CurrentAttackTarget.Reset();
+
+	// 2. 캐릭터 회전 복원
+	if (PlayerController)
+	{
+		SetActorRotation(OriginalRotation);
+		PlayerController->SetControlRotation(OriginalRotation);
+	}
+
+	// 3. 커서 및 입력 모드 업데이트
+	UpdateCursor();
+	
+	UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] State reset and ending turn."));
+
+	// 4. CombatManager에 턴 종료 알림
 	if (TurnBridge)
 	{
-		//강제로 턴을 넘기는 경우를 위해 남겨둠
 		TurnBridge->NotifySkillFinished();
 	}
 	else

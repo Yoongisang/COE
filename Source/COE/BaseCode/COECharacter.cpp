@@ -49,7 +49,7 @@ ACOECharacter::ACOECharacter()
 	CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->TargetArmLength = 400.0f;
 	CameraBoom->bUsePawnControlRotation = true;
-	CameraBoom->SocketOffset = FVector(200.f,80.f, 50.f);
+	CameraBoom->SocketOffset = FVector(100.f,80.f, 50.f);
 
 	// Create a follow camera
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
@@ -251,7 +251,7 @@ void ACOECharacter::StartCombatTransition(AExplorationEnemy* Enemy, FName Battle
 			UE_LOG(LogTemp, Warning, TEXT("[CombatTransition] 레벨 전환 실행: %s"), *BattleMapName.ToString());
 			UGameplayStatics::OpenLevel(this, BattleMapName);
 		},
-		1.f,    // 실제 시간으로 1.초
+		0.3f,    // 실제 시간으로 1.초
 		false
 	);
 
@@ -323,7 +323,7 @@ void ACOECharacter::SetAiming(bool bNewAiming)
 	StartSocketOffset = CameraBoom->SocketOffset;
 	TargetSocketOffset = bIsAiming
 		? FVector(300.f, 80.f, 50.f)
-		: FVector(200.f, 80.f, 50.f);
+		: FVector(100.f, 80.f, 50.f);
 
 
 	InterpAlpha = 0.f;
@@ -427,6 +427,52 @@ void ACOECharacter::SpawnDefaultAttackEmitter()
 			EAttachLocation::SnapToTarget,
 			true  // Auto Destroy
 		);
+	}
+}
+
+void ACOECharacter::SpawnHealEmitter(ACOECharacter* Target)
+{
+	// Heal 파티클 스폰
+	if (HealParticle)
+	{
+		// 캐릭터 발밑 위치 계산
+		FVector TargetLocation = Target->GetActorLocation();
+		FVector GroundLocation = TargetLocation;
+		GroundLocation.Z -= Target->GetCapsuleComponent()->GetScaledCapsuleHalfHeight(); // 캡슐 높이만큼 내리기
+
+		UGameplayStatics::SpawnEmitterAtLocation(
+			GetWorld(),
+			HealParticle,
+			GroundLocation,                    // 바닥 위치
+			FRotator::ZeroRotator,            // 회전
+			true                              // Auto Destroy
+		);
+	}
+}
+
+void ACOECharacter::SpawnSkillEmitter(ACOECharacter* Target)
+{
+	// Skill 파티클 스폰
+	if (SkillParticle)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[SpawnSkillEmitter] SkillParticle found, spawning..."));
+
+		// 캐릭터 발밑 위치 계산
+		FVector TargetLocation = Target->GetActorLocation();
+		FVector GroundLocation = TargetLocation;
+		GroundLocation.Z -= Target->GetCapsuleComponent()->GetScaledCapsuleHalfHeight(); // 캡슐 높이만큼 내리기
+
+		UGameplayStatics::SpawnEmitterAtLocation(
+			GetWorld(),
+			SkillParticle,
+			GroundLocation,                    // 바닥 위치
+			FRotator::ZeroRotator,
+			true
+		);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("[SpawnSkillEmitter] SkillParticle is NULL on %s"), *GetName());
 	}
 }
 

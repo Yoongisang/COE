@@ -6,10 +6,15 @@
 #include "BaseCode/COEGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 #include "Camera/CameraComponent.h"
+#include "EngineUtils.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PlayerController.h"
 #include "Engine/World.h"
-#include "EngineUtils.h"
-#include "GameFramework/SpringArmComponent.h"
+#include "Components/CapsuleComponent.h"     // 누락된 헤더 추가
+#include "GameFramework/Character.h"         // 누락된 헤더 추가
+#include "TimerManager.h"    
+#include "TurnPlayer.h"
+
 
 UTargetSelectionComponent::UTargetSelectionComponent()
 {
@@ -81,32 +86,77 @@ void UTargetSelectionComponent::StartTargetSelection(ESkillTargetType SkillType)
 
 void UTargetSelectionComponent::CancelTargetSelection()
 {
-    if (SelectionState == ETargetSelectionState::None)
+    if (SelectionState == ETargetSelectionState::None && RotationState == ERotationState::Idle)
     {
         return;
     }
 
-    UE_LOG(LogTemp, Log, TEXT("[TargetSelection] Target selection cancelled"));
+    UE_LOG(LogTemp, Log, TEXT("[TargetSelection] Cancel initiated."));
 
-    // 상태 초기화
+    // 상태를 '취소 중'으로 설정
     SelectionState = ETargetSelectionState::None;
-    CurrentSkillType = ESkillTargetType::Universal;
-    ValidTargets.Empty();
-    CurrentTarget.Reset();
-    CurrentTargetIndex = 0;
 
-    // 카메라 및 회전 복원
-    RestoreOriginalCamera();
-    CleanupTemporaryCamera();
-
-    // 원래 플레이어 회전 복원
-    if (OwnerCharacter.IsValid())
+    // 현재 Player 타겟팅 중이라면 (임시 카메라 사용 중)
+    if (IsValid(TempCameraActor))
     {
-        OwnerCharacter->SetActorRotation(OriginalPlayerRotation);
-    }
+        // 임시 카메라에서 원래 카메라로 부드럽게 전환
+        RestoreOriginalCamera();
 
-    // 이벤트 브로드캐스트
-    OnTargetSelectionCancelled.Broadcast();
+        // 카메라 이동 타이머 정리
+        GetWorld()->GetTimerManager().ClearTimer(CameraMovementTimerHandle);
+
+        // 회전은 필요없으므로 즉시 정리
+        GetWorld()->GetTimerManager().ClearTimer(RotationTimerHandle);
+        RotationState = ERotationState::Idle;
+
+        // 캐릭터 회전 설정 복원
+        if (OwnerCharacter.IsValid())
+        {
+            OwnerCharacter->bUseControllerRotationYaw = bOriginalUseControllerRotationYaw;
+        }
+
+        // 지연 후 임시 카메라 정리 (블렌드 완료 후)
+        FTimerHandle CleanupHandle;
+        GetWorld()->GetTimerManager().SetTimer(
+            CleanupHandle,
+            [this]()
+            {
+                CleanupTemporaryCamera();
+                // 상태 초기화
+                CurrentSkillType = ESkillTargetType::Universal;
+                ValidTargets.Empty();
+                CurrentTarget.Reset();
+                CurrentTargetIndex = 0;
+                OnTargetSelectionCancelled.Broadcast();
+            },
+            0.9f, // RestoreOriginalCamera의 블렌드 시간(0.8f)보다 약간 길게
+            false
+        );
+    }
+    else
+    {
+        // Enemy 타겟팅 중이라면 (회전만 필요)
+        TargetRotation = OriginalPlayerRotation;
+        RotationState = ERotationState::RotatingToOriginal;
+
+        // 회전 타이머 시작
+        if (!GetWorld()->GetTimerManager().IsTimerActive(RotationTimerHandle))
+        {
+            if (OwnerCharacter.IsValid())
+            {
+                bOriginalUseControllerRotationYaw = OwnerCharacter->bUseControllerRotationYaw;
+                OwnerCharacter->bUseControllerRotationYaw = false;
+            }
+
+            GetWorld()->GetTimerManager().SetTimer(
+                RotationTimerHandle,
+                this,
+                &UTargetSelectionComponent::UpdateRotation,
+                0.016f,
+                true
+            );
+        }
+    }
 }
 
 void UTargetSelectionComponent::ConfirmTarget()
@@ -122,15 +172,52 @@ void UTargetSelectionComponent::ConfirmTarget()
     UE_LOG(LogTemp, Log, TEXT("[TargetSelection] Target confirmed: %s"),
         CurrentTarget.IsValid() ? *CurrentTarget->GetName() : TEXT("None"));
 
-    // 이벤트 브로드캐스트
+    // 이벤트 브로드캐스트 (스킬 실행 시작)
     OnTargetSelected.Broadcast(CurrentTarget.Get(), CurrentSkillType);
 
-    // 선택 완료 후 정리
-    RestoreOriginalCamera();
-    CleanupTemporaryCamera();
+    // 애니메이션이 있는 스킬인지 확인
+    bool bHasAnimation = false;
+    if (OwnerCharacter.IsValid())
+    {
+        if (auto* TurnPlayer = Cast<ATurnPlayer>(OwnerCharacter.Get()))
+        {
+            // SkillW, SkillE는 애니메이션이 있는 스킬
+            if (TurnPlayer->PendingSkillName == TEXT("SkillW") ||
+                TurnPlayer->PendingSkillName == TEXT("SkillE"))
+            {
+                bHasAnimation = true;
+            }
+        }
+    }
 
-    // 상태 초기화
-    SelectionState = ETargetSelectionState::None;
+    if (!bHasAnimation)
+    {
+        // 즉시 효과 스킬: 기존처럼 모든 상태 즉시 초기화
+        GetWorld()->GetTimerManager().ClearTimer(RotationTimerHandle);
+        GetWorld()->GetTimerManager().ClearTimer(CameraMovementTimerHandle);
+        RotationState = ERotationState::Idle;
+
+        // 캐릭터 회전 설정 복원
+        if (OwnerCharacter.IsValid())
+        {
+            OwnerCharacter->bUseControllerRotationYaw = bOriginalUseControllerRotationYaw;
+        }
+
+        // 선택 완료 후 정리
+        RestoreOriginalCamera();
+        CleanupTemporaryCamera();
+
+        // 상태 초기화
+        SelectionState = ETargetSelectionState::None;
+
+        UE_LOG(LogTemp, Log, TEXT("[TargetSelection] Instant skill confirmed - full cleanup"));
+    }
+    else
+    {
+        // 애니메이션이 있는 스킬: 아무것도 초기화하지 않음
+        // RequestEndTurn()에서 모든 정리를 처리함
+        UE_LOG(LogTemp, Log, TEXT("[TargetSelection] Animation skill confirmed - keeping all states"));
+    }
 }
 
 void UTargetSelectionComponent::SelectNextTarget()
@@ -280,24 +367,31 @@ void UTargetSelectionComponent::SetupCameraForTarget(ACOECharacter* Target)
 
     if (TargetTeam == ECombatTeam::Enemy)
     {
-        // 적 타겟팅: 플레이어가 적을 바라보도록 회전
+        // 적 타겟팅: 플레이어가 적을 바라보도록 부드럽게 회전 시작
         RotatePlayerToTarget(Target);
 
-        // 플레이어 카메라 사용 (이미 적을 바라보고 있으므로)
-        if (OwnerCharacter.IsValid())
+        // 플레이어 카메라 사용
+        if (OwnerCharacter.IsValid() && OriginalViewTarget.Get() == OwnerCharacter.Get())
         {
             PlayerController->SetViewTargetWithBlend(
-                OwnerCharacter.Get(), 
-                1.0f,
-                EViewTargetBlendFunction::VTBlend_EaseInOut, 
-                2.0f);
-            
-            // 혹시 모를 드리프트 방지: 컨트롤러=파운 회전 싱크
-            PlayerController->SetControlRotation(OwnerCharacter->GetActorRotation());
+                OwnerCharacter.Get(),
+                0.5f, // 블렌드 시간 단축
+                EViewTargetBlendFunction::VTBlend_EaseInOut,
+                1.0f);
         }
     }
     else if (TargetTeam == ECombatTeam::Player)
     {
+        // 진행중인 회전 타이머 중지
+        GetWorld()->GetTimerManager().ClearTimer(RotationTimerHandle);
+        RotationState = ERotationState::Idle;
+
+        // 캐릭터 회전 설정 복원
+        if (OwnerCharacter.IsValid())
+        {
+            OwnerCharacter->bUseControllerRotationYaw = bOriginalUseControllerRotationYaw;
+        }
+
         // 아군 타겟팅: 각 아군 캐릭터 정면에서 바라보는 카메라로 직접 전환
         SetupPlayerFrontCamera(Target);
     }
@@ -314,17 +408,76 @@ void UTargetSelectionComponent::RotatePlayerToTarget(ACOECharacter* Target)
     FVector TargetLocation = Target->GetActorLocation();
     FVector Direction = (TargetLocation - PlayerLocation).GetSafeNormal();
 
-    FRotator LookRotation = Direction.Rotation();
-    LookRotation.Pitch = 0.0f; // 수평 회전만
-    LookRotation.Roll = 0.0f;
+    TargetRotation = Direction.Rotation();
+    TargetRotation.Pitch = 0.0f;
+    TargetRotation.Roll = 0.0f;
 
-    if (AController* C = OwnerCharacter->GetController())
+    RotationState = ERotationState::RotatingToTarget;
+
+    if (!GetWorld()->GetTimerManager().IsTimerActive(RotationTimerHandle))
     {
-        C->SetControlRotation(LookRotation);
+        if (OwnerCharacter.IsValid())
+        {
+            bOriginalUseControllerRotationYaw = OwnerCharacter->bUseControllerRotationYaw;
+            OwnerCharacter->bUseControllerRotationYaw = false;
+        }
+        UE_LOG(LogTemp, Log, TEXT("[TargetSelection] Starting smooth rotation timer."));
+        GetWorld()->GetTimerManager().SetTimer(
+            RotationTimerHandle, this, &UTargetSelectionComponent::UpdateRotation, 0.016f, true);
+    }
+    else
+    {
+        UE_LOG(LogTemp, Log, TEXT("[TargetSelection] Updating target rotation for active timer."));
+    }
+}
+
+void UTargetSelectionComponent::UpdateRotation()
+{
+    if (RotationState == ERotationState::Idle || !PlayerController.IsValid() || !OwnerCharacter.IsValid())
+    {
+        GetWorld()->GetTimerManager().ClearTimer(RotationTimerHandle);
+        return;
     }
 
-    OwnerCharacter->SetActorRotation(LookRotation);
-    UE_LOG(LogTemp, Log, TEXT("[TargetSelection] Player rotated to face %s"), *Target->GetName());
+    ACharacter* OwnerAsChar = OwnerCharacter.Get();
+    AController* Controller = PlayerController.Get();
+
+    const FRotator CurrentControlRotation = Controller->GetControlRotation();
+    const FRotator NewControlRotation = FMath::RInterpTo(CurrentControlRotation, TargetRotation, GetWorld()->GetDeltaSeconds(), RotationInterpSpeed);
+    Controller->SetControlRotation(NewControlRotation);
+
+    const FRotator CurrentActorRotation = OwnerAsChar->GetActorRotation();
+    const FRotator NewActorRotation = FMath::RInterpTo(CurrentActorRotation, TargetRotation, GetWorld()->GetDeltaSeconds(), RotationInterpSpeed);
+    OwnerAsChar->SetActorRotation(NewActorRotation);
+
+    if (CurrentControlRotation.Equals(TargetRotation, 1.0f))
+    {
+        Controller->SetControlRotation(TargetRotation);
+        OwnerAsChar->SetActorRotation(TargetRotation);
+        GetWorld()->GetTimerManager().ClearTimer(RotationTimerHandle);
+
+        if (OwnerCharacter.IsValid())
+        {
+            OwnerAsChar->bUseControllerRotationYaw = bOriginalUseControllerRotationYaw;
+        }
+
+        UE_LOG(LogTemp, Log, TEXT("[TargetSelection] Smooth rotation finished. State was: %d"), (int32)RotationState);
+
+        if (RotationState == ERotationState::RotatingToOriginal)
+        {
+            CurrentSkillType = ESkillTargetType::Universal;
+            ValidTargets.Empty();
+            CurrentTarget.Reset();
+            CurrentTargetIndex = 0;
+
+            RestoreOriginalCamera();
+            CleanupTemporaryCamera();
+
+            OnTargetSelectionCancelled.Broadcast();
+        }
+
+        RotationState = ERotationState::Idle;
+    }
 }
 
 void UTargetSelectionComponent::SetupPlayerFrontCamera(ACOECharacter* PlayerTarget)
@@ -334,35 +487,36 @@ void UTargetSelectionComponent::SetupPlayerFrontCamera(ACOECharacter* PlayerTarg
         return;
     }
 
-    // 기존 임시 카메라가 있다면 위치만 업데이트, 없다면 새로 생성
+    // 1. 목표 카메라 위치/회전 계산
+    const FVector PlayerLocation = PlayerTarget->GetActorLocation();
+    const FVector PlayerForward = PlayerTarget->GetActorForwardVector();
+    TargetCameraLocation = PlayerLocation + (PlayerForward * 200.0f) + FVector(0, 0, 50.f);
+    TargetCameraRotation = (PlayerLocation - TargetCameraLocation).GetSafeNormal().Rotation();
+
+    // 2. 임시 카메라 생성 및 초기 설정
     if (!IsValid(TempCameraActor))
     {
         CreateTemporaryCameraActor();
-        if (!IsValid(TempCameraActor))
-        {
-            return;
-        }
+        if (!IsValid(TempCameraActor)) return;
+
+        // 생성된 임시 카메라를 현재 플레이어의 카메라 위치로 옮겨서 시작
+        FVector CurrentViewLocation;
+        FRotator CurrentViewRotation;
+        PlayerController->GetPlayerViewPoint(CurrentViewLocation, CurrentViewRotation);
+        TempCameraActor->SetActorLocationAndRotation(CurrentViewLocation, CurrentViewRotation);
+
+        // 현재 뷰에서 임시 카메라로 시점 전환
+        PlayerController->SetViewTargetWithBlend(TempCameraActor, 0.8f, EViewTargetBlendFunction::VTBlend_Cubic);
     }
 
-    // 타겟 캐릭터 정면에서 바라보는 카메라 위치 계산
-    FVector PlayerLocation = PlayerTarget->GetActorLocation();
-    FVector PlayerForward = PlayerTarget->GetActorForwardVector();
-
-    // 캐릭터 정면 200cm, 위쪽 50cm 위치에 카메라 배치
-    FVector CameraLocation = PlayerLocation + (PlayerForward * 200.0f) + FVector(0, 0, 50);
-
-    // 캐릭터를 바라보는 방향 계산
-    FVector CameraDirection = (PlayerLocation - CameraLocation).GetSafeNormal();
-    FRotator CameraRotation = CameraDirection.Rotation();
-
-    // 카메라 위치 및 회전 설정
-    TempCameraActor->SetActorLocation(CameraLocation);
-    TempCameraActor->SetActorRotation(CameraRotation);
-
-    // 카메라로 부드럽게 전환 (블렌드 시간을 조금 더 길게)
-    PlayerController->SetViewTargetWithBlend(TempCameraActor, 0.8f, EViewTargetBlendFunction::VTBlend_Cubic);
-
-    UE_LOG(LogTemp, Log, TEXT("[TargetSelection] Setup front camera for player: %s"), *PlayerTarget->GetName());
+    // 3. 부드러운 이동을 위한 타이머 시작
+    GetWorld()->GetTimerManager().SetTimer(
+        CameraMovementTimerHandle,
+        this,
+        &UTargetSelectionComponent::UpdatePlayerCameraMovement,
+        0.016f, // ~60fps
+        true
+    );
 }
 
 void UTargetSelectionComponent::CreateTemporaryCameraActor()
@@ -405,6 +559,29 @@ void UTargetSelectionComponent::RestoreOriginalCamera()
 {
     if (PlayerController.IsValid() && OriginalViewTarget.IsValid())
     {
-        PlayerController->SetViewTargetWithBlend(OriginalViewTarget.Get(), 0.5f);
+        PlayerController->SetViewTargetWithBlend(OriginalViewTarget.Get(), 0.8f, EViewTargetBlendFunction::VTBlend_Cubic);
+    }
+}
+
+void UTargetSelectionComponent::UpdatePlayerCameraMovement()
+{
+    if (!IsValid(TempCameraActor))
+    {
+        GetWorld()->GetTimerManager().ClearTimer(CameraMovementTimerHandle);
+        return;
+    }
+
+    const float DeltaTime = GetWorld()->GetTimerManager().GetTimerRate(CameraMovementTimerHandle);
+
+    // 현재 카메라 위치에서 목표 위치로 부드럽게 보간
+    const FVector NewLocation = FMath::VInterpTo(TempCameraActor->GetActorLocation(), TargetCameraLocation, DeltaTime, CameraInterpSpeed);
+    const FRotator NewRotation = FMath::RInterpTo(TempCameraActor->GetActorRotation(), TargetCameraRotation, DeltaTime, CameraInterpSpeed);
+
+    TempCameraActor->SetActorLocationAndRotation(NewLocation, NewRotation);
+
+    // 목표 위치에 도달하면 타이머 중지
+    if (TempCameraActor->GetActorLocation().Equals(TargetCameraLocation, 1.0f))
+    {
+        GetWorld()->GetTimerManager().ClearTimer(CameraMovementTimerHandle);
     }
 }

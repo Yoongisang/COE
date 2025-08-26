@@ -86,6 +86,14 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VFX")
 	class UParticleSystem* DefaultAttackParticle;
 
+	/** Heal 파티클 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VFX")
+	class UParticleSystem* HealParticle;
+
+	/** Cost스킬 파티클 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VFX")
+	class UParticleSystem* SkillParticle;
+
 public:
 
 	/** Returns CameraBoom subobject **/
@@ -139,6 +147,13 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void SpawnDefaultAttackEmitter();
 
+	/** Heal 파티클 스폰 함수 */
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	void SpawnHealEmitter(ACOECharacter* Target);
+
+	/** Skill 파티클 스폰 함수 */
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	void SpawnSkillEmitter(ACOECharacter* Target);
 	protected:
 
 	/** 조준 UI 위젯 초기화 */

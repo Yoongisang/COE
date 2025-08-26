@@ -33,6 +33,14 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat|Targeting", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UTargetSelectionComponent> TargetSelector;
 
+	/** 현재 대기 중인 스킬 타입 */
+	UPROPERTY()
+	ESkillTargetType PendingSkillType = ESkillTargetType::Universal;
+
+	/** 대기 중인 스킬 이름 (디버그용) */
+	UPROPERTY()
+	FString PendingSkillName;
+
 private:
 
 	// 조준 전 뷰 회전 저장 플래그와 값
@@ -69,15 +77,8 @@ private:
 		CharacterStats.CurrentAP = FMath::Clamp(CharacterStats.CurrentAP + Amount, 0, CharacterStats.MAXAP);
 	}
 
-	/** 현재 대기 중인 스킬 타입 */
-	UPROPERTY()
-	ESkillTargetType PendingSkillType = ESkillTargetType::Universal;
-
-	/** 대기 중인 스킬 이름 (디버그용) */
-	UPROPERTY()
-	FString PendingSkillName;
-
 public:
+
 	ATurnPlayer();
 
 public:
@@ -132,15 +133,11 @@ public:
 	/** 좌클릭 Fire (우클릭 조준 상태에서만 AP 1 소모, 0이면 자동 턴 종료) */
 	virtual void Fire() override;
 
-	/** 회복 아이템 사용 */
-	UFUNCTION(BlueprintCallable, Category = "Consumable|Combat")
-	void UseHPPotion();
-
 	/** W: 회피(성공 시, AP +1) */
 	void Dodge();
 
-	UFUNCTION(BlueprintCallable, Category = "Consumable|Combat")
-	void UseAPPotion();
+	//UFUNCTION(BlueprintCallable, Category = "Consumable|Combat")
+	//void UseAPPotion();
 
 	/** Enemy Turn 중인지 확인하는 함수 */
 	UFUNCTION(BlueprintPure, Category = "Combat")

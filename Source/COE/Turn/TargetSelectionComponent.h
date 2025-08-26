@@ -31,6 +31,16 @@ enum class ESkillTargetType : uint8
 	Universal       // 범용 (모든 대상에게)
 };
 
+// 회전 상태 (새로 추가된 부분)
+UENUM()
+enum class ERotationState : uint8
+{
+    Idle,
+    RotatingToTarget,
+    RotatingToOriginal
+};
+
+
 // 타겟 선택 이벤트
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnTargetSelected, ACOECharacter*, TargetCharacter, ESkillTargetType, SkillType);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnTargetSelectionCancelled);
@@ -103,6 +113,10 @@ private:
     /** 플레이어를 타겟 방향으로 회전 */
     void RotatePlayerToTarget(ACOECharacter* Target);
 
+    /** 부드러운 회전을 위한 타이머 함수 */
+    UFUNCTION()
+    void UpdateRotation();
+
     /** 아군 캐릭터 정면에서 바라보는 카메라 설정 */
     void SetupPlayerFrontCamera(ACOECharacter* PlayerTarget);
 
@@ -114,6 +128,9 @@ private:
 
     /** 원래 카메라로 복원 */
     void RestoreOriginalCamera();
+
+    /** Player 카메라 이동함수 */
+    void UpdatePlayerCameraMovement();
 
 private:
 
@@ -160,6 +177,35 @@ private:
     /** 플레이어 캐릭터 캐시 */
     UPROPERTY()
     TWeakObjectPtr<ACOECharacter> OwnerCharacter;
+
+    /** 회전 보간 타이머 핸들 */
+    FTimerHandle RotationTimerHandle;
+
+    /** 목표 회전값 */
+    FRotator TargetRotation;
+
+    /** 현재 회전 상태 */
+    ERotationState RotationState = ERotationState::Idle;
+
+    /** 회전 보간 속도 */
+    UPROPERTY(EditAnywhere, Category = "Target Selection|Rotation")
+    float RotationInterpSpeed = 5.0f;
+
+    /** 회전 시작 전 bUseControllerRotationYaw 상태 저장용 */
+    bool bOriginalUseControllerRotationYaw = false;
+
+    /** Player간 카메라 이동 변수 */
+    UPROPERTY()
+    FTimerHandle CameraMovementTimerHandle;
+
+    UPROPERTY()
+    FVector TargetCameraLocation;
+
+    UPROPERTY()
+    FRotator TargetCameraRotation;
+
+    UPROPERTY(EditAnywhere, Category = "Target Selection")
+    float CameraInterpSpeed = 5.0f;
 
 public:
 

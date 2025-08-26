@@ -10,6 +10,10 @@
 #include "Turn/TurnCombatBridgeComponent.h"
 #include "Turn/CombatManager.h"
 #include "Turn/TurnEnemy.h"
+#include "Kismet/GameplayStatics.h" // UGameplayStatics 사용을 위해 추가
+#include "GameFramework/PlayerController.h"   
+#include "GameFramework/PlayerController.h" // GetInstigatorController 사용을 위해 추가
+#include "GameFramework/Actor.h" // GetInstigatorController 사용을 위해 추가
 
 UCOEAnimInstance::UCOEAnimInstance()
 {
@@ -104,6 +108,34 @@ void UCOEAnimInstance::DefaultAttackAnim()
 		if (!Montage_IsPlaying(DefaultAttackMontage))
 		{
 			Montage_Play(DefaultAttackMontage);
+
+		}
+
+	}
+}
+
+void UCOEAnimInstance::HealAnim()
+{
+	// HealMontage가 할당되어있고 Montage가 실행중이 아닐경우 Montage실행
+	if (IsValid(HealMontage))
+	{
+		if (!Montage_IsPlaying(HealMontage))
+		{
+			Montage_Play(HealMontage);
+
+		}
+
+	}
+}
+
+void UCOEAnimInstance::SkillAnim()
+{
+	// SkillMontage가 할당되어있고 Montage가 실행중이 아닐경우 Montage실행
+	if (IsValid(SkillMontage))
+	{
+		if (!Montage_IsPlaying(SkillMontage))
+		{
+			Montage_Play(SkillMontage);
 
 		}
 
@@ -284,5 +316,88 @@ void UCOEAnimInstance::AnimNotify_DodgeAnim_End()
 	if (auto* TurnPlayer = Cast<ATurnPlayer>(Character))
 	{
 		TurnPlayer->EndDefenseAction();
+	}
+}
+
+void UCOEAnimInstance::AnimNotify_WSkill_Start()
+{
+	if (!Character)
+		return;
+
+	UE_LOG(LogTemp, Warning, TEXT("[AnimNotify] WSkill_Start %s"), *Character->GetName());
+
+	// TurnPlayer로 캐스팅해서 방어 행동 완전 종료
+	if (auto* TurnPlayer = Cast<ATurnPlayer>(Character))
+	{
+		auto* Target = TurnPlayer->TargetSelector->GetCurrentTarget();
+		// Heal 파티클 스폰 (타겟에게)
+		TurnPlayer->SpawnHealEmitter(Target);
+
+		// Heal
+		Target->CharacterStats.CurrentHP = FMath::Clamp(
+			Target->CharacterStats.CurrentHP + 20.f,
+			0.f,
+			Target->CharacterStats.MAXHP
+		);
+	}
+}
+
+void UCOEAnimInstance::AnimNotify_WSkill_End()
+{
+	if (!Character)
+		return;
+
+	// TurnPlayer로 캐스팅해서 방어 행동 완전 종료
+	if (auto* TurnPlayer = Cast<ATurnPlayer>(Character))
+	{
+		UE_LOG(LogTemp, Log, TEXT("[AnimNotify] WSkill_End called for %s"), *Character->GetName());
+		TurnPlayer->bIsAttacking = false;
+
+		// 대기 중이던 스킬 상태 초기화 (이제 여기서 초기화!)
+		TurnPlayer->PendingSkillType = ESkillTargetType::Universal;
+		TurnPlayer->PendingSkillName = TEXT("");
+		TurnPlayer->RequestEndTurn(); // 모든 후처리를 RequestEndTurn에 위임
+	}
+}
+
+void UCOEAnimInstance::AnimNotify_ESkill_Start()
+{
+	if (!Character)
+		return;
+
+	UE_LOG(LogTemp, Warning, TEXT("[AnimNotify] ESkill_Start %s"), *Character->GetName());
+
+	// TurnPlayer로 캐스팅해서 방어 행동 완전 종료
+	if (auto* TurnPlayer = Cast<ATurnPlayer>(Character))
+	{
+		auto* Target = TurnPlayer->TargetSelector->GetCurrentTarget();
+		// Skill 파티클 스폰 (타겟에게)
+		TurnPlayer->SpawnSkillEmitter(Target);
+
+		// TODO: 스킬 D 구체적인 로직 구현
+		UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] Skill D executed on %s"), *Target->GetName());
+
+		// 예시: 강력한 공격
+		UGameplayStatics::ApplyDamage(Target, 100.f, TurnPlayer->GetController(), TurnPlayer, nullptr);
+	
+	}
+}
+
+void UCOEAnimInstance::AnimNotify_ESkill_End()
+{
+	if (!Character)
+		return;
+
+	// TurnPlayer로 캐스팅해서 Heal 스킬 시작
+	if (auto* TurnPlayer = Cast<ATurnPlayer>(Character))
+	{
+		UE_LOG(LogTemp, Log, TEXT("[AnimNotify] ESkill_End called for %s"), *Character->GetName());
+		TurnPlayer->bIsAttacking = false;
+
+		// 대기 중이던 스킬 상태 초기화 (이제 여기서 초기화!)
+		TurnPlayer->PendingSkillType = ESkillTargetType::Universal;
+		TurnPlayer->PendingSkillName = TEXT("");
+
+		TurnPlayer->RequestEndTurn(); // 모든 후처리를 RequestEndTurn에 위임
 	}
 }

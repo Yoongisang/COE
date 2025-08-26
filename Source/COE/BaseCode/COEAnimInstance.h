@@ -18,6 +18,14 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AnimMontage")
 	TObjectPtr<class UAnimMontage> DefaultAttackMontage;
 
+	// Heal(W)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AnimMontage")
+	TObjectPtr<class UAnimMontage> HealMontage;
+
+	// SKill(E)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AnimMontage")
+	TObjectPtr<class UAnimMontage> SkillMontage;
+
 	// 패링
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AnimMontage")
 	TObjectPtr<class UAnimMontage> ParryMontage;
@@ -80,6 +88,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Animation")
 	void DefaultAttackAnim();
 
+	// Heal 
+	UFUNCTION(BlueprintCallable, Category = "Animation")
+	void HealAnim();
+
+	// Skill
+	UFUNCTION(BlueprintCallable, Category = "Animation")
+	void SkillAnim();
+
 	// 패리
 	UFUNCTION(BlueprintCallable, Category = "Animation")
 	void ParryAnim();
@@ -116,4 +132,20 @@ public:
 	/** 회피 애니메이션 완전 종료 (DodgeAnim_End에서 호출) */
 	UFUNCTION(BlueprintCallable, Category = "Animation|Defense")
 	void AnimNotify_DodgeAnim_End();
+
+	/** HealEmitter 스폰 시점 */
+	UFUNCTION(BlueprintCallable, Category = "Animation|Defense")
+	void AnimNotify_WSkill_Start();
+
+	/** HealAnim 종료 시점 */
+	UFUNCTION(BlueprintCallable, Category = "Animation|Defense")
+	void AnimNotify_WSkill_End();
+
+	/** SkillEmitter 스폰 시점 */
+	UFUNCTION(BlueprintCallable, Category = "Animation|Defense")
+	void AnimNotify_ESkill_Start();
+
+	/** SkillAnim 종료 시점 */
+	UFUNCTION(BlueprintCallable, Category = "Animation|Defense")
+	void AnimNotify_ESkill_End();
 };

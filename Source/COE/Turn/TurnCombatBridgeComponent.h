@@ -20,6 +20,7 @@ class COE_API UTurnCombatBridgeComponent : public UActorComponent
 
 public:
     UTurnCombatBridgeComponent();
+    ~UTurnCombatBridgeComponent();
 
     // 전투 편의 옵션 -----------------------------
     // BeginPlay 시 자동 등록/세팅을 수행할지 여부(맵 배치만으로 바로 참여 시킬 때 유용)
@@ -86,4 +87,8 @@ private:
 
     UPROPERTY()
     ACOECharacter* OwnerCharacter = nullptr;     // 이 컴포넌트를 가진 캐릭터 캐시
+
+    /** 델리게이트 바인딩 상태 추적 */
+    UPROPERTY()
+    bool bDelegatesBound = false;
 };

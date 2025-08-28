@@ -12,6 +12,8 @@
 #include "Exploration/ExplorationPlayer.h"
 #include "CombatManager.h"
 #include "BaseCode/COEAnimInstance.h"
+#include "TurnHudWidget.h"
+#include "Components/WidgetComponent.h"
 
 ATurnPlayer::ATurnPlayer()
 {
@@ -20,6 +22,26 @@ ATurnPlayer::ATurnPlayer()
 
 	// 타겟 선택 컴포넌트 생성
 	TargetSelector = CreateDefaultSubobject<UTargetSelectionComponent>(TEXT("TargetSelector"));
+
+	// Turn HUD 위젯 컴포넌트 생성
+	TurnHudWidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("TurnHudWidgetComponent"));
+	if (TurnHudWidgetComponent)
+	{
+		TurnHudWidgetComponent->SetupAttachment(RootComponent);
+		// 캐릭터 앞쪽 위치로 설정
+		TurnHudWidgetComponent->SetRelativeLocation(FVector(150.0f, 150.0f, 50.0f));
+
+		// 월드 스페이스 설정 (항상 카메라를 바라봄)
+		TurnHudWidgetComponent->SetWidgetSpace(EWidgetSpace::Screen);
+		TurnHudWidgetComponent->SetDrawSize(FVector2D(400.0f, 200.0f));
+
+		// 반투명 설정을 위한 속성
+		TurnHudWidgetComponent->SetDrawAtDesiredSize(true);
+
+		// 기본적으로 숨김 상태
+		SetTurnHudVisible(false);
+		//TurnHudWidgetComponent->SetVisibility(true);
+	}
 
 }
 
@@ -42,6 +64,16 @@ void ATurnPlayer::BeginPlay()
 
 	// 타겟 선택 시스템 초기화
 	InitializeTargetSelector();
+
+	// Turn HUD 초기화 (지연 호출로 PlayerController 준비 대기)
+	FTimerHandle HudInitHandle;
+	GetWorld()->GetTimerManager().SetTimer(
+		HudInitHandle,
+		this,
+		&ATurnPlayer::InitializeTurnHud,
+		0.5f,
+		false
+	);
 }
 
 void ATurnPlayer::UpdateCursor()
@@ -140,6 +172,9 @@ void ATurnPlayer::SetAiming(bool bNewAiming)
 
 	//커서 상태 갱신
 	UpdateCursor();
+
+	// HUD 업데이트 추가
+	UpdateHudForTurnState();
 }
 
 //기본 공격
@@ -334,7 +369,8 @@ void ATurnPlayer::ExecuteSkillOnTarget(ACOECharacter* TargetCharacter, ESkillTar
 
 	}
 
-
+	// HUD 상태 업데이트
+	UpdateHudForTurnState();
 }
 
 void ATurnPlayer::OnTargetSelectionCancelled()
@@ -357,6 +393,9 @@ void ATurnPlayer::OnTargetSelectionCancelled()
 
 	// 커서 상태 업데이트 (다시 스킬 선택 가능 상태로)
 	UpdateCursor();
+
+	// HUD 상태 업데이트
+	UpdateHudForTurnState();
 }
 
 bool ATurnPlayer::IsSelectingTarget() const
@@ -526,14 +565,40 @@ bool ATurnPlayer::CanPerformAction() const
 	}
 
 	// 자신의 턴인지 확인
-	if (ActiveChar != this)
-	{
-		UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] CanPerformAction: Not my turn (Active: %s)"),
-			*ActiveChar->GetName());
-		return false;
-	}
+	return ActiveChar == this;
 
-	return true;
+}
+
+// HUD용 별도 함수 추가 - 로그 없이 체크만
+bool ATurnPlayer::IsMyTurnActive() const
+{
+	if (!TurnBridge || !TurnBridge->GetManager() || !GI)
+		return false;
+
+	ACOECharacter* ActiveChar = TurnBridge->GetManager()->GetActiveCharacter();
+	return ActiveChar == this;
+}
+
+// 현재 턴 상태를 안전하게 확인하는 함수
+ETurnState ATurnPlayer::GetCurrentTurnState() const
+{
+	if (!TurnBridge || !TurnBridge->GetManager() || !GI)
+		return ETurnState::None;
+
+	ACOECharacter* ActiveChar = TurnBridge->GetManager()->GetActiveCharacter();
+	if (!ActiveChar)
+		return ETurnState::None;
+
+	if (ActiveChar == this)
+		return ETurnState::MyTurn;
+
+	ECombatTeam ActiveTeam = GI->GetTeam(ActiveChar);
+	if (ActiveTeam == ECombatTeam::Player)
+		return ETurnState::AllyTurn;
+	else if (ActiveTeam == ECombatTeam::Enemy)
+		return ETurnState::EnemyTurn;
+
+	return ETurnState::None;
 }
 
 bool ATurnPlayer::CanPerformDefense() const
@@ -1034,6 +1099,125 @@ void ATurnPlayer::ExecuteSkillS(ACOECharacter* Target)
 	RequestEndTurn(); // 즉시 턴 종료
 }
 
+void ATurnPlayer::InitializeTurnHud()
+{
+	if (!TurnHudWidgetClass || !TurnHudWidgetComponent)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] TurnHudWidgetClass or TurnHudWidgetComponent not set for %s"), *GetName());
+		return;
+	}
+
+	// PlayerController가 준비될 때까지 대기
+	APlayerController* PC = Cast<APlayerController>(GetController());
+	if (!PC)
+	{
+		PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	}
+
+	if (!PC)
+	{
+		UE_LOG(LogTemp, Error, TEXT("[TurnPlayer] No PlayerController found for TurnHUD initialization"));
+		return;
+	}
+
+	// 위젯 생성 및 설정
+	TurnHudWidget = CreateWidget<UTurnHudWidget>(PC, TurnHudWidgetClass);
+	if (TurnHudWidget)
+	{
+		// 위젯 컴포넌트에 설정
+		TurnHudWidgetComponent->SetWidget(TurnHudWidget);
+
+		// 캐릭터와 바인딩
+		TurnHudWidget->BindToCharacter(this);
+
+		// 위젯 컴포넌트 설정 조정
+		TurnHudWidgetComponent->SetDrawSize(FVector2D(400.0f, 200.0f));
+		TurnHudWidgetComponent->SetRelativeRotation(FRotator(0.f, 180.f, 0.f));
+		TurnHudWidgetComponent->SetWidgetSpace(EWidgetSpace::Screen);
+		TurnHudWidgetComponent->SetRelativeLocation(FVector(150.0f, 150.0f, 50.0f)); // 캐릭터 머리 위
+
+		// 기본적으로 표시 (테스트용)
+		SetTurnHudVisible(false);
+		SetTurnHudMode(ETurnHudMode::None);
+
+		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] Turn HUD initialized and shown for %s"), *GetName());
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("[TurnPlayer] Failed to create Turn HUD Widget for %s"), *GetName());
+	}
+}
+
+void ATurnPlayer::UpdateHudForTurnState()
+{
+	if (!TurnHudWidget)
+		return;
+
+	// 현재 턴 상태 확인 (로그 없는 버전 사용)
+	ETurnState TurnState = GetCurrentTurnState();
+
+	// 공격 중이면 HUD 숨김
+	if (bIsAttacking)
+	{
+		SetTurnHudMode(ETurnHudMode::None);
+		return;
+	}
+
+	// 턴 상태에 따른 HUD 모드 결정
+	switch (TurnState)
+	{
+	case ETurnState::MyTurn:
+	{
+		// 조준 중이면 조준 모드
+		if (bIsAiming)
+		{
+			SetTurnHudMode(ETurnHudMode::Aiming);
+		}
+		// 타겟 선택 중이면 타겟팅 모드
+		else if (IsSelectingTarget())
+		{
+			SetTurnHudMode(ETurnHudMode::Targeting);
+		}
+		// 일반 플레이어 턴
+		else
+		{
+			SetTurnHudMode(ETurnHudMode::PlayerTurn);
+		}
+		break;
+	}
+
+	case ETurnState::EnemyTurn:
+	{
+		// 현재 카메라 타겟이 자신인지 확인
+		if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))
+		{
+			if (PC->GetViewTarget() == this)
+			{
+				SetTurnHudMode(ETurnHudMode::EnemyTurn);
+			}
+			else
+			{
+				SetTurnHudMode(ETurnHudMode::None);
+			}
+		}
+		else
+		{
+			SetTurnHudMode(ETurnHudMode::None);
+		}
+		break;
+	}
+
+	case ETurnState::AllyTurn:
+	case ETurnState::None:
+	default:
+	{
+		SetTurnHudMode(ETurnHudMode::None);
+		break;
+	}
+	}
+
+}
+
 void ATurnPlayer::RequestEndTurn()
 {
 	// 1. 상태 초기화
@@ -1060,5 +1244,45 @@ void ATurnPlayer::RequestEndTurn()
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] RequestEndTurn called but TurnBridge is null"));
+	}
+
+	// 턴 종료 시 HUD 숨김
+	SetTurnHudMode(ETurnHudMode::None);
+}
+
+void ATurnPlayer::SetTurnHudVisible(bool bVisible)
+{
+	if (TurnHudWidgetComponent)
+	{
+		TurnHudWidgetComponent->SetVisibility(bVisible);
+	}
+
+	if (TurnHudWidget)
+	{
+		TurnHudWidget->SetVisibility(bVisible ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+	}
+}
+
+void ATurnPlayer::SetTurnHudMode(ETurnHudMode Mode)
+{
+	CurrentHudMode = Mode; // 모드 저장
+
+	if (TurnHudWidget)
+	{
+		TurnHudWidget->SetHudMode(Mode);
+		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] SetTurnHudMode called: %s"), *UEnum::GetValueAsString(Mode));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] SetTurnHudMode called but TurnHudWidget is null. Mode: %d"), (int32)Mode);
+	}
+}
+
+void ATurnPlayer::RefreshTurnHud()
+{
+	if (TurnHudWidget)
+	{
+		TurnHudWidget->UpdateAPDisplay();
+		TurnHudWidget->UpdateSkillButtons();
 	}
 }

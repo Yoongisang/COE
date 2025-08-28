@@ -150,15 +150,74 @@ void ACombatManager::BeginNextTurn()
     {
         Round++;                                         // 라운드 증가
         BuildTurnOrder();                                // 사망/부활/버프 영향 반영해 재정렬
-        CurrentIndex = 0;                                // 새 라운드 첫 참가자부터 시작
+        // 재정렬 후에도 참가자가 없으면 전투 종료
+        if (TurnOrder.Num() == 0)
+        {
+            UE_LOG(LogTemp, Error, TEXT("[CombatManager] No participants after rebuilding turn order"));
+            EndCombat(true);
+            return;
+        }
+
+        CurrentIndex = 0;
     }
 
     ACOECharacter* Active = GetActiveCharacter();        // 현재 턴 주체
-    if (!IsValid(Active)) { BeginNextTurn(); return; }   // 파괴/무효면 스킵하고 다음 턴으로(안전 장치)
+    
+    // 안전성 검증 강화
+    if (!IsValid(Active))
+    {
+        UE_LOG(LogTemp, Error, TEXT("[CombatManager] Active character is invalid at index %d"), CurrentIndex);
+
+        // 무한 루프 방지를 위한 카운터
+        int32 SafetyCounter = 0;
+        const int32 MaxAttempts = TurnOrder.Num() + 1;
+
+        while (SafetyCounter < MaxAttempts)
+        {
+            CurrentIndex++;
+            if (CurrentIndex >= TurnOrder.Num())
+            {
+                Round++;
+                BuildTurnOrder();
+                CurrentIndex = 0;
+
+                if (TurnOrder.Num() == 0)
+                {
+                    EndCombat(true);
+                    return;
+                }
+            }
+
+            Active = GetActiveCharacter();
+            if (IsValid(Active))
+            {
+                break;
+            }
+
+            SafetyCounter++;
+        }
+
+        // 여전히 유효한 캐릭터를 찾지 못했다면 전투 종료
+        if (!IsValid(Active))
+        {
+            UE_LOG(LogTemp, Error, TEXT("[CombatManager] Could not find valid character after %d attempts"), MaxAttempts);
+            EndCombat(true);
+            return;
+        }
+    }
+
+    // 추가 생존 상태 체크
+    if (GI && !GI->IsAlive(Active))
+    {
+        UE_LOG(LogTemp, Warning, TEXT("[CombatManager] Active character %s is marked as dead, skipping turn"), *Active->GetName());
+        BeginNextTurn(); // 재귀 호출로 다음 턴으로
+        return;
+    }
 
     UE_LOG(LogTemp, Warning, TEXT("[CM] OnTurnStarted -> %s (Round %d)"), *Active->GetName(), Round);
     EnterState(static_cast<uint8>(ECombatState::PreTurn)); // 입력 대기/연출 준비 단계
     OnTurnStarted.Broadcast(Active, Round);               // UI/사운드/로그 등 외부 시스템 통지
+    // UI/사운드/로그 등 외부 시스템 통지
 }
 
 void ACombatManager::NotifyTurnActionEnd()
@@ -195,8 +254,22 @@ void ACombatManager::ApplyDamageAndEndTurn(ACOECharacter* InstigatorCharacter, A
 ACOECharacter* ACombatManager::GetActiveCharacter() const
 {
     // 현재 인덱스가 유효한지 검증 후 해당 엔트리의 캐릭터 반환
-    if (!TurnOrder.IsValidIndex(CurrentIndex)) return nullptr; // 초기/에러 방지
-    return TurnOrder[CurrentIndex].Character.Get();            // 약포인터 → 실제 포인터
+    if (!TurnOrder.IsValidIndex(CurrentIndex))
+    {
+        UE_LOG(LogTemp, Error, TEXT("[CombatManager] Invalid CurrentIndex: %d (TurnOrder size: %d)"), CurrentIndex, TurnOrder.Num());
+        return nullptr;
+    }
+
+    ACOECharacter* Character = TurnOrder[CurrentIndex].Character.Get();
+
+    // 약포인터가 무효해졌는지 확인
+    if (!IsValid(Character))
+    {
+        UE_LOG(LogTemp, Warning, TEXT("[CombatManager] Character at index %d is no longer valid"), CurrentIndex);
+        return nullptr;
+    }
+
+    return Character;           // 약포인터 → 실제 포인터
 }
 
 void ACombatManager::CheckVictory()

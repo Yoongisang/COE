@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "BaseCode/COECharacter.h"
 #include "TargetSelectionComponent.h"
+#include "TurnHudWidget.h"
 #include "TurnPlayer.generated.h"
 
 /** 공격 시퀀스의 현재 단계 */
@@ -15,6 +16,16 @@ enum class EAttackSequenceState : uint8
 	MovingToTarget, // 적으로 이동 중
 	Attacking,      // 공격 애니메이션 실행 중
 	Returning       // 원래 위치로 복귀 중
+};
+
+/** 턴 상태 확인용 enum */
+UENUM(BlueprintType)
+enum class ETurnState : uint8
+{
+	None,           // 전투 외 상태
+	MyTurn,         // 내 턴
+	AllyTurn,       // 아군 턴
+	EnemyTurn       // 적 턴
 };
 
 /**
@@ -40,6 +51,22 @@ public:
 	/** 대기 중인 스킬 이름 (디버그용) */
 	UPROPERTY()
 	FString PendingSkillName;
+
+	/** Turn HUD 위젯 컴포넌트 (캐릭터 앞에 표시) */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI|Turn HUD", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UWidgetComponent> TurnHudWidgetComponent;
+
+	/** Turn HUD 위젯 클래스 (블루프린트에서 설정) */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI|Turn HUD")
+	TSubclassOf<class UTurnHudWidget> TurnHudWidgetClass;
+
+	/** Turn HUD 위젯 인스턴스 */
+	UPROPERTY(BlueprintReadOnly, Category = "UI|Turn HUD")
+	TObjectPtr<UTurnHudWidget> TurnHudWidget;
+
+	/** 현재 HUD 모드 저장 */
+	UPROPERTY()
+	ETurnHudMode CurrentHudMode = ETurnHudMode::None;
 
 private:
 
@@ -147,6 +174,14 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Combat")
 	bool CanPerformAction() const;
 
+	/** HUD용 - 로그 없이 내 턴인지만 체크 */
+	UFUNCTION(BlueprintPure, Category = "Combat")
+	bool IsMyTurnActive() const;
+
+	/** 현재 턴 상태를 안전하게 확인 */
+	UFUNCTION(BlueprintPure, Category = "Combat")
+	ETurnState GetCurrentTurnState() const;
+
 	/** 방어 행동 가능한지 체크 (Enemy 턴 중이고 방어 중이 아닐 때) */
 	UFUNCTION(BlueprintPure, Category = "Defense")
 	bool CanPerformDefense() const;
@@ -188,6 +223,18 @@ public:
 
 	// CombatManager에 턴 종료 요청(브리지를 통해)
 	void RequestEndTurn();
+
+	/** Turn HUD 표시/숨김 */
+	UFUNCTION(BlueprintCallable, Category = "UI|Turn HUD")
+	void SetTurnHudVisible(bool bVisible);
+
+	/** Turn HUD 모드 변경 */
+	UFUNCTION(BlueprintCallable, Category = "UI|Turn HUD")
+	void SetTurnHudMode(ETurnHudMode Mode);
+
+	/** Turn HUD 강제 업데이트 */
+	UFUNCTION(BlueprintCallable, Category = "UI|Turn HUD")
+	void RefreshTurnHud();
 
 private:
 	/** GI 캐스팅 헬퍼 */
@@ -239,5 +286,14 @@ protected:
 	void ExecuteSkillE(ACOECharacter* Target);
 	void ExecuteSkillA(ACOECharacter* Target);
 	void ExecuteSkillS(ACOECharacter* Target);
+
+	/** Turn HUD 초기화 */
+	void InitializeTurnHud();
+
+public:
+
+	/** 턴 상태 변경 시 HUD 업데이트 */
+	void UpdateHudForTurnState();
+
 
 };

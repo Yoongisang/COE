@@ -14,9 +14,9 @@
 #include "EngineUtils.h"
 #include "Turn/TurnCombatBridgeComponent.h"
 #include "AimUIWidget.h"
-//#include "EnhancedInputComponent.h"
-//#include "EnhancedInputSubsystems.h"
-//#include "InputActionValue.h"
+#include "COEUserWidget.h"
+#include "Components/WidgetComponent.h"
+
 
 //DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -57,6 +57,25 @@ ACOECharacter::ACOECharacter()
 	FollowCamera->bUsePawnControlRotation = true; //컨트롤러 따라가게 바꿈
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+
+	// HP 위젯 컴포넌트 생성
+	HPWidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("HPWidgetComponent"));
+	if (HPWidgetComponent)
+	{
+		HPWidgetComponent->SetupAttachment(RootComponent);
+		// 캐릭터 머리 위 위치로 설정
+		HPWidgetComponent->SetRelativeLocation(FVector(0.0f, 0.0f, 100.0f));
+
+		// 월드 스페이스 설정 (항상 카메라를 바라봄)
+		HPWidgetComponent->SetWidgetSpace(EWidgetSpace::Screen);
+		HPWidgetComponent->SetDrawSize(FVector2D(200.0f, 40.0f));
+
+		// 거리에 따른 스케일 설정
+		HPWidgetComponent->SetDrawAtDesiredSize(true);
+
+		// 기본적으로 숨김 상태
+		HPWidgetComponent->SetVisibility(false);
+	}
 
 	
 }
@@ -119,6 +138,9 @@ void ACOECharacter::BeginPlay()
 
 	// 조준 UI 위젯 초기화
 	InitializeAimUIWidget();
+
+	// HP 위젯 초기화
+	InitializeHPWidget();
 
 }
 
@@ -358,14 +380,19 @@ float ACOECharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEv
 	HP -= DamageAmount;
 	CharacterStats.CurrentHP = HP;
 
+	// HP 변경 알림
+	OnHPChanged();
+
 	if (HP <= 0)
 	{
+		// 사망 시 HP 위젯 숨김
+		SetHPWidgetVisible(false);
 		SetLifeSpan(2.f);
 	}
 
 
 	UE_LOG(LogTemp, Log, TEXT("Damaged : %f"), HP);
-	return 0.f;
+	return 0;
 }
 
 void ACOECharacter::UpdateAimingInterp()
@@ -539,4 +566,60 @@ void ACOECharacter::HideAimUI()
 		AimUIWidget->HideAimUI();
 		UE_LOG(LogTemp, Log, TEXT("[COECharacter] Aim UI hidden for %s"), *GetName());
 	}
+}
+
+void ACOECharacter::SetHPWidgetVisible(bool bVisible)
+{
+	if (HPWidgetComponent)
+	{
+		HPWidgetComponent->SetVisibility(bVisible);
+	}
+
+	if (HPWidget)
+	{
+		HPWidget->SetWidgetVisible(bVisible);
+	}
+}
+
+void ACOECharacter::RefreshHPWidget()
+{
+	if (HPWidget)
+	{
+		HPWidget->UpdateHp();
+	}
+}
+
+void ACOECharacter::InitializeHPWidget()
+{
+	if (!HPWidgetClass || !HPWidgetComponent)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[COECharacter] HPWidgetClass or HPWidgetComponent not set for %s"), *GetName());
+		return;
+	}
+
+	// 위젯 생성 및 설정
+	HPWidget = CreateWidget<UCOEUserWidget>(GetWorld(), HPWidgetClass);
+	if (HPWidget)
+	{
+		// 위젯 컴포넌트에 설정
+		HPWidgetComponent->SetWidget(HPWidget);
+
+		// 캐릭터와 바인딩
+		HPWidget->BindToCharacter(this);
+
+		// 기본적으로 표시 (필요에 따라 조건 추가)
+		SetHPWidgetVisible(true);
+
+		UE_LOG(LogTemp, Log, TEXT("[COECharacter] HP Widget initialized for %s"), *GetName());
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("[COECharacter] Failed to create HP Widget for %s"), *GetName());
+	}
+}
+
+void ACOECharacter::OnHPChanged()
+{
+	// HP 위젯 업데이트
+	RefreshHPWidget();
 }

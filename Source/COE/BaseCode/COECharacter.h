@@ -29,9 +29,12 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UCameraComponent> FollowCamera;
 
+	/** HP 위젯 컴포넌트 (캐릭터 머리 위에 표시) */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI|HP Widget", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UWidgetComponent> HPWidgetComponent;
+
+
 protected:
-
-
 
 	/** 조준 상태 전환 시 보간을 위한 변수 */
 	FTimerHandle AimingInterpTimerHandle;
@@ -93,6 +96,14 @@ public:
 	/** Cost스킬 파티클 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VFX")
 	class UParticleSystem* SkillParticle;
+
+	/** HP 위젯 클래스 (블루프린트에서 설정) */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI|HP Widget")
+	TSubclassOf<class UCOEUserWidget> HPWidgetClass;
+
+	/** HP 위젯 인스턴스 */
+	UPROPERTY(BlueprintReadOnly, Category = "UI|HP Widget")
+	TObjectPtr<UCOEUserWidget> HPWidget;
 
 public:
 
@@ -166,6 +177,24 @@ public:
 	/** 조준 UI 숨김 */
 	UFUNCTION(BlueprintCallable, Category = "UI|Aim")
 	void HideAimUI();
+
+	/** HP 위젯 표시/숨김 */
+	UFUNCTION(BlueprintCallable, Category = "UI|HP Widget")
+	void SetHPWidgetVisible(bool bVisible);
+
+	/** HP 위젯 강제 업데이트 */
+	UFUNCTION(BlueprintCallable, Category = "UI|HP Widget")
+	void RefreshHPWidget();
+
+	protected:
+
+	/** HP 위젯 초기화 */
+	void InitializeHPWidget();
+
+	/** HP가 변경될 때 호출 (기존 TakeDamage에서 호출) */
+	void OnHPChanged();
+
+
 
 };
 

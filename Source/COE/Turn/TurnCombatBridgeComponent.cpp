@@ -9,10 +9,18 @@
 #include "GameFramework/Actor.h"
 #include "TurnPlayer.h"
 #include "TurnEnemy.h"
-
+#include "TurnHudWidget.h"
+#include "TimerManager.h" 
+#include "EngineUtils.h" 
 UTurnCombatBridgeComponent::UTurnCombatBridgeComponent()
 {
     PrimaryComponentTick.bCanEverTick = false; // 이벤트 드리븐
+}
+
+UTurnCombatBridgeComponent::~UTurnCombatBridgeComponent()
+{
+    // 소멸자에서 델리게이트 정리
+    UnbindFromManagerDelegates();
 }
 
 void UTurnCombatBridgeComponent::BeginPlay()
@@ -33,7 +41,15 @@ void UTurnCombatBridgeComponent::BeginPlay()
 
 void UTurnCombatBridgeComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-    UnbindFromManagerDelegates();                           // 안전한 해제
+    // EndPlay에서도 안전하게 해제
+    UnbindFromManagerDelegates();
+
+    // 타이머도 정리
+    if (UWorld* World = GetWorld())
+    {
+        World->GetTimerManager().ClearAllTimersForObject(this);
+    }
+
     Super::EndPlay(EndPlayReason);
 }
 
@@ -148,32 +164,68 @@ void UTurnCombatBridgeComponent::BindToManagerDelegates()
 {
     if (!Manager) return;
 
-    // 델리게이트는 동일 바인딩 중복을 피하기 위해 바인딩 전에 언바인드 권장
-    UnbindFromManagerDelegates();
-
-    Manager->OnTurnStarted.AddDynamic(this, &UTurnCombatBridgeComponent::HandleTurnStarted);
-    Manager->OnTurnEnded.AddDynamic(this, &UTurnCombatBridgeComponent::HandleTurnEnded);
+    // 이미 바인딩되어 있는지 확인 후 바인딩
+    if (!bDelegatesBound)
+    {
+        Manager->OnTurnStarted.AddDynamic(this, &UTurnCombatBridgeComponent::HandleTurnStarted);
+        Manager->OnTurnEnded.AddDynamic(this, &UTurnCombatBridgeComponent::HandleTurnEnded);
+        bDelegatesBound = true;
+        UE_LOG(LogTemp, Log, TEXT("[Bridge] Delegates bound for %s"), *OwnerCharacter->GetName());
+    }
 }
 
 void UTurnCombatBridgeComponent::UnbindFromManagerDelegates()
 {
     if (!Manager) return;
 
-    Manager->OnTurnStarted.RemoveDynamic(this, &UTurnCombatBridgeComponent::HandleTurnStarted);
-    Manager->OnTurnEnded.RemoveDynamic(this, &UTurnCombatBridgeComponent::HandleTurnEnded);
+    // 바인딩되어 있을 때만 해제
+    if (bDelegatesBound)
+    {
+        Manager->OnTurnStarted.RemoveDynamic(this, &UTurnCombatBridgeComponent::HandleTurnStarted);
+        Manager->OnTurnEnded.RemoveDynamic(this, &UTurnCombatBridgeComponent::HandleTurnEnded);
+        bDelegatesBound = false;
+        UE_LOG(LogTemp, Log, TEXT("[Bridge] Delegates unbound for %s"), *OwnerCharacter->GetName());
+    }
 }
 
 void UTurnCombatBridgeComponent::HandleTurnStarted(ACOECharacter* ActiveCharacter, int32 Round)
 {
-    if (!ActiveCharacter) return;
+    // 유효성 검사 강화
+    if (!IsValid(ActiveCharacter) || !IsValid(OwnerCharacter))
+    {
+        UE_LOG(LogTemp, Warning, TEXT("[Bridge] HandleTurnStarted: Invalid character pointers"));
+        return;
+    }
+
+    // 컴포넌트가 파괴 중인지 확인
+    if (HasAnyFlags(RF_BeginDestroyed | RF_FinishDestroyed))
+    {
+        UE_LOG(LogTemp, Warning, TEXT("[Bridge] HandleTurnStarted: Component is being destroyed"));
+        return;
+    }
 
     if (!GI) GI = Cast<UCOEGameInstance>(UGameplayStatics::GetGameInstance(this));
-    if (!GI) return;
+    if (!GI)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("[Bridge] HandleTurnStarted: No GameInstance"));
+        return;
+    }
 
     APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
-    if (!PC) return;
+    if (!PC)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("[Bridge] HandleTurnStarted: No PlayerController"));
+        return;
+    }
+
+    // 활성 캐릭터의 브리지만 아래 로직을 실행
+    if (ActiveCharacter != OwnerCharacter)
+    {
+        return;
+    }
 
     const ECombatTeam Team = GI->GetTeam(ActiveCharacter);
+
 
     if (Team == ECombatTeam::Player)
     {
@@ -185,8 +237,21 @@ void UTurnCombatBridgeComponent::HandleTurnStarted(ACOECharacter* ActiveCharacte
 
             // 2단계: 카메라 블렌드 완료 후 Possess (지연 실행)
             FTimerHandle PossessDelayHandle;
-            GetWorld()->GetTimerManager().SetTimer(PossessDelayHandle, [this, PC, Pawn]()
+            GetWorld()->GetTimerManager().SetTimer(PossessDelayHandle,
+                [this, PC, Pawn, ActiveCharacter, Round]()
                 {
+                    // 타이머 실행 시점에서 다시 유효성 검사
+                    if (!IsValid(this) || !IsValid(PC) || !IsValid(Pawn) || !IsValid(ActiveCharacter))
+                    {
+                        return;
+                    }
+
+                    // 컴포넌트가 파괴 중인지 재확인
+                    if (HasAnyFlags(RF_BeginDestroyed | RF_FinishDestroyed))
+                    {
+                        return;
+                    }
+
                     PC->Possess(Pawn);
 
                     // 3단계: Possess 후 입력 설정
@@ -197,51 +262,100 @@ void UTurnCombatBridgeComponent::HandleTurnStarted(ACOECharacter* ActiveCharacte
                     if (auto* TP = Cast<ATurnPlayer>(Pawn))
                     {
                         TP->UpdateCursor();
+
+                        // **오직 활성 캐릭터의 HUD만 표시**
+                        FTimerHandle HudShowHandle;
+                        GetWorld()->GetTimerManager().SetTimer(HudShowHandle,
+                            [TP]()
+                            {
+                                if (IsValid(TP))
+                                {
+                                    TP->SetTurnHudVisible(true);
+                                    TP->SetTurnHudMode(ETurnHudMode::PlayerTurn);
+                                    TP->RefreshTurnHud();
+                                    UE_LOG(LogTemp, Warning, TEXT("[Bridge] ONLY Active Player HUD shown for: %s"), *TP->GetName());
+                                }
+                            }, 0.1f, false);
+                    }
+
+                    // 내 캐릭터의 턴이라면 추가 처리
+                    if (ActiveCharacter == OwnerCharacter && IsValid(this))
+                    {
+                        OnMyTurnStarted.Broadcast(Round);
+                        UE_LOG(LogTemp, Log, TEXT("[Bridge] My Turn START (Round %d) : %s"), Round, *OwnerCharacter->GetName());
                     }
 
                 }, 1.3f, false); // 블렌드 시간보다 약간 길게
         }
+		return;
     }
     else
     {
-        // Enemy 턴: 살아있는 Player 중 랜덤 선택해 카메라 전환 + PlayerController도 Possess
-        const TArray<ACOECharacter*> AlivePlayers = GI->GetAliveTeamMembers(ECombatTeam::Player);
-        if (AlivePlayers.Num() > 0)
-        {
-            // 완전 랜덤 선택 (현재 타겟 상관없이)
-            ACOECharacter* RandomTarget = AlivePlayers[FMath::RandRange(0, AlivePlayers.Num() - 1)];
-
-            PC->SetViewTargetWithBlend(RandomTarget, 0.8f, EViewTargetBlendFunction::VTBlend_Cubic);
-            UE_LOG(LogTemp, Log, TEXT("[Camera] Enemy turn - random target selected: %s"),
-                *RandomTarget->GetName());
-
-            // 2) 블렌드가 끝나갈 타이밍에 해당 아군 Pawn을 Possess
-            if (APawn* TargetPawn = Cast<APawn>(RandomTarget))
+  
+            // Enemy 턴: 살아있는 Player 중 랜덤 선택해 카메라 전환 + PlayerController도 Possess
+            const TArray<ACOECharacter*> AlivePlayers = GI->GetAliveTeamMembers(ECombatTeam::Player);
+            if (AlivePlayers.Num() > 0)
             {
-                FTimerHandle PossessDelayHandle;
-                GetWorld()->GetTimerManager().SetTimer(PossessDelayHandle, [this, PC, TargetPawn]()
-                    {
-                        PC->Possess(TargetPawn);
+                // 완전 랜덤 선택 (현재 타겟 상관없이)
+                ACOECharacter* RandomTarget = AlivePlayers[FMath::RandRange(0, AlivePlayers.Num() - 1)];
 
-                        // 3) 적 턴이므로 입력은 잠그고, 커서는 보이게 유지
-                        PC->SetInputMode(FInputModeGameOnly());
-                        PC->bShowMouseCursor = false;
-                        PC->bEnableClickEvents = false;
-                        PC->bEnableMouseOverEvents = false;
-                        PC->SetIgnoreLookInput(true);
+                PC->SetViewTargetWithBlend(RandomTarget, 0.8f, EViewTargetBlendFunction::VTBlend_Cubic);
+                UE_LOG(LogTemp, Log, TEXT("[Camera] Enemy turn - random target selected: %s"),
+                    *RandomTarget->GetName());
 
-                        if (auto* TP = Cast<ATurnPlayer>(TargetPawn))
+                // 2) 블렌드가 끝나갈 타이밍에 해당 아군 Pawn을 Possess
+                if (APawn* TargetPawn = Cast<APawn>(RandomTarget))
+                {
+                    FTimerHandle PossessDelayHandle;
+                    GetWorld()->GetTimerManager().SetTimer(PossessDelayHandle,
+                        [this, PC, TargetPawn, RandomTarget]()
                         {
-                            TP->UpdateCursor(); // 네가 이미 만든 커서/입력 상태 동기화
-                        }
-                    }, 0.85f, false); // 블렌드(0.8s)보다 약간 뒤에 Possess
-            }
-        }
+                            // 타이머 실행 시점에서 다시 유효성 검사
+                            if (!IsValid(this) || !IsValid(PC) || !IsValid(TargetPawn) || !IsValid(RandomTarget))
+                            {
+                                return;
+                            }
 
-        // 새로 추가: Enemy 자동 행동 시작 
+                            // 컴포넌트가 파괴 중인지 재확인
+                            if (HasAnyFlags(RF_BeginDestroyed | RF_FinishDestroyed))
+                            {
+                                return;
+                            }
+
+                            PC->Possess(TargetPawn);
+
+                            // 3) 적 턴이므로 입력은 잠그고, 커서는 보이게 유지
+                            PC->SetInputMode(FInputModeGameOnly());
+                            PC->bShowMouseCursor = false;
+                            PC->bEnableClickEvents = false;
+                            PC->bEnableMouseOverEvents = false;
+                            PC->SetIgnoreLookInput(true);
+
+                            if (auto* TP = Cast<ATurnPlayer>(TargetPawn))
+                            {
+                                TP->UpdateCursor();
+
+                                // HUD 표시 (적 턴, 방어 버튼만) - 안전한 지연 호출
+                                FTimerHandle HudShowHandle;
+                                GetWorld()->GetTimerManager().SetTimer(HudShowHandle,
+                                    [TP]()
+                                    {
+                                        if (IsValid(TP))
+                                        {
+                                            TP->SetTurnHudVisible(true);
+                                            TP->SetTurnHudMode(ETurnHudMode::EnemyTurn);
+                                            TP->RefreshTurnHud();
+                                            UE_LOG(LogTemp, Log, TEXT("[Bridge] Enemy turn HUD shown for: %s"), *TP->GetName());
+                                        }
+                                    }, 0.1f, false);
+                            }
+                        }, 0.85f, false); // 블렌드(0.8s)보다 약간 뒤에 Possess
+                }
+            }
+    
+        // Enemy 자동 행동 시작 (내가 활성 캐릭터일 때만)
         if (auto* TurnEnemy = Cast<ATurnEnemy>(ActiveCharacter))
         {
-            // 현재 활성 캐릭터와 이 컴포넌트의 소유자가 같을 때만 실행
             if (ActiveCharacter == OwnerCharacter)
             {
                 UE_LOG(LogTemp, Warning, TEXT("[Bridge] Starting action for Enemy: %s"), *TurnEnemy->GetName());
@@ -249,23 +363,56 @@ void UTurnCombatBridgeComponent::HandleTurnStarted(ACOECharacter* ActiveCharacte
             }
         }
     }
-
-
-    if (ActiveCharacter == OwnerCharacter)
-    {
-        // 내 턴 시작: UI 열기, 입력 허용, AI 트리거 등은 BP에서 바인딩하여 처리
-        OnMyTurnStarted.Broadcast(Round);
-        UE_LOG(LogTemp, Log, TEXT("[Bridge] My Turn START (Round %d) : %s"), Round, *OwnerCharacter->GetName());
-    }
 }
 
 void UTurnCombatBridgeComponent::HandleTurnEnded(ACOECharacter* ActiveCharacter, int32 Round)
 {
+    if (!IsValid(ActiveCharacter) || !IsValid(OwnerCharacter))
+    {
+        return;
+    }
+
+    // 컴포넌트가 파괴 중인지 확인
+    if (HasAnyFlags(RF_BeginDestroyed | RF_FinishDestroyed))
+    {
+        return;
+    }
+
     if (ActiveCharacter == OwnerCharacter)
     {
-        // 내 턴 종료: UI 닫기, 입력 잠금 등은 BP에서 처리
-        OnMyTurnEnded.Broadcast(Round);
-        UE_LOG(LogTemp, Log, TEXT("[Bridge] My Turn END   (Round %d) : %s"), Round, *OwnerCharacter->GetName());
+        // 내 턴 종료: HUD 숨김
+        if (auto* TP = Cast<ATurnPlayer>(OwnerCharacter))
+        {
+            if (IsValid(TP) && TP->TurnHudWidget && IsValid(TP->TurnHudWidget))
+            {
+                TP->SetTurnHudMode(ETurnHudMode::None);
+                UE_LOG(LogTemp, Log, TEXT("[Bridge] HUD hidden for: %s"), *TP->GetName());
+            }
+        }
+
+        // 델리게이트 브로드캐스트 전 유효성 재확인
+        if (IsValid(this) && !HasAnyFlags(RF_BeginDestroyed | RF_FinishDestroyed))
+        {
+            OnMyTurnEnded.Broadcast(Round);
+            UE_LOG(LogTemp, Log, TEXT("[Bridge] My Turn END   (Round %d) : %s"), Round, *OwnerCharacter->GetName());
+        }
+    }
+     else
+    {
+        // 다른 캐릭터의 턴이 종료된 경우, 내가 TurnPlayer라면 HUD 상태 업데이트
+        if (auto* TP = Cast<ATurnPlayer>(OwnerCharacter))
+        {
+            // 안전한 지연 호출로 HUD 상태 업데이트
+            FTimerHandle UpdateHandle;
+            GetWorld()->GetTimerManager().SetTimer(UpdateHandle,
+                [this, TP]()
+                {
+                    if (IsValid(this) && IsValid(TP) && !HasAnyFlags(RF_BeginDestroyed | RF_FinishDestroyed))
+                    {
+                        TP->UpdateHudForTurnState();
+                    }
+                }, 0.1f, false);
+        }
     }
 }
 

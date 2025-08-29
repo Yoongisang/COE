@@ -78,6 +78,10 @@ public:
 
 public:
 
+	/** 현재 레벨 전환(전투 진입)이 진행 중인지 여부 */
+	UPROPERTY(BlueprintReadOnly, Category = "Combat")
+	bool bIsTransitioning = false;
+
 	/** 플레이어가 선공한 경우 true, 적이 먼저 감지한 경우 false */
 	UPROPERTY(BlueprintReadOnly, Category = "Combat")
 	bool bPlayerInitiative = false;
@@ -102,7 +106,12 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Combat")
 	TArray<FName> EnemyToRemoveName;
 
+	/** 적 턴에 카메라가 비추고 있는, 방어해야 할 플레이어 */
+	UPROPERTY(BlueprintReadOnly, Category = "Combat")
+	TWeakObjectPtr<ACOECharacter> CurrentDefendingPlayer;
+
 public:
+
 	// ─────────────────────────── Combat Meta API ───────────────────────────
 	UFUNCTION(BlueprintCallable, Category = "Combat|State")
 	void SetCombatState(ECombatState InState) { CombatState = InState; }

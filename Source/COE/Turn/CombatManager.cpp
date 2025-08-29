@@ -235,7 +235,16 @@ void ACombatManager::NotifyTurnActionEnd()
     }
 
     EnterState(static_cast<uint8>(ECombatState::PostTurn)); // 후처리 단계 표시
-    BeginNextTurn();                                      // 다음 턴으로 진행
+    // BeginNextTurn()을 즉시 호출하는 대신 1초 지연하여 호출.
+   // 이렇게 하면 이전 턴의 카메라 복원 블렌드가 완료될 시간을 확보할 수 있음.
+    FTimerHandle NextTurnDelayHandle;
+    GetWorld()->GetTimerManager().SetTimer(
+        NextTurnDelayHandle,
+        this,
+        &ACombatManager::BeginNextTurn,
+        1.0f, // 1초 지연 (카메라 블렌드 시간 0.8초보다 김)
+        false
+    );
 }
 
 void ACombatManager::ApplyDamageAndEndTurn(ACOECharacter* InstigatorCharacter, ACOECharacter* TargetCharacter, float Damage)

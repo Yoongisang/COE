@@ -76,7 +76,7 @@ void AExplorationPlayerController::BeginPlay()
 
 void AExplorationPlayerController::DoMouseLeftClick()
 {
-	if (!ExplorationChar->bIsAiming)
+if (!ExplorationChar->bIsAiming)
 	{
 		ExplorationChar->UseExplorationFullHeal();
 	}

@@ -13,7 +13,9 @@ UCLASS()
 class COE_API AExplorationEnemy : public ACOECharacter
 {
 	GENERATED_BODY()
+
 public:
+
 	//TrunLevel 할당
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	TArray<FName> PossibleBattleLevels;

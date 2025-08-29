@@ -159,6 +159,11 @@ void ATurnPlayer::OnAttackMontageEnded()
 	}
 }
 
+
+
+
+
+
 void ATurnPlayer::SetAiming(bool bNewAiming)
 {
 	if (!CanPerformAction() || IsSelectingTarget())
@@ -194,17 +199,6 @@ void ATurnPlayer::UseSkill_Q()
 	{
 		TargetSelector->StartTargetSelection(ESkillTargetType::Attack);
 	}
-
-	//// 기본 공격 처리
-	//if (!bIsAttacking)
-	//{
-	//	DefaultAttack();
-	//	// AP +1 (클램프)
-	//	CharacterStats.CurrentAP = FMath::Clamp(CharacterStats.CurrentAP + 1, 0, CharacterStats.MAXAP);
-	//
-	//	UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] Used Q skill → CurrentAP: %d"), CharacterStats.CurrentAP);
-	//
-	//}
 
 }
 
@@ -713,6 +707,7 @@ float ATurnPlayer::TakeDamage(float DamageAmount, FDamageEvent const& DamageEven
 		return 0.0f; // 데미지 무효화
 	}
 
+
 	// 일반적인 데미지 처리 (부모 클래스 호출)
 	return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
@@ -746,7 +741,6 @@ void ATurnPlayer::ExecuteParryCounter(ATurnEnemy* Target)
 		// 현재 공격 애니메이션 중단
 		Target->AnimInstance->Montage_Stop(0.0f);
 		Target->bIsAttacking = false;
-		// 추후 즉시 애니메이션 중단한다음 Stun AnimMontage 실행 구현
 
 		UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] %s attack animation stopped"), *Target->GetName());
 	}
@@ -763,7 +757,11 @@ void ATurnPlayer::ExecuteParryCounter(ATurnEnemy* Target)
 		ParryCounterDamage, *Target->GetName());
 
 	// 4. 파티클 효과 (패링 성공 이펙트)
-	SpawnDefaultAttackEmitter(); // 기존 공격 파티클 재사용 (추후 전용 이펙트로 교체 가능)
+	if (DefaultAttackParticle)
+	{
+		SpawnDefaultAttackEmitter(); // 기존 공격 파티클 재사용 (추후 전용 이펙트로 교체 가능)
+	}
+	
 }
 
 void ATurnPlayer::UpdateAttackMovement()
@@ -913,6 +911,7 @@ void ATurnPlayer::ExecuteBasicAttack(ACOECharacter* Target)
 	//// 시퀀스에 필요한 정보 저장
 	CurrentAttackTarget = Target;
 	OriginalLocation = GetActorLocation();
+
 	// TargetSelector가 타겟 선택을 시작할 때 저장해 둔,
 	// 캐릭터의 '진짜' 원래 회전값을 가져옵니다.
 	if (TargetSelector)
@@ -924,17 +923,29 @@ void ATurnPlayer::ExecuteBasicAttack(ACOECharacter* Target)
 		// 만약을 대비한 폴백
 		OriginalRotation = GetActorRotation();
 	}
-	// 1. '적으로 이동' 상태로 전환
-	CurrentAttackState = EAttackSequenceState::MovingToTarget;
 
-	// 2. 이동을 처리할 타이머 시작 (매 프레임처럼 동작)
-	GetWorld()->GetTimerManager().SetTimer(
-		MovementTimerHandle,
-		this,
-		&ATurnPlayer::UpdateAttackMovement,
-		0.016f, // 약 60fps
-		true
-	);
+	// 공격 전 거리 체크
+	const float DistanceToTarget = FVector::Dist(GetActorLocation(), Target->GetActorLocation());
+	if (DistanceToTarget <= AttackDistance + 50.f) // 약간의 오차 범위를 추가
+	{
+		// 사거리 내에 있을 경우 즉시 공격
+		UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] Target in range. Attacking immediately."));
+		CurrentAttackState = EAttackSequenceState::Attacking;
+		DefaultAttack(); // 공격 애니메이션 재생
+	}
+	else
+	{
+		// 사거리 밖에 있을 경우 이동 시작
+		UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] Target out of range. Moving to target."));
+		CurrentAttackState = EAttackSequenceState::MovingToTarget;
+		GetWorld()->GetTimerManager().SetTimer(
+			MovementTimerHandle,
+			this,
+			&ATurnPlayer::UpdateAttackMovement,
+			0.016f,
+			true
+		);
+	}
 }
 
 void ATurnPlayer::ExecuteSkillW(ACOECharacter* Target)
@@ -1042,6 +1053,12 @@ void ATurnPlayer::ExecuteSkillA(ACOECharacter* Target)
 		return;
 	}
 
+	// TargetSelector로부터 원래 회전값을 가져와 저장합니다.
+	if (TargetSelector)
+	{
+		OriginalRotation = TargetSelector->OriginalPlayerRotation;
+	}
+
 	if (!GI->TryConsumeHPPotion())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] Failed to consume HP potion"));
@@ -1073,6 +1090,12 @@ void ATurnPlayer::ExecuteSkillS(ACOECharacter* Target)
 	if (!IsValid(Target) || !GI)
 	{
 		return;
+	}
+
+	// TargetSelector로부터 원래 회전값을 가져와 저장합니다.
+	if (TargetSelector)
+	{
+		OriginalRotation = TargetSelector->OriginalPlayerRotation;
 	}
 
 	if (!GI->TryConsumeAPPotion())
@@ -1220,6 +1243,13 @@ void ATurnPlayer::UpdateHudForTurnState()
 
 void ATurnPlayer::RequestEndTurn()
 {
+
+	// 턴 종료 시 타겟팅 컴포넌트 정리
+	if (TargetSelector && TargetSelector->GetSelectionState() != ETargetSelectionState::None)
+	{
+		TargetSelector->FinalizeSelection();
+	}
+
 	// 1. 상태 초기화
 	CurrentAttackState = EAttackSequenceState::None;
 	CurrentAttackTarget.Reset();

@@ -170,6 +170,20 @@ void UCOEAnimInstance::DodgeAnim()
 	}
 }
 
+void UCOEAnimInstance::HitAnim()
+{
+	// DodgeMontage가 할당되어있고 Montage가 실행중이 아닐경우 Montage실행
+	if (IsValid(HitMontage))
+	{
+		if (!Montage_IsPlaying(HitMontage))
+		{
+			Montage_Play(HitMontage);
+
+		}
+
+	}
+}
+
 void UCOEAnimInstance::AnimNotify_End()
 {
 	if (!Character) 
@@ -197,7 +211,7 @@ void UCOEAnimInstance::AnimNotify_End()
 						// TurnEnemy인 경우 FinishEnemyTurn() 호출
 						else if (auto* TurnEnemy = Cast<ATurnEnemy>(COEChar))
 						{
-							TurnEnemy->FinishEnemyTurn();
+							TurnEnemy->OnAttackMontageEnded();
 							UE_LOG(LogTemp, Log, TEXT("[AnimNotify_End] TurnEnemy FinishEnemyTurn called"));
 						}
 						// 일반적인 경우 브리지를 통해 턴 종료
@@ -378,7 +392,7 @@ void UCOEAnimInstance::AnimNotify_ESkill_Start()
 		UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] Skill D executed on %s"), *Target->GetName());
 
 		// 예시: 강력한 공격
-		UGameplayStatics::ApplyDamage(Target, 100.f, TurnPlayer->GetController(), TurnPlayer, nullptr);
+		UGameplayStatics::ApplyDamage(Target, 50.f, TurnPlayer->GetController(), TurnPlayer, nullptr);
 	
 	}
 }
@@ -399,5 +413,44 @@ void UCOEAnimInstance::AnimNotify_ESkill_End()
 		TurnPlayer->PendingSkillName = TEXT("");
 
 		TurnPlayer->RequestEndTurn(); // 모든 후처리를 RequestEndTurn에 위임
+	}
+}
+
+void UCOEAnimInstance::AnimNotify_Fire()
+{
+	if (!Character)
+		return;
+
+	// TurnEnemy로 캐스팅해서 Fire 콜백 호출
+	if (auto* TurnEnemy = Cast<ATurnEnemy>(Character))
+	{
+		TurnEnemy->OnSkillFire();
+		UE_LOG(LogTemp, Log, TEXT("[AnimNotify] EnemySkill_Fire called for %s"), *Character->GetName());
+	}
+}
+
+void UCOEAnimInstance::AnimNotify_Fire_Spawn()
+{
+	if (!Character)
+		return;
+
+	// TurnEnemy로 캐스팅해서 Fire_Spawn 콜백 호출
+	if (auto* TurnEnemy = Cast<ATurnEnemy>(Character))
+	{
+		TurnEnemy->OnSkillFireSpawn();
+		UE_LOG(LogTemp, Log, TEXT("[AnimNotify] EnemySkill_Fire_Spawn called for %s"), *Character->GetName());
+	}
+}
+
+void UCOEAnimInstance::AnimNotify_Fire_End()
+{
+	if (!Character)
+		return;
+
+	// TurnEnemy로 캐스팅해서 Fire_End 콜백 호출
+	if (auto* TurnEnemy = Cast<ATurnEnemy>(Character))
+	{
+		TurnEnemy->OnSkillFireEnd();
+		UE_LOG(LogTemp, Log, TEXT("[AnimNotify] EnemySkill_Fire_End called for %s"), *Character->GetName());
 	}
 }

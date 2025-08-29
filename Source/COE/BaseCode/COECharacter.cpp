@@ -91,6 +91,9 @@ void ACOECharacter::BeginPlay()
 	auto* GI = GetWorld()->GetGameInstance<UCOEGameInstance>();
 	if (!GI) return;
 
+	// 레벨 전환이 완료되었으므로 플래그를 false로 초기화합니다.
+	GI->bIsTransitioning = false;
+
 	// 1) 플레이어 위치 복원
 	FString Curr = UGameplayStatics::GetCurrentLevelName(this, true);
 	if (GI->ReturnMapName.ToString() == Curr)
@@ -234,23 +237,38 @@ void ACOECharacter::StartCombatTransition(AExplorationEnemy* Enemy, FName Battle
 	if (!Enemy) 
 		return;
 
+	UCOEGameInstance* GI = Cast<UCOEGameInstance>(UGameplayStatics::GetGameInstance(this));
+	if (!GI)
+	{
+		UE_LOG(LogTemp, Error, TEXT("[CombatTransition] GameInstance is null!"));
+		return;
+	}
+
+	// 이미 레벨 전환이 진행 중인지 확인
+	if (GI->bIsTransitioning)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[CombatTransition] Blocked duplicate transition request."));
+		return; // 중복 호출 방지
+	}
+
+	// 전환 시작: 플래그를 true로 설정하여 다른 요청을 막음
+	GI->bIsTransitioning = true;
+
 	UE_LOG(LogTemp, Warning, TEXT("[CombatTransition] 전투 진입 시작 - 슬로우모션 활성화"));
 
 	// 조준 UI 강제로 숨김 (전투 진입 시)
 	HideAimUI();
 
 	// 1) GameInstance에 전투 정보 저장
-	if (UCOEGameInstance* GI = Cast<UCOEGameInstance>(UGameplayStatics::GetGameInstance(this)))
-	{
-		FString CurrLevel = UGameplayStatics::GetCurrentLevelName(this, true);
-		FName ThisEnemyName = Enemy->GetFName();
+	FString CurrLevel = UGameplayStatics::GetCurrentLevelName(this, true);
+	FName ThisEnemyName = Enemy->GetFName();
 
-		GI->bPlayerInitiative = bPlayerInitiative;
-		GI->bPlayerWasDetected = !bPlayerInitiative;
-		GI->ReturnLocation = GetActorLocation();
-		GI->ReturnMapName = FName(*CurrLevel);
-		GI->EnemyToRemoveName.AddUnique(ThisEnemyName);
-	}
+	GI->bPlayerInitiative = bPlayerInitiative;
+	GI->bPlayerWasDetected = !bPlayerInitiative;
+	GI->ReturnLocation = GetActorLocation();
+	GI->ReturnMapName = FName(*CurrLevel);
+	GI->EnemyToRemoveName.AddUnique(ThisEnemyName);
+	
 
 	// 2) 월드 슬로우모션 시작 (0.1배속으로 설정)
 	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 0.3f);
@@ -383,6 +401,13 @@ float ACOECharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEv
 	// HP 변경 알림
 	OnHPChanged();
 
+	//피격 애니메이션 재생
+	if (DamageAmount > 0 && IsValid(AnimInstance))
+	{
+		AnimInstance->HitAnim();
+	}
+
+	// 사망시 HP 위젯 표시 갱신
 	if (HP <= 0)
 	{
 		// 사망 시 HP 위젯 숨김

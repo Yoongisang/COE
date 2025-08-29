@@ -75,6 +75,10 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Target Selection")
     void CancelTargetSelection();
 
+    /** 타겟 선택 완료 후 모든 상태를 초기화하고 원래대로 복원 */
+    UFUNCTION(BlueprintCallable, Category = "Target Selection")
+    void FinalizeSelection();
+
     /** 현재 타겟 확정 */
     UFUNCTION(BlueprintCallable, Category = "Target Selection")
     void ConfirmTarget();

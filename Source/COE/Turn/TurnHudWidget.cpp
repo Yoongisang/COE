@@ -496,25 +496,6 @@ void UTurnHudWidget::UpdateAllButtonContainerVisibilities(bool bShowSkills, bool
         RangedButtonContainer->SetVisibility(bShowRanged ? ESlateVisibility::Visible : ESlateVisibility::Collapsed);
     }
 
-    // 방어 버튼들은 기존 스킬 버튼(Q, W)을 재활용하므로, 해당 버튼의 가시성을 직접 제어합니다.
-    // 방어 텍스트 업데이트도 여기서 함께 처리합니다.
-    //if (Q_Button && Q_Text)
-    //{
-    //    Q_Button->SetVisibility(bShowDefense ? ESlateVisibility::Visible : ESlateVisibility::Collapsed);
-    //    if (bShowDefense)
-    //    {
-    //        Q_Text->SetText(FText::FromString(TEXT("Q: 패링")));
-    //    }
-    //}
-    //if (W_Button && W_Text)
-    //{
-    //    W_Button->SetVisibility(bShowDefense ? ESlateVisibility::Visible : ESlateVisibility::Collapsed);
-    //    if (bShowDefense)
-    //    {
-    //        W_Text->SetText(FText::FromString(TEXT("W: 회피")));
-    //    }
-    //}
-
     // 방어 모드: Q/W만 키고 라벨 변경
     if (bShowDefense)
     {

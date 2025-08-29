@@ -86,77 +86,59 @@ void UTargetSelectionComponent::StartTargetSelection(ESkillTargetType SkillType)
 
 void UTargetSelectionComponent::CancelTargetSelection()
 {
-    if (SelectionState == ETargetSelectionState::None && RotationState == ERotationState::Idle)
+    if (SelectionState == ETargetSelectionState::None)
     {
         return;
     }
 
     UE_LOG(LogTemp, Log, TEXT("[TargetSelection] Cancel initiated."));
 
-    // 상태를 '취소 중'으로 설정
+    FinalizeSelection(); // 새로운 정리 함수 호출
+
+    OnTargetSelectionCancelled.Broadcast();
+}
+
+void UTargetSelectionComponent::FinalizeSelection()
+{
+    if (SelectionState == ETargetSelectionState::None)
+    {
+        return; // 이미 정리되었으면 중복 실행 방지
+    }
+
+    UE_LOG(LogTemp, Log, TEXT("[TargetSelection] Finalizing selection and resetting state."));
+
+    // 타이머 정리
+    GetWorld()->GetTimerManager().ClearTimer(RotationTimerHandle);
+    GetWorld()->GetTimerManager().ClearTimer(CameraMovementTimerHandle);
+    RotationState = ERotationState::Idle;
+
+    // 캐릭터 회전 설정 복원
+    if (OwnerCharacter.IsValid())
+    {
+        OwnerCharacter->bUseControllerRotationYaw = bOriginalUseControllerRotationYaw;
+        // 원래 회전값으로 즉시 되돌림 (중요)
+        OwnerCharacter->SetActorRotation(OriginalPlayerRotation);
+    }
+
+    // 원래 카메라로 복원
+    RestoreOriginalCamera();
+
+    // 블렌드가 끝난 후 카메라 액터를 파괴하도록 지연 호출
+    FTimerHandle CleanupHandle;
+    GetWorld()->GetTimerManager().SetTimer(
+        CleanupHandle,
+        this,
+        &UTargetSelectionComponent::CleanupTemporaryCamera,
+        0.9f, // RestoreOriginalCamera의 블렌드 시간(0.8f)보다 약간 길게
+        false
+    );
+
+    // 상태 변수 초기화
     SelectionState = ETargetSelectionState::None;
-
-    // 현재 Player 타겟팅 중이라면 (임시 카메라 사용 중)
-    if (IsValid(TempCameraActor))
-    {
-        // 임시 카메라에서 원래 카메라로 부드럽게 전환
-        RestoreOriginalCamera();
-
-        // 카메라 이동 타이머 정리
-        GetWorld()->GetTimerManager().ClearTimer(CameraMovementTimerHandle);
-
-        // 회전은 필요없으므로 즉시 정리
-        GetWorld()->GetTimerManager().ClearTimer(RotationTimerHandle);
-        RotationState = ERotationState::Idle;
-
-        // 캐릭터 회전 설정 복원
-        if (OwnerCharacter.IsValid())
-        {
-            OwnerCharacter->bUseControllerRotationYaw = bOriginalUseControllerRotationYaw;
-        }
-
-        // 지연 후 임시 카메라 정리 (블렌드 완료 후)
-        FTimerHandle CleanupHandle;
-        GetWorld()->GetTimerManager().SetTimer(
-            CleanupHandle,
-            [this]()
-            {
-                CleanupTemporaryCamera();
-                // 상태 초기화
-                CurrentSkillType = ESkillTargetType::Universal;
-                ValidTargets.Empty();
-                CurrentTarget.Reset();
-                CurrentTargetIndex = 0;
-                OnTargetSelectionCancelled.Broadcast();
-            },
-            0.9f, // RestoreOriginalCamera의 블렌드 시간(0.8f)보다 약간 길게
-            false
-        );
-    }
-    else
-    {
-        // Enemy 타겟팅 중이라면 (회전만 필요)
-        TargetRotation = OriginalPlayerRotation;
-        RotationState = ERotationState::RotatingToOriginal;
-
-        // 회전 타이머 시작
-        if (!GetWorld()->GetTimerManager().IsTimerActive(RotationTimerHandle))
-        {
-            if (OwnerCharacter.IsValid())
-            {
-                bOriginalUseControllerRotationYaw = OwnerCharacter->bUseControllerRotationYaw;
-                OwnerCharacter->bUseControllerRotationYaw = false;
-            }
-
-            GetWorld()->GetTimerManager().SetTimer(
-                RotationTimerHandle,
-                this,
-                &UTargetSelectionComponent::UpdateRotation,
-                0.016f,
-                true
-            );
-        }
-    }
+    CurrentSkillType = ESkillTargetType::Universal;
+    ValidTargets.Empty();
+    CurrentTarget.Reset();
+    CurrentTargetIndex = 0;
 }
 
 void UTargetSelectionComponent::ConfirmTarget()
@@ -172,52 +154,8 @@ void UTargetSelectionComponent::ConfirmTarget()
     UE_LOG(LogTemp, Log, TEXT("[TargetSelection] Target confirmed: %s"),
         CurrentTarget.IsValid() ? *CurrentTarget->GetName() : TEXT("None"));
 
-    // 이벤트 브로드캐스트 (스킬 실행 시작)
+    // 이벤트만 브로드캐스트하고, 상태 정리는 호출자(TurnPlayer)에게 맡김
     OnTargetSelected.Broadcast(CurrentTarget.Get(), CurrentSkillType);
-
-    // 애니메이션이 있는 스킬인지 확인
-    bool bHasAnimation = false;
-    if (OwnerCharacter.IsValid())
-    {
-        if (auto* TurnPlayer = Cast<ATurnPlayer>(OwnerCharacter.Get()))
-        {
-            // SkillW, SkillE는 애니메이션이 있는 스킬
-            if (TurnPlayer->PendingSkillName == TEXT("SkillW") ||
-                TurnPlayer->PendingSkillName == TEXT("SkillE"))
-            {
-                bHasAnimation = true;
-            }
-        }
-    }
-
-    if (!bHasAnimation)
-    {
-        // 즉시 효과 스킬: 기존처럼 모든 상태 즉시 초기화
-        GetWorld()->GetTimerManager().ClearTimer(RotationTimerHandle);
-        GetWorld()->GetTimerManager().ClearTimer(CameraMovementTimerHandle);
-        RotationState = ERotationState::Idle;
-
-        // 캐릭터 회전 설정 복원
-        if (OwnerCharacter.IsValid())
-        {
-            OwnerCharacter->bUseControllerRotationYaw = bOriginalUseControllerRotationYaw;
-        }
-
-        // 선택 완료 후 정리
-        RestoreOriginalCamera();
-        CleanupTemporaryCamera();
-
-        // 상태 초기화
-        SelectionState = ETargetSelectionState::None;
-
-        UE_LOG(LogTemp, Log, TEXT("[TargetSelection] Instant skill confirmed - full cleanup"));
-    }
-    else
-    {
-        // 애니메이션이 있는 스킬: 아무것도 초기화하지 않음
-        // RequestEndTurn()에서 모든 정리를 처리함
-        UE_LOG(LogTemp, Log, TEXT("[TargetSelection] Animation skill confirmed - keeping all states"));
-    }
 }
 
 void UTargetSelectionComponent::SelectNextTarget()

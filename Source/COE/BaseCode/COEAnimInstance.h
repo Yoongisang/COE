@@ -34,6 +34,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AnimMontage")
 	TObjectPtr<class UAnimMontage> DodgeMontage;
 
+	// 피격
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AnimMontage")
+	TObjectPtr<class UAnimMontage> HitMontage;
+
 public:
 	//움직임 체크 (Idle 판단)
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ani", meta = (AllowPrivateAccess = "true"))
@@ -104,6 +108,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Animation")
 	void DodgeAnim();
 
+	// 피격
+	UFUNCTION(BlueprintCallable, Category = "Animation")
+	void HitAnim();
+
 	UFUNCTION(BlueprintCallable, Category = "Animation")
 	void AnimNotify_End();
 	UFUNCTION(BlueprintCallable, Category = "Animation")
@@ -148,4 +156,17 @@ public:
 	/** SkillAnim 종료 시점 */
 	UFUNCTION(BlueprintCallable, Category = "Animation|Defense")
 	void AnimNotify_ESkill_End();
+
+	/** 보스 SkillAnim 시작 시점 */
+	UFUNCTION(BlueprintCallable, Category = "Animation|Defense")
+	void AnimNotify_Fire();
+
+	/** 보스 SkillAnim FX 스폰 시점 */
+	UFUNCTION(BlueprintCallable, Category = "Animation|Defense")
+	void AnimNotify_Fire_Spawn();
+
+	/** 보스 SkillAnim 종료 시점 */
+	UFUNCTION(BlueprintCallable, Category = "Animation|Defense")
+	void AnimNotify_Fire_End();
+
 };

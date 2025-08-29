@@ -261,7 +261,7 @@ private:
 
 	/** 적과의 공격 거리 */
 	UPROPERTY(EditAnywhere, Category = "Combat")
-	float AttackDistance = 150.0f;
+	float AttackDistance = 200.0f;
 
 	/** 이동 속도 */
 	UPROPERTY(EditAnywhere, Category = "Combat")

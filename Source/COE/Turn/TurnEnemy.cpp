@@ -178,19 +178,10 @@ void ATurnEnemy::DefaultAttackToTarget(ACOECharacter* SpecificTarget)
         UE_LOG(LogTemp, Warning, TEXT("[TurnEnemy] %s Using assigned target: %s"), *GetName(), *Target->GetName());
     }
     // AssignedTarget 멤버 변수도 확인합니다.
-    else if (AssignedTarget.IsValid())
+    else if(AssignedTarget.IsValid())
     {
         Target = AssignedTarget.Get();
         UE_LOG(LogTemp, Warning, TEXT("[TurnEnemy] %s Using member target: %s"), *GetName(), *Target->GetName());
-    }
-    else
-    {
-        // 지정된 타겟이 없으면 백업 로직으로 타겟 검색
-        Target = FindTargetPlayer();
-        if (Target)
-        {
-            UE_LOG(LogTemp, Warning, TEXT("[TurnEnemy] %s Using fallback target: %s"), *GetName(), *Target->GetName());
-        }
     }
 
     if (!Target)
@@ -271,21 +262,14 @@ void ATurnEnemy::PerformSkill()
         return;
     }
 
-    // 타겟 찾기 (지정된 타겟 우선, 백업 로직)
+    // 타겟 찾기 (지정된 타겟 우선)
     ACOECharacter* Target = nullptr;
     if (AssignedTarget.IsValid())
     {
         Target = AssignedTarget.Get();
         UE_LOG(LogTemp, Warning, TEXT("[TurnEnemy] %s Using assigned target for skill: %s"), *GetName(), *Target->GetName());
     }
-    else
-    {
-        Target = FindTargetPlayer();
-        if (Target)
-        {
-            UE_LOG(LogTemp, Warning, TEXT("[TurnEnemy] %s Using fallback target for skill: %s"), *GetName(), *Target->GetName());
-        }
-    }
+
 
     if (!Target)
     {

@@ -104,6 +104,25 @@ void ATurnPlayer::UpdateCursor()
 		return;
 	}
 
+	// ★ 2) 방어 모드 체크 추가 (Enemy 턴 중일 때)
+	if (IsEnemyTurnActive())
+	{
+		// 방어 모드: 커서 숨김, 룩 입력 허용 (방어 액션을 위해), 이동 입력 차단
+		PlayerController->bShowMouseCursor = false;
+		PlayerController->bEnableClickEvents = false;
+		PlayerController->bEnableMouseOverEvents = false;
+
+		// ★ 방어 모드에서는 룩 입력을 허용하되 이동은 차단
+		PlayerController->SetIgnoreLookInput(true);
+		PlayerController->SetIgnoreMoveInput(true);
+
+		PlayerController->SetInputMode(FInputModeGameOnly());
+
+		bHasSavedRotation = true;
+		UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] UpdateCursor: Defense mode (Q/W inputs enabled)"));
+		return;
+	}
+
 	//조준 중이거나 공격 중일때는 커서가 안보이게
 	if (bIsAiming || bIsAttacking)
 	{
@@ -399,13 +418,16 @@ bool ATurnPlayer::IsSelectingTarget() const
 
 void ATurnPlayer::Parry()
 {
-
-	// 방어 가능한 상태인지 확인
+	// ★ 방어 가능한 상태인지 확인 (적 턴 + 방어 중 아님)
 	if (!CanPerformDefense())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] Parry failed - cannot perform defense"));
+		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] Parry failed - cannot perform defense. EnemyTurn: %s, IsDefense: %s"),
+			IsEnemyTurnActive() ? TEXT("True") : TEXT("False"),
+			bIsDefense ? TEXT("True") : TEXT("False"));
 		return;
 	}
+
+	UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] %s - Parry activated!"), *GetName());
 
 	// 방어 상태 설정
 	bIsDefense = true;
@@ -413,14 +435,12 @@ void ATurnPlayer::Parry()
 	if (IsValid(AnimInstance))
 	{
 		AnimInstance->ParryAnim();
-
-		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] 패링!"));
 	}
 	else
 	{
+		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] No AnimInstance for Parry"));
 		EndDefenseAction();
 	}
-		
 
 }
 
@@ -472,27 +492,29 @@ void ATurnPlayer::Fire()
 
 void ATurnPlayer::Dodge()
 {
-	// 방어 가능한 상태인지 확인
+	// ★ 방어 가능한 상태인지 확인 (적 턴 + 방어 중 아님)
 	if (!CanPerformDefense())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] Dodge failed - cannot perform defense"));
+		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] Dodge failed - cannot perform defense. EnemyTurn: %s, IsDefense: %s"),
+			IsEnemyTurnActive() ? TEXT("True") : TEXT("False"),
+			bIsDefense ? TEXT("True") : TEXT("False"));
 		return;
 	}
 
-	
+	UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] %s - Dodge activated!"), *GetName());
+
 	// 방어 상태 설정
 	bIsDefense = true;
 
 	if (IsValid(AnimInstance))
 	{
 		AnimInstance->DodgeAnim();
-		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayerController] 회피!"));
 	}
 	else
 	{
+		UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] No AnimInstance for Dodge"));
 		EndDefenseAction();
 	}
-		
 	
 }
 
@@ -597,7 +619,16 @@ ETurnState ATurnPlayer::GetCurrentTurnState() const
 
 bool ATurnPlayer::CanPerformDefense() const
 {
-	return IsEnemyTurnActive() && !bIsDefense;
+	// ★ 조건 강화: 적 턴이고, 방어 중이 아니고, 공격 중도 아니어야 함
+	bool bCanDefend = IsEnemyTurnActive() && !bIsDefense && !bIsAttacking;
+
+	UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] CanPerformDefense: %s (EnemyTurn: %s, IsDefense: %s, IsAttacking: %s)"),
+		bCanDefend ? TEXT("True") : TEXT("False"),
+		IsEnemyTurnActive() ? TEXT("True") : TEXT("False"),
+		bIsDefense ? TEXT("True") : TEXT("False"),
+		bIsAttacking ? TEXT("True") : TEXT("False"));
+
+	return bCanDefend;
 }
 
 void ATurnPlayer::StartParryInvincibility()
@@ -610,6 +641,7 @@ void ATurnPlayer::EndParryInvincibility()
 {
 	UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] %s - Parry invincibility ended!"), *GetName());
 	bIsParryInvincible = false;
+
 }
 
 void ATurnPlayer::StartDodgeInvincibility()
@@ -622,6 +654,7 @@ void ATurnPlayer::EndDodgeInvincibility()
 {
 	UE_LOG(LogTemp, Warning, TEXT("[TurnPlayer] %s - Dodge invincibility ended!"), *GetName());
 	bIsDodgeInvincible = false;
+
 }
 
 void ATurnPlayer::EndDefenseAction()
@@ -1257,8 +1290,22 @@ void ATurnPlayer::RequestEndTurn()
 	// 2. 캐릭터 회전 복원
 	if (PlayerController)
 	{
-		SetActorRotation(OriginalRotation);
-		PlayerController->SetControlRotation(OriginalRotation);
+		// ★ TargetSelector에서 저장된 회전값이 있으면 사용, 없으면 현재 회전값 유지
+		if (TargetSelector && TargetSelector->OriginalPlayerRotation != FRotator::ZeroRotator)
+		{
+			// 타겟 선택이 있었던 경우: 저장된 원래 회전값으로 복원
+			SetActorRotation(TargetSelector->OriginalPlayerRotation);
+			PlayerController->SetControlRotation(TargetSelector->OriginalPlayerRotation);
+			UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] Restored to saved rotation: %s"), *TargetSelector->OriginalPlayerRotation.ToString());
+		}
+		else
+		{
+			// 타겟 선택이 없었던 경우: 현재 회전값 유지 (회전하지 않음)
+			FRotator CurrentRotation = GetActorRotation();
+			SetActorRotation(CurrentRotation);
+			PlayerController->SetControlRotation(CurrentRotation);
+			UE_LOG(LogTemp, Log, TEXT("[TurnPlayer] Keeping current rotation: %s"), *CurrentRotation.ToString());
+		}
 	}
 
 	// 3. 커서 및 입력 모드 업데이트

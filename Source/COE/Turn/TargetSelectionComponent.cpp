@@ -65,6 +65,13 @@ void UTargetSelectionComponent::StartTargetSelection(ESkillTargetType SkillType)
         if (OwnerCharacter.IsValid())
         {
             OriginalPlayerRotation = OwnerCharacter->GetActorRotation();
+
+            // 현재 회전값을 다시 저장 (최신 상태로 업데이트)
+            if (OwnerCharacter.IsValid())
+            {
+                OriginalPlayerRotation = OwnerCharacter->GetActorRotation();
+                UE_LOG(LogTemp, Log, TEXT("[TargetSelection] Current rotation saved: %s"), *OriginalPlayerRotation.ToString());
+            }
         }
     }
 

@@ -190,7 +190,7 @@ void UTurnCombatBridgeComponent::UnbindFromManagerDelegates()
 
 void UTurnCombatBridgeComponent::HandleTurnStarted(ACOECharacter* ActiveCharacter, int32 Round)
 {
-    // 유효성 검사
+    // 유효성 검사 강화
     if (!IsValid(ActiveCharacter) || !IsValid(OwnerCharacter) || HasAnyFlags(RF_BeginDestroyed | RF_FinishDestroyed))
     {
         return;
@@ -241,34 +241,50 @@ void UTurnCombatBridgeComponent::HandleTurnStarted(ACOECharacter* ActiveCharacte
         }
         else // [적 턴 로직]
         {
-            const TArray<ACOECharacter*> AlivePlayers = GI->GetAliveTeamMembers(ECombatTeam::Player);
-            if (AlivePlayers.Num() > 0)
+            // ★ 핵심 수정: Enemy가 미리 자신의 타겟을 결정하도록 함
+            if (auto* TurnEnemy = Cast<ATurnEnemy>(ActiveCharacter))
             {
-                // 방어할 플레이어 랜덤 선택
-                ACOECharacter* DefendingPlayer = AlivePlayers[FMath::RandRange(0, AlivePlayers.Num() - 1)];
+                // Enemy가 공격할 타겟을 미리 선정
+                const TArray<ACOECharacter*> AlivePlayers = GI->GetAliveTeamMembers(ECombatTeam::Player);
 
-                // GameInstance에 '현재 방어자'로 저장 (핵심)
-                GI->CurrentDefendingPlayer = DefendingPlayer;
-                UE_LOG(LogTemp, Warning, TEXT("[Bridge] Enemy Turn. Defending Player is now: %s"), *DefendingPlayer->GetName());
-
-                // 해당 방어자에게 카메라 및 조종권 이전
-                PC->SetViewTargetWithBlend(DefendingPlayer, 0.8f, EViewTargetBlendFunction::VTBlend_Cubic);
-
-                if (APawn* PawnToPossess = Cast<APawn>(DefendingPlayer))
+                if (AlivePlayers.Num() > 0)
                 {
-                    FTimerHandle PossessDelayHandle;
-                    GetWorld()->GetTimerManager().SetTimer(PossessDelayHandle, [this, PC, PawnToPossess]() {
-                        if (IsValid(PawnToPossess) && IsValid(PC))
-                        {
-                            PC->Possess(PawnToPossess);
-                            if (auto* TP = Cast<ATurnPlayer>(PawnToPossess))
+                    // 이 Enemy가 공격할 타겟 랜덤 선택
+                    ACOECharacter* EnemyTarget = AlivePlayers[FMath::RandRange(0, AlivePlayers.Num() - 1)];
+
+                    // Enemy에게 타겟 미리 설정 (중요!)
+                    TurnEnemy->SetAssignedTarget(EnemyTarget);
+
+                    // GameInstance에도 방어자로 설정 (동일한 타겟)
+                    GI->CurrentDefendingPlayer = EnemyTarget;
+
+                    UE_LOG(LogTemp, Warning, TEXT("[Bridge] %s will attack %s. Setting up defense for %s."),
+                        *TurnEnemy->GetName(), *EnemyTarget->GetName(), *EnemyTarget->GetName());
+
+                    // 공격 대상이 될 플레이어에게 카메라 및 조종권 이전
+                    PC->SetViewTargetWithBlend(EnemyTarget, 0.8f, EViewTargetBlendFunction::VTBlend_Cubic);
+
+                    if (APawn* PawnToPossess = Cast<APawn>(EnemyTarget))
+                    {
+                        FTimerHandle PossessDelayHandle;
+                        GetWorld()->GetTimerManager().SetTimer(PossessDelayHandle, [this, PC, PawnToPossess, EnemyTarget]() {
+                            if (IsValid(PawnToPossess) && IsValid(PC))
                             {
-                                TP->UpdateCursor();
-                                TP->SetTurnHudVisible(true);
-                                TP->SetTurnHudMode(ETurnHudMode::EnemyTurn); // 방어 모드 UI 표시
+                                PC->Possess(PawnToPossess);
+                                if (auto* TP = Cast<ATurnPlayer>(PawnToPossess))
+                                {
+                                    TP->UpdateCursor();
+                                    TP->SetTurnHudVisible(true);
+                                    TP->SetTurnHudMode(ETurnHudMode::EnemyTurn);
+                                    UE_LOG(LogTemp, Warning, TEXT("[Bridge] Defense mode activated for TARGET: %s"), *EnemyTarget->GetName());
+                                }
                             }
-                        }
-                        }, 0.85f, false);
+                            }, 0.85f, false);
+                    }
+                }
+                else
+                {
+                    UE_LOG(LogTemp, Error, TEXT("[Bridge] No alive players found for enemy turn!"));
                 }
             }
         }
@@ -283,20 +299,30 @@ void UTurnCombatBridgeComponent::HandleTurnStarted(ACOECharacter* ActiveCharacte
         // Enemy라면 AI 행동 시작
         if (auto* TurnEnemy = Cast<ATurnEnemy>(ActiveCharacter))
         {
-            // GameInstance에서 지정된 방어자를 타겟으로 설정
-            ACOECharacter* TargetToAttack = GI->CurrentDefendingPlayer.Get();
+            // 타이밍 수정: Enemy 공격을 충분히 지연시켜서 방어 모드 설정 완료 대기
+            FTimerHandle EnemyAttackDelayHandle;
+            GetWorld()->GetTimerManager().SetTimer(EnemyAttackDelayHandle,
+                [this, TurnEnemy]()
+                {
+                    if (!IsValid(this) || !IsValid(TurnEnemy)) return;
 
-            if (IsValid(TargetToAttack))
-            {
-                UE_LOG(LogTemp, Warning, TEXT("[Bridge] Commanding %s to attack designated target %s."), *TurnEnemy->GetName(), *TargetToAttack->GetName());
-                TurnEnemy->ExecuteEnemyTurnWithTarget(TargetToAttack);
-            }
-            else
-            {
-                // 혹시 모를 예외 처리
-                UE_LOG(LogTemp, Warning, TEXT("[Bridge] No designated target found. Enemy will pick a random target."));
-                TurnEnemy->ExecuteEnemyTurn();
-            }
+                    // 이미 Part 1에서 설정된 타겟을 사용하여 공격
+                    if (TurnEnemy->AssignedTarget.IsValid())
+                    {
+                        ACOECharacter* TargetToAttack = TurnEnemy->AssignedTarget.Get();
+                        UE_LOG(LogTemp, Warning, TEXT("[Bridge] %s attacking PRE-ASSIGNED target %s."),
+                            *TurnEnemy->GetName(), *TargetToAttack->GetName());
+                        TurnEnemy->ExecuteEnemyTurnWithTarget(TargetToAttack);
+                    }
+                    else
+                    {
+                        // 백업: 할당된 타겟이 없으면 일반 로직 사용
+                        UE_LOG(LogTemp, Warning, TEXT("[Bridge] No pre-assigned target. Using fallback logic."));
+                        TurnEnemy->ExecuteEnemyTurn();
+                    }
+                },
+                1.5f, false
+            );
         }
     }
 }
@@ -352,5 +378,3 @@ void UTurnCombatBridgeComponent::HandleTurnEnded(ACOECharacter* ActiveCharacter,
         }
     }
 }
-
-

@@ -201,7 +201,7 @@ void ATurnPlayer::SetAiming(bool bNewAiming)
 	UpdateHudForTurnState();
 }
 
-//기본 공격
+//기본공격
 void ATurnPlayer::UseSkill_Q()
 {
 	if (!CanPerformAction() || IsSelectingTarget())
@@ -240,7 +240,7 @@ void ATurnPlayer::UseSkill_W()
 	}
 }
 
-//강한 공격
+//강한공격
 void ATurnPlayer::UseSkill_E()
 {
 	if (!CanPerformAction() || IsSelectingTarget())

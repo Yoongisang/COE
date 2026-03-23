@@ -16,7 +16,7 @@ class ACOECharacter;        // 전투 참가자 공통 베이스 (ATurnPlayer/AT
 
 // 턴 정렬용 엔트리: 높은 Initiative 우선, 동률은 TieBreak 난수로 결정
 USTRUCT()
-struct FTurnEntry
+struct COE_API FTurnEntry
 {
     GENERATED_BODY()
 

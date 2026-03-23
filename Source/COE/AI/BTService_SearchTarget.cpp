@@ -42,7 +42,7 @@ void UBTService_SearchTarget::TickNode(UBehaviorTreeComponent& OwnerComp, uint8*
 				auto Player = Cast<AExplorationPlayer>(OverlapResult.GetActor());
 				if (Player)
 				{
-					DrawDebugSphere(GetWorld(), Center, SearchDistance, 10, FColor::Green, false, 0.5f);
+					//DrawDebugSphere(GetWorld(), Center, SearchDistance, 10, FColor::Green, false, 0.5f);
 					OwnerComp.GetBlackboardComponent()->SetValueAsObject(FName("Target"), Player);
 
 					return;
@@ -53,7 +53,7 @@ void UBTService_SearchTarget::TickNode(UBehaviorTreeComponent& OwnerComp, uint8*
 		}
 		OwnerComp.GetBlackboardComponent()->SetValueAsObject(FName("Target"), nullptr);
 
-		DrawDebugSphere(GetWorld(), Center, SearchDistance, 10, FColor::Red, false, 0.5f);
+		//DrawDebugSphere(GetWorld(), Center, SearchDistance, 10, FColor::Red, false, 0.5f);
 
 	}
 

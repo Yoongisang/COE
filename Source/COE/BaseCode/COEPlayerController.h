@@ -15,7 +15,7 @@ struct FInputActionValue;
  *  Manages input mappings
  */
 UCLASS(abstract)
-class ACOEPlayerController : public APlayerController
+class COE_API ACOEPlayerController : public APlayerController
 {
 	GENERATED_BODY()
 

@@ -9,7 +9,7 @@
  * 
  */
 USTRUCT(BlueprintType)
-struct FCharacterStats
+struct COE_API FCharacterStats
 {
 	GENERATED_BODY()
 

@@ -200,7 +200,7 @@ void ACOECharacter::DoDefaultAttack()
 
 	DrawColor = Result ? FColor::Green : FColor::Red;
 
-	DrawDebugCapsule(GetWorld(), Center, HalfHeight, AttackRadius, Rot, DrawColor, false, 2.f);
+	//DrawDebugCapsule(GetWorld(), Center, HalfHeight, AttackRadius, Rot, DrawColor, false, 2.f);
 
 	// 파티클 스폰
 	SpawnDefaultAttackEmitter();
@@ -334,7 +334,7 @@ void ACOECharacter::Fire()
 		if (Result)
 		{
 			TargetLocation = HitResult.ImpactPoint;
-			DrawDebugLine(GetWorld(), AimLocation, TargetLocation, FColor::Green, false, 2.f);
+			//DrawDebugLine(GetWorld(), AimLocation, TargetLocation, FColor::Green, false, 2.f);
 			UE_LOG(LogTemp, Log, TEXT("Hit : %s"), *HitResult.GetActor()->GetName());
 
 			//공격판정이 들어가면 데미지 적용
@@ -342,7 +342,7 @@ void ACOECharacter::Fire()
 		}
 		else
 		{
-			DrawDebugLine(GetWorld(), AimLocation, TargetLocation, FColor::Red, false, 2.f);
+			//DrawDebugLine(GetWorld(), AimLocation, TargetLocation, FColor::Red, false, 2.f);
 		}
 
 		// 원거리 Montage 적용시 소켓 위치에서 Aim ImpactPoint로 공격이 갈 수 있게 조정

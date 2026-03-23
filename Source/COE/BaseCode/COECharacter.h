@@ -15,7 +15,7 @@ class UAimUIWidget;
 //DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
 UCLASS(abstract)
-class ACOECharacter : public ACharacter
+class COE_API ACOECharacter : public ACharacter
 {
 	GENERATED_BODY()
 

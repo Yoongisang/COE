@@ -10,7 +10,7 @@
  *  Simple GameMode for a third person game
  */
 UCLASS(abstract)
-class ACOEGameMode : public AGameModeBase
+class COE_API ACOEGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
 
